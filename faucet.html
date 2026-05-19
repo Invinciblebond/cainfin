@@ -1169,7 +1169,7 @@ async function requestTokens() {
     const data = await res.json();
 
     if (data.success) {
-      txt.textContent = '✓ Sent ' + c.token + ' to your wallet';
+      txt.textContent = 'Claimed! It may take upto 2 hours to process your claim.' + c.token + ' to your wallet';
       btn.style.background = '#4ade80';
       btn.style.color = '#0a0a0a';
       setTimeout(() => {
