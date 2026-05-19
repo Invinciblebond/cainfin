@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cain Liquid | Earn Private Equity Yields</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --bg-card: #111111;
+    --bg-card2: #161616;
+    --bg-pill: #1e1e1e;
+    --border: rgba(255,255,255,0.08);
+    --border-bright: rgba(255,255,255,0.14);
+    --text-primary: #f0ede6;
+    --text-secondary: #888882;
+    --text-muted: #555550;
+    --accent: #c8b68a;
+    --accent-dim: rgba(200,182,138,0.15);
+    --accent-dim2: rgba(200,182,138,0.08);
+    --green: #4ade80;
+    --green-dim: rgba(74,222,128,0.12);
+    --font: 'Geist', sans-serif;
+    --mono: 'Geist Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 60px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+  .nav-logo-icon {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-logo-icon svg { width: 16px; height: 16px; }
+  .nav-links {
+    display: flex; gap: 6px; align-items: center;
+  }
+  .nav-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .nav-link:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+  .nav-btn {
+    background: var(--text-primary);
+    color: #0a0a0a;
+    border: none;
+    border-radius: 7px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .nav-btn:hover { opacity: 0.85; }
+
+  /* ── BREADCRUMB ── */
+  .breadcrumb {
+    padding: 16px 32px;
+    display: flex; align-items: center; gap: 8px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .breadcrumb a { color: var(--text-secondary); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--text-primary); }
+  .breadcrumb-sep { color: var(--text-muted); }
+
+  /* ── MAIN LAYOUT ── */
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 32px 80px;
+  }
+
+  /* ── VAULT HERO ── */
+  .vault-hero {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 24px;
+    margin-bottom: 24px;
+    align-items: start;
+  }
+
+  .vault-header {
+    padding: 28px 0 0;
+  }
+  .vault-badge-row {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    border: 1px solid;
+  }
+  .badge-private-credit {
+    background: rgba(200,182,138,0.1);
+    border-color: rgba(200,182,138,0.25);
+    color: var(--accent);
+  }
+  .badge-dot {
+    width: 5px; height: 5px; border-radius: 50%; background: currentColor;
+  }
+  .badge-verified {
+    background: rgba(255,255,255,0.04);
+    border-color: var(--border);
+    color: var(--text-secondary);
+  }
+  .vault-title {
+    font-size: 30px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+  }
+  .vault-subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.65;
+    max-width: 520px;
+    margin-bottom: 20px;
+  }
+  .vault-meta-row {
+    display: flex; gap: 24px; flex-wrap: wrap;
+  }
+  .vault-meta-item {
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .vault-meta-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .vault-meta-value {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-family: var(--mono);
+  }
+
+  /* ── DEPOSIT CARD ── */
+  .deposit-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    position: sticky;
+    top: 76px;
+  }
+  .deposit-card-tabs {
+    display: flex;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 3px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+  .deposit-tab {
+    flex: 1;
+    padding: 7px;
+    text-align: center;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+    border: none;
+    background: none;
+    font-family: var(--font);
+  }
+  .deposit-tab.active {
+    background: var(--bg-card2);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+
+  .stat-highlight {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-highlight-item { display: flex; flex-direction: column; gap: 4px; }
+  .stat-hl-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .stat-hl-value { font-size: 22px; font-weight: 500; color: var(--text-primary); letter-spacing: -0.01em; }
+  .stat-hl-value.green { color: var(--green); }
+
+  .input-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    display: block;
+  }
+  .token-input-wrap {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    transition: border-color 0.15s;
+  }
+  .token-input-wrap:focus-within { border-color: var(--border-bright); }
+  .token-input {
+    background: none;
+    border: none;
+    outline: none;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-family: var(--font);
+    width: 100%;
+  }
+  .token-input::placeholder { color: var(--text-muted); }
+  .token-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--bg-pill);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .token-circle {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2775CA 0%, #5B9BD5 100%);
+    font-size: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-weight: 700;
+  }
+  .balance-row {
+    display: flex; justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+  .balance-max {
+    color: var(--accent);
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .deposit-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--text-primary);
+    color: #0a0a0a;
+    border: none;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: opacity 0.15s;
+    margin-bottom: 12px;
+  }
+  .deposit-btn:hover { opacity: 0.88; }
+  .deposit-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.5;
+  }
+  .deposit-meta a { color: var(--text-secondary); }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .stat-card-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .stat-card-value {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+  }
+  .stat-card-value.green { color: var(--green); }
+  .stat-card-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* ── TABS ── */
+  .section-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .section-tab {
+    padding: 10px 20px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    margin-bottom: -1px;
+    background: none;
+    border-top: none; border-left: none; border-right: none;
+    font-family: var(--font);
+  }
+  .section-tab.active {
+    color: var(--text-primary);
+    border-bottom-color: var(--accent);
+  }
+  .section-tab:hover:not(.active) { color: var(--text-primary); }
+
+  /* ── CONTENT SECTIONS ── */
+  .content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .info-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+  .info-card-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+  .info-card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .asset-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .asset-row:last-child { border-bottom: none; }
+  .asset-left { display: flex; align-items: center; gap: 12px; }
+  .asset-icon {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    background: var(--bg-pill);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .asset-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .asset-issuer { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .asset-alloc {
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--mono);
+    color: var(--text-primary);
+  }
+
+  /* ── PERFORMANCE CHART ── */
+  .chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin-bottom: 16px;
+  }
+  .chart-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 20px;
+  }
+  .chart-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+  }
+  .chart-current {
+    text-align: right;
+  }
+  .chart-current-value {
+    font-size: 22px; font-weight: 500; color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+  .chart-current-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .chart-timeframe {
+    display: flex; gap: 4px; margin-bottom: 16px;
+  }
+  .tf-btn {
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-family: var(--font);
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--text-muted);
+    transition: all 0.15s;
+  }
+  .tf-btn.active {
+    background: var(--bg-pill);
+    color: var(--text-primary);
+    border-color: var(--border-bright);
+  }
+  .chart-wrap { height: 180px; position: relative; }
+
+  /* ── KEY METRICS TABLE ── */
+  .metrics-table { width: 100%; border-collapse: collapse; }
+  .metrics-table tr { border-bottom: 1px solid var(--border); }
+  .metrics-table tr:last-child { border-bottom: none; }
+  .metrics-table td {
+    padding: 12px 0;
+    font-size: 13px;
+  }
+  .metrics-table td:first-child { color: var(--text-secondary); }
+  .metrics-table td:last-child {
+    text-align: right;
+    color: var(--text-primary);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .tooltip-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 1px solid var(--text-muted);
+    color: var(--text-muted);
+    font-size: 9px;
+    cursor: help;
+    margin-left: 5px;
+    vertical-align: middle;
+  }
+
+  /* ── DOCUMENTS / LINKS ── */
+  .doc-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .doc-row:last-child { border-bottom: none; }
+  .doc-left { display: flex; align-items: center; gap: 10px; }
+  .doc-icon {
+    width: 32px; height: 32px;
+    border-radius: 7px;
+    background: var(--bg-pill);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .doc-name { font-size: 13px; color: var(--text-primary); }
+  .doc-type { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .doc-link {
+    font-size: 12px; color: var(--accent);
+    text-decoration: none;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .doc-link:hover { opacity: 0.8; }
+
+  /* ── CONTRACT ADDRESSES ── */
+  .contract-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .contract-row:last-child { border-bottom: none; }
+  .contract-label { font-size: 12px; color: var(--text-secondary); }
+  .contract-addr {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .copy-btn {
+    cursor: pointer;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    font-size: 11px;
+    padding: 2px 4px;
+    border-radius: 3px;
+    transition: color 0.15s;
+  }
+  .copy-btn:hover { color: var(--text-secondary); }
+
+  /* ── CHAIN PILLS ── */
+  .chain-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--bg-pill);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 3px 9px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-right: 4px;
+  }
+  .chain-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+  .chain-dot.plume { background: #9b87f5; }
+  .chain-dot.eth { background: #627EEA; }
+  .chain-dot.bnb { background: #F0B90B; }
+  .chain-dot.plasma { background: #e85d4a; }
+
+  /* ── PARTNER BADGE ── */
+  .partner-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .partner-logo {
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    background: var(--bg-pill);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .partner-info { flex: 1; }
+  .partner-name { font-size: 14px; font-weight: 500; color: var(--text-primary); margin-bottom: 3px; }
+  .partner-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+  .partner-link { font-size: 12px; color: var(--accent); text-decoration: none; }
+
+  /* ── RISK INDICATORS ── */
+  .risk-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .risk-item {
+    flex: 1; min-width: 130px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .risk-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+  .risk-value { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .risk-bar-wrap {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .risk-bar { height: 100%; border-radius: 2px; background: var(--accent); }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+  footer a { color: var(--text-muted); text-decoration: none; }
+  footer a:hover { color: var(--text-secondary); }
+
+  /* ── TAB PANELS ── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── SECTION HEADING ── */
+  .section-heading {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+
+  /* ── INFO TOOLTIP ── */
+  .info-tip { cursor: help; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .vault-hero { animation: fadeUp 0.4s ease both; }
+  .stats-row { animation: fadeUp 0.4s ease 0.06s both; }
+
+  @media (max-width: 900px) {
+    .vault-hero { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .content-grid { grid-template-columns: 1fr; }
+    .deposit-card { position: static; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" fill="#0a0a0a"/>
+      </svg>
+    </div>
+    nest
+  </a>
+  <div class="nav-links">
+    <a href="#" class="nav-link">Vaults</a>
+    <a href="#" class="nav-link">Portfolio</a>
+    <a href="#" class="nav-link">Docs</a>
+    <button class="nav-btn">Connect Wallet</button>
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div style="max-width:1200px; margin:0 auto;">
+  <div class="breadcrumb">
+    <a href="#">Vaults</a>
+    <span class="breadcrumb-sep">/</span>
+    <span style="color: var(--text-secondary);">Cain Liquid II</span>
+  </div>
+</div>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- HERO -->
+  <div class="vault-hero">
+    <div class="vault-header">
+      <div class="vault-badge-row">
+        <span class="badge badge-private-credit">
+          <span class="badge-dot"></span>Private Credit
+        </span>
+        <span class="badge badge-verified">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="margin-right:2px"><path d="M5 1L6.2 3.5L9 3.9L7 5.8L7.5 8.5L5 7.2L2.5 8.5L3 5.8L1 3.9L3.8 3.5L5 1Z" fill="currentColor"/></svg>
+          Investment Grade
+        </span>
+        <span class="badge badge-verified">Short Duration</span>
+      </div>
+      <h1 class="vault-title">Cain Liquid II<br/></h1>
+      <p class="vault-subtitle">Investment grade short-duration payment receivables. Designed for consistent, risk-adjusted income backed by Liquidity pools across multiple chains.</p>
+
+      <div class="vault-meta-row">
+        <div class="vault-meta-item">
+          <span class="vault-meta-label">Token</span>
+          <span class="vault-meta-value">nOPAL</span>
+        </div>
+        <div class="vault-meta-item">
+          <span class="vault-meta-label">Networks</span>
+          <span class="vault-meta-value" style="display:flex;gap:4px;margin-top:3px;">
+            <span class="chain-pill"><span class="chain-dot plume"></span>Polygon</span>
+            <span class="chain-pill"><span class="chain-dot eth"></span>ETH</span>
+            <span class="chain-pill"><span class="chain-dot bnb"></span>BNB</span>
+          </span>
+        </div>
+        <div class="vault-meta-item">
+          <span class="vault-meta-label">Liquidity</span>
+          <span class="vault-meta-value">3–5 days</span>
+        </div>
+        <div class="vault-meta-item">
+          <span class="vault-meta-label">Min. Deposit</span>
+          <span class="vault-meta-value">$100 USDC</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEPOSIT CARD -->
+    <div class="deposit-card">
+      <div class="deposit-card-tabs">
+        <button class="deposit-tab active" onclick="switchDepositTab(this,'deposit')">Deposit</button>
+        <button class="deposit-tab" onclick="switchDepositTab(this,'withdraw')">Withdraw</button>
+      </div>
+      <div class="stat-highlight">
+        <div class="stat-highlight-item">
+          <span class="stat-hl-label">Vault APY</span>
+          <span class="stat-hl-value green">11.91%</span>
+        </div>
+        <div class="stat-highlight-item" style="text-align:right;">
+          <span class="stat-hl-label">TVL</span>
+          <span class="stat-hl-value">$16M</span>
+        </div>
+      </div>
+      <label class="input-label">You deposit</label>
+      <div class="token-input-wrap">
+        <input class="token-input" type="text" placeholder="0.00" id="depositAmt" oninput="calcOutput()" />
+        <div class="token-badge">
+          <div class="token-circle">$</div>
+          USDC
+        </div>
+      </div>
+      <div class="balance-row">
+        <span>Balance: 0.00 USDC</span>
+        <span class="balance-max" onclick="document.getElementById('depositAmt').value='0.00'">MAX</span>
+      </div>
+
+      <label class="input-label">You receive</label>
+      <div class="token-input-wrap">
+        <input class="token-input" type="text" placeholder="0.00" id="receiveAmt" readonly style="color:var(--text-secondary);" />
+        <div class="token-badge">
+          <div class="token-circle" style="background:linear-gradient(135deg,#c8b68a,#8a7650);color:#0a0a0a;">N</div>
+          nOPAL
+        </div>
+      </div>
+
+      <div style="height:16px;"></div>
+      <button class="deposit-btn">Connect Wallet to Deposit</button>
+      <div class="deposit-meta">
+        By depositing you agree to the <a href="#">Terms of Service</a>.<br/>
+        Redemption window: 3–5 business days.
+      </div>
+    </div>
+  </div><!-- /vault-hero -->
+
+  <!-- STATS ROW -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-card-label">Vault APY <span class="tooltip-icon" title="Annualized percentage yield based on recent returns">?</span></div>
+      <div class="stat-card-value green">11.91%</div>
+      <div class="stat-card-sub">Trailing 30d</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">TVL</div>
+      <div class="stat-card-value">$16.0M</div>
+      <div class="stat-card-sub">Total value locked</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">nOPAL Price</div>
+      <div class="stat-card-value">$1.02</div>
+      <div class="stat-card-sub">+0.03% (24h)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">Avg. Duration</div>
+      <div class="stat-card-value">90d</div>
+      <div class="stat-card-sub">Payment receivables</div>
+    </div>
+  </div>
+
+  <!-- SECTION TABS -->
+  <div class="section-tabs">
+    <button class="section-tab active" onclick="switchTab(this,'overview')">Overview</button>
+    <button class="section-tab" onclick="switchTab(this,'performance')">Performance</button>
+    <button class="section-tab" onclick="switchTab(this,'assets')">Assets</button>
+    <button class="section-tab" onclick="switchTab(this,'details')">Details</button>
+    <button class="section-tab" onclick="switchTab(this,'docs')">Documents</button>
+  </div>
+
+  <!-- TAB: OVERVIEW -->
+  <div class="tab-panel active" id="panel-overview">
+    <div class="content-grid">
+      <div class="info-card">
+        <div class="info-card-title">Strategy</div>
+        <p>The Cain Liquid II vault provides institutional investors with structured exposure to short-duration payment receivables originated by international payment and remittance businesses across Southeast Asia, MENA, and LATAM regions.</p>
+        <br/>
+        <p>The strategy targets investment-grade credit quality with a working capital focus, providing consistent yield through a BVI-domiciled special purpose vehicle that finances cross-border payment infrastructure.</p>
+      </div>
+      <div class="info-card">
+        <div class="info-card-title">Risk Profile</div>
+        <div class="risk-row">
+          <div class="risk-item">
+            <div class="risk-label">Credit Risk</div>
+            <div class="risk-value">Low–Med</div>
+            <div class="risk-bar-wrap"><div class="risk-bar" style="width:35%"></div></div>
+          </div>
+          <div class="risk-item">
+            <div class="risk-label">Duration Risk</div>
+            <div class="risk-value">Low</div>
+            <div class="risk-bar-wrap"><div class="risk-bar" style="width:20%"></div></div>
+          </div>
+          <div class="risk-item">
+            <div class="risk-label">Liquidity Risk</div>
+            <div class="risk-value">Medium</div>
+            <div class="risk-bar-wrap"><div class="risk-bar" style="width:50%"></div></div>
+          </div>
+        </div>
+        <table class="metrics-table" style="margin-top:8px;">
+          <tr><td>Asset Class</td><td>Payment Receivables</td></tr>
+          <tr><td>Structure</td><td>Senior, bankruptcy-remote SPV</td></tr>
+          <tr><td>Geography</td><td>SEA · MENA · LATAM</td></tr>
+          <tr><td>Issuer</td><td>Credbull (Opal Capital Ltd.)</td></tr>
+          <tr><td>Jurisdiction</td><td>British Virgin Islands</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Partner -->
+    <div class="section-heading">Asset Manager</div>
+    <div class="partner-card" style="margin-bottom:16px;">
+      <div class="partner-logo">CB</div>
+      <div class="partner-info">
+        <div class="partner-name">Credbull — Opal Capital Ltd.</div>
+        <div class="partner-desc" style="margin-bottom:6px;">Licensed private credit issuer based in the Bahamas. BVI-domiciled working capital financing provider to international payment and remittance businesses in SEA, MENA, and LATAM. Provides structured, senior-secured exposure to short-duration payment receivables.</div>
+        <a href="#" class="partner-link">credbull.io ↗</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: PERFORMANCE -->
+  <div class="tab-panel" id="panel-performance">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">nOPAL Token Price</div>
+          <div class="chart-timeframe">
+            <button class="tf-btn" onclick="setTF(this,'7d')">7D</button>
+            <button class="tf-btn active" onclick="setTF(this,'1m')">1M</button>
+            <button class="tf-btn" onclick="setTF(this,'3m')">3M</button>
+            <button class="tf-btn" onclick="setTF(this,'all')">All</button>
+          </div>
+        </div>
+        <div class="chart-current">
+          <div class="chart-current-value">$1.0200</div>
+          <div class="chart-current-sub">+0.03% (24h) · nOPAL</div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="priceChart"></canvas>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <div class="info-card">
+        <div class="info-card-title">Historical Returns</div>
+        <table class="metrics-table">
+          <tr><td>7 Day Return</td><td>+0.22%</td></tr>
+          <tr><td>30 Day Return</td><td>+0.97%</td></tr>
+          <tr><td>90 Day Return</td><td>+2.89%</td></tr>
+          <tr><td>Since Inception</td><td>+2.00%</td></tr>
+          <tr><td>Annualized APY</td><td style="color:var(--green);">11.91%</td></tr>
+        </table>
+      </div>
+      <div class="info-card">
+        <div class="info-card-title">Monthly Yield Distribution</div>
+        <div class="chart-wrap" style="height:140px;">
+          <canvas id="yieldChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: ASSETS -->
+  <div class="tab-panel" id="panel-assets">
+    <div class="info-card" style="margin-bottom:16px;">
+      <div class="info-card-title">Portfolio Composition</div>
+      <div class="asset-row">
+        <div class="asset-left">
+          <div class="asset-icon">LS</div>
+          <div>
+            <div class="asset-name">LiquidStone</div>
+            <div class="asset-issuer">Credbull · Payment Receivables</div>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div class="asset-alloc">~85%</div>
+          <div style="font-size:11px;color:var(--text-muted);">Core strategy</div>
+        </div>
+      </div>
+      <div class="asset-row">
+        <div class="asset-left">
+          <div class="asset-icon" style="color:#2775CA;">$</div>
+          <div>
+            <div class="asset-name">USDC / Stablecoin Buffer</div>
+            <div class="asset-issuer">Circle · Liquidity management</div>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div class="asset-alloc">~10%</div>
+          <div style="font-size:11px;color:var(--text-muted);">Redemption buffer</div>
+        </div>
+      </div>
+      <div class="asset-row">
+        <div class="asset-left">
+          <div class="asset-icon" style="color:#627EEA;">Y</div>
+          <div>
+            <div class="asset-name">Yield-bearing Stablecoins</div>
+            <div class="asset-issuer">Ondo USDY · Liquidity buffer</div>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div class="asset-alloc">~5%</div>
+          <div style="font-size:11px;color:var(--text-muted);">Yield on buffer</div>
+        </div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title">Geography Breakdown</div>
+      <div class="asset-row">
+        <div class="asset-left"><div class="asset-name">Southeast Asia (SEA)</div></div>
+        <div class="asset-alloc">~45%</div>
+      </div>
+      <div class="asset-row">
+        <div class="asset-left"><div class="asset-name">Middle East & North Africa (MENA)</div></div>
+        <div class="asset-alloc">~30%</div>
+      </div>
+      <div class="asset-row">
+        <div class="asset-left"><div class="asset-name">Latin America (LATAM)</div></div>
+        <div class="asset-alloc">~25%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: DETAILS -->
+  <div class="tab-panel" id="panel-details">
+    <div class="content-grid">
+      <div class="info-card">
+        <div class="info-card-title">Vault Parameters</div>
+        <table class="metrics-table">
+          <tr><td>Management Fee</td><td>0.50% p.a.</td></tr>
+          <tr><td>Performance Fee</td><td>10%</td></tr>
+          <tr><td>Deposit Token</td><td>USDC</td></tr>
+          <tr><td>Vault Token</td><td>nOPAL</td></tr>
+          <tr><td>Min. Deposit</td><td>$100</td></tr>
+          <tr><td>Redemption Period</td><td>3–5 business days</td></tr>
+          <tr><td>Yield Settlement</td><td>Continuous (auto-compounding)</td></tr>
+          <tr><td>Architecture</td><td>Boring Vault</td></tr>
+        </table>
+      </div>
+      <div class="info-card">
+        <div class="info-card-title">Smart Contracts</div>
+        <div class="contract-row">
+          <div class="contract-label">Boring Vault (Polygon)</div>
+          <div class="contract-addr">
+            0x119D...9165
+            <button class="copy-btn" onclick="copyAddr(this,'0x119Dd7dAFf816f29D7eE47596ae5E4bdC4299165')">Copy</button>
+          </div>
+        </div>
+        <div class="contract-row">
+          <div class="contract-label">Boring Vault (Ethereum)</div>
+          <div class="contract-addr">
+            0x119D...9165
+            <button class="copy-btn" onclick="copyAddr(this,'0x119Dd7dAFf816f29D7eE47596ae5E4bdC4299165')">Copy</button>
+          </div>
+        </div>
+        <div class="contract-row">
+          <div class="contract-label">Teller</div>
+          <div class="contract-addr">
+            0xA5F8...A90b
+            <button class="copy-btn" onclick="copyAddr(this,'0xA5F8e5843dd597a179453bF782844e8Bf808A90b')">Copy</button>
+          </div>
+        </div>
+        <div class="contract-row">
+          <div class="contract-label">Supported Chains</div>
+          <div>
+            <span class="chain-pill"><span class="chain-dot plume"></span>Polygon</span>
+            <span class="chain-pill"><span class="chain-dot eth"></span>Ethereum</span>
+            <span class="chain-pill"><span class="chain-dot bnb"></span>BNB</span>
+            <span class="chain-pill"><span class="chain-dot plasma"></span>Solana</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: DOCUMENTS -->
+  <div class="tab-panel" id="panel-docs">
+    <div class="info-card">
+      <div class="info-card-title">Legal & Research Documents</div>
+      <div class="doc-row">
+        <div class="doc-left">
+          <div class="doc-icon">📄</div>
+          <div>
+            <div class="doc-name">Term Sheet — Liquid II</div>
+            <div class="doc-type">PDF · Legal</div>
+          </div>
+        </div>
+        <a href="#" class="doc-link">View ↗</a>
+      </div>
+      <div class="doc-row">
+        <div class="doc-left">
+          <div class="doc-icon">📋</div>
+          <div>
+            <div class="doc-name">Risk Disclosure Document</div>
+            <div class="doc-type">PDF · Compliance</div>
+          </div>
+        </div>
+        <a href="#" class="doc-link">View ↗</a>
+      </div>
+      <div class="doc-row">
+        <div class="doc-left">
+          <div class="doc-icon">🔍</div>
+          <div>
+            <div class="doc-name">Smart Contract Audit — Boring Vault</div>
+            <div class="doc-type">PDF · Security</div>
+          </div>
+        </div>
+        <a href="#" class="doc-link">View ↗</a>
+      </div>
+      <div class="doc-row">
+        <div class="doc-left">
+          <div class="doc-icon">📊</div>
+          <div>
+            <div class="doc-name">Monthly Performance Report</div>
+            <div class="doc-type">PDF · Reporting</div>
+          </div>
+        </div>
+        <a href="#" class="doc-link">View ↗</a>
+      </div>
+      <div class="doc-row">
+        <div class="doc-left">
+          <div class="doc-icon">⚖️</div>
+          <div>
+            <div class="doc-name">Credbull — Opal Capital Ltd. License</div>
+            <div class="doc-type">PDF · Regulatory</div>
+          </div>
+        </div>
+        <a href="#" class="doc-link">View ↗</a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<footer>
+  <span>© 2025 Cain by Cain.Finance. All rights reserved.</span>
+  <div style="display:flex;gap:20px;">
+    <a href="#">Terms</a>
+    <a href="#">Privacy</a>
+    <a href="#">Docs</a>
+    <a href="#">Discord</a>
+  </div>
+</footer>
+
+<script>
+function switchTab(btn, id) {
+  document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + id).classList.add('active');
+  if (id === 'performance') initCharts();
+}
+function switchDepositTab(btn, id) {
+  document.querySelectorAll('.deposit-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+function calcOutput() {
+  const v = parseFloat(document.getElementById('depositAmt').value) || 0;
+  document.getElementById('receiveAmt').value = v > 0 ? (v / 1.02).toFixed(4) : '';
+}
+function copyAddr(btn, addr) {
+  navigator.clipboard.writeText(addr).then(() => {
+    btn.textContent = 'Copied';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  });
+}
+
+let chartsInit = false;
+function initCharts() {
+  if (chartsInit) return;
+  chartsInit = true;
+
+  const gold = 'rgba(200,182,138,1)';
+  const goldAlpha = 'rgba(200,182,138,0.15)';
+
+  // Price chart
+  const days = 30;
+  const labels = Array.from({length:days}, (_,i) => {
+    const d = new Date(); d.setDate(d.getDate() - (days-1-i));
+    return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  });
+  let price = 1.0;
+  const prices = labels.map(() => { price += (Math.random()-0.3)*0.001; return +price.toFixed(5); });
+
+  const pCtx = document.getElementById('priceChart').getContext('2d');
+  new Chart(pCtx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: prices,
+        borderColor: gold,
+        borderWidth: 1.5,
+        pointRadius: 0,
+        tension: 0.35,
+        fill: true,
+        backgroundColor: (ctx) => {
+          const gr = ctx.chart.ctx.createLinearGradient(0,0,0,160);
+          gr.addColorStop(0, goldAlpha);
+          gr.addColorStop(1, 'rgba(200,182,138,0)');
+          return gr;
+        }
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: '#1e1e1e',
+        borderColor: 'rgba(255,255,255,0.1)',
+        borderWidth: 1,
+        titleColor: '#888882',
+        bodyColor: '#f0ede6',
+        callbacks: { label: c => '$' + c.parsed.y.toFixed(4) }
+      }},
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#555550', font: { size: 10 }, maxTicksLimit: 6 } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#555550', font: { size: 10 }, callback: v => '$'+v.toFixed(3) } }
+      }
+    }
+  });
+
+  // Yield chart
+  const months = ['Oct','Nov','Dec','Jan','Feb','Mar'];
+  const yields = [0.89, 0.92, 0.94, 0.97, 0.95, 0.98];
+  const yCtx = document.getElementById('yieldChart').getContext('2d');
+  new Chart(yCtx, {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [{ data: yields, backgroundColor: 'rgba(200,182,138,0.3)', borderColor: gold, borderWidth: 1, borderRadius: 3 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: '#1e1e1e',
+        borderColor: 'rgba(255,255,255,0.1)',
+        borderWidth: 1,
+        titleColor: '#888882',
+        bodyColor: '#f0ede6',
+        callbacks: { label: c => c.parsed.y.toFixed(2) + '% monthly' }
+      }},
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#555550', font: { size: 10 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#555550', font: { size: 10 }, callback: v => v+'%' } }
+      }
+    }
+  });
+}
+
+function setTF(btn, tf) {
+  document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>

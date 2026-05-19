@@ -1,0 +1,285 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Cain Finance - Institutional Dashboard</title>
+<!-- Tailwind CSS v3 CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter for high-fidelity financial UI -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            'cain-black': '#060606',
+            'cain-sidebar': '#0a0a0a',
+            'cain-gray-text': '#888888',
+            'cain-border': 'rgba(255, 255, 255, 0.1)',
+            'cain-card': 'rgba(255, 255, 255, 0.03)',
+            'cain-green': '#00ffa3',
+          },
+        },
+      },
+    }
+  </script>
+<style data-purpose="layout">
+    body {
+      background-color: #060606;
+      color: white;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Dot-grid background texture */
+    .dot-grid {
+      background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Custom scrollbar for sidebar */
+    .sidebar-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="h-full font-sans overflow-hidden">
+<div class="flex h-full">
+<!-- BEGIN: Sidebar -->
+<aside class="w-64 bg-cain-sidebar border-r border-cain-border flex flex-col shrink-0" data-purpose="main-navigation">
+<div class="p-6">
+<div class="flex items-center gap-2 mb-10">
+<div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+<div class="w-4 h-4 bg-black rounded-sm"></div>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tight">Cain</h1>
+<p class="text-[10px] text-cain-gray-text -mt-1 uppercase tracking-widest">by Plume</p>
+</div>
+</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 bg-white/5 rounded-lg text-white font-medium" href="#">
+<svg class="w-5 h-5 text-cain-gray-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            Earn
+          </a>
+<a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            Borrow
+          </a>
+<a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            Portfolio
+          </a>
+<div class="relative group">
+<button class="w-full flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+              More
+            </button>
+</div>
+</nav>
+<div class="mt-10">
+<p class="px-3 text-[11px] font-bold text-cain-gray-text uppercase tracking-widest mb-4">Recents</p>
+<div class="space-y-4 px-3 sidebar-scroll overflow-y-auto">
+<div class="flex items-center gap-3 text-sm text-cain-gray-text hover:text-white cursor-pointer">
+<div class="w-6 h-6 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 border border-white/10 flex items-center justify-center text-[10px]">💰</div>
+              nOPAL · pUSD
+            </div>
+<div class="flex items-center gap-3 text-sm text-cain-gray-text hover:text-white cursor-pointer">
+<div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-700 to-blue-900 border border-white/10 flex items-center justify-center text-[10px]">💎</div>
+              nALPHA · pUSD
+            </div>
+<div class="flex items-center gap-3 text-sm text-cain-gray-text hover:text-white cursor-pointer">
+<div class="w-6 h-6 rounded-full bg-gradient-to-br from-green-700 to-green-900 border border-white/10 flex items-center justify-center text-[10px]">📜</div>
+              nTBILL
+            </div>
+<div class="flex items-center gap-3 text-sm text-cain-gray-text hover:text-white cursor-pointer">
+<div class="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-700 to-indigo-900 border border-white/10 flex items-center justify-center text-[10px]">✨</div>
+              nALPHA
+            </div>
+</div>
+</div>
+</div>
+<div class="mt-auto p-6 border-t border-cain-border">
+<button class="text-cain-gray-text hover:text-white">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- BEGIN: Main Content Area -->
+<main class="flex-1 flex flex-col h-full overflow-y-auto dot-grid" data-purpose="content-wrapper">
+<!-- BEGIN: Topbar -->
+<header class="h-16 px-8 flex items-center justify-between shrink-0" data-purpose="top-navigation">
+<div class="flex-1 max-w-md">
+<div class="relative group">
+<span class="absolute inset-y-0 left-3 flex items-center text-cain-gray-text">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</span>
+<input class="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-16 text-sm focus:outline-none focus:ring-1 focus:ring-white/20" placeholder="Search vaults and markets" type="text">
+<span class="absolute inset-y-0 right-3 flex items-center gap-1 text-[10px] text-cain-gray-text font-medium uppercase">
+<kbd class="px-1.5 py-0.5 border border-white/20 rounded bg-white/5">⌘</kbd>
+<kbd class="px-1.5 py-0.5 border border-white/20 rounded bg-white/5">K</kbd>
+</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+<button class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+<div class="h-8 w-px bg-white/10 mx-1"></div>
+<button class="p-1.5 hover:bg-white/5 rounded-lg border border-white/10"><div class="w-5 h-5 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full"></div></button>
+<button class="bg-white/10 border border-white/10 px-4 py-2 rounded-xl text-xs font-mono font-medium hover:bg-white/20 transition-colors">0xA4...5D4f</button>
+</div>
+</header>
+<!-- END: Topbar -->
+<!-- BEGIN: Hero & Metrics Section -->
+<section class="px-8 pt-8 pb-12" data-purpose="account-summary">
+<div class="mb-10">
+<div class="flex items-center gap-1 text-cain-gray-text text-sm mb-2 group cursor-pointer">
+            Your balance
+            <svg class="w-3 h-3 group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<h2 class="text-6xl font-bold mb-2">$0.00</h2>
+<p class="text-cain-green text-sm font-medium">+$0.00 (0.00%) in the Last 1M</p>
+</div>
+<div class="grid grid-cols-4 gap-8 mb-10 border-t border-white/5 pt-8">
+<div class="space-y-1">
+<p class="text-cain-gray-text text-xs border-b border-dotted border-cain-gray-text w-max">Current APY</p>
+<p class="text-2xl font-medium">0.00%</p>
+</div>
+<div class="space-y-1">
+<p class="text-cain-gray-text text-xs border-b border-dotted border-cain-gray-text w-max">Total earnings</p>
+<p class="text-2xl font-medium">$0.00</p>
+</div>
+<div class="space-y-1">
+<p class="text-cain-gray-text text-xs border-b border-dotted border-cain-gray-text w-max">Active redemptions</p>
+<p class="text-2xl font-medium">$0.00</p>
+</div>
+<div class="space-y-1">
+<p class="text-cain-gray-text text-xs border-b border-dotted border-cain-gray-text w-max">Available to invest</p>
+<p class="text-2xl font-medium">$0.00</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-6 py-2.5 bg-white text-black font-semibold rounded-xl text-sm hover:bg-gray-200 transition-colors">Start earning</button>
+<button class="px-6 py-2.5 bg-white/10 border border-white/5 font-semibold rounded-xl text-sm hover:bg-white/20 transition-colors">Get USDC</button>
+</div>
+</section>
+<!-- END: Hero & Metrics Section -->
+<!-- BEGIN: Promotion Banner -->
+<section class="px-8 mb-16">
+<div class="glass rounded-3xl overflow-hidden relative group cursor-pointer h-32 flex items-center">
+<div class="flex-1 px-10">
+<h3 class="text-xl font-bold mb-1">Get ready to start earning</h3>
+<p class="text-orange-500 text-xs font-medium">0/3 completed</p>
+</div>
+<!-- Mockup of the 3D coin graphic container -->
+<div class="absolute right-0 top-0 bottom-0 w-1/2 overflow-hidden pointer-events-none">
+<div class="absolute right-[-100px] top-1/2 -translate-y-1/2 w-[600px] h-full flex items-center justify-end opacity-80">
+<img alt="Coin Graphic" class="h-full w-full object-cover object-right" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGkwMuGdnb1d_yN3Sj9GofRIIymoWadf6qnK-LfIPAzlS2NbT0xoKRpxMj46i26Saz5jGW_9wKsMz_q9Yr_Y4pnJqDcFflXtbm08MZftcSicj1XhsEtXJPHxv4XVNVqdp-LQceUFYFAQN185q47h4QXDI3Z0KsFNk-M_ZghtNFB7IOk0uEdH7E2C-M9fg3VDs-kOaT_s4cJQZlFpO53jSIRaF8Zl0w2DL-9OMDEQfoo-xwF8XckuF1bcAHp1HM7aA02Jy7UOMS4nuA">
+</div>
+</div>
+<div class="pr-10 z-10">
+<div class="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center border border-white/10">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+</div>
+</div>
+</section>
+<!-- END: Promotion Banner -->
+<!-- BEGIN: Explore Vaults -->
+<section class="px-8 pb-20" data-purpose="vaults-grid">
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-4xl font-bold">Explore our vaults</h2>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2 border border-white/10 rounded-xl text-sm font-medium hover:bg-white/5 transition-colors">
+              Asset classes
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="p-2.5 border border-white/10 rounded-xl hover:bg-white/5"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Vault Card 1 -->
+<div class="glass p-8 rounded-[40px] hover:border-white/20 transition-all cursor-pointer group" data-purpose="vault-card">
+<div class="flex items-start gap-4 mb-10">
+<div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center p-3">
+<img alt="Icon" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuLpwt_eOBHT663GCG8b88EwWgMzp9sOEJeimynttn57KMk2FwjvSu82q3uIb8EQLra9HaQGOLmaHocjOEwy_mWw3tlgluHWZGTvnERCs9oFwL0wCdZRB-iz9ZZhn1NM7eGZpNfszyD-0e4EowxyKCzv2OnSKhy3R8wVVWTpR4nHzSmmfZveZgbK66wIDaHZ1V55ievySBLtKyw8fPcJr7yH2O63My7Vl-ueiG9C2hjd6d1se3tkksWs0u7Z-W8u-skOfti70ovxly">
+</div>
+<div>
+<h4 class="text-xl font-bold">BlackOpal LiquidStone II</h4>
+<p class="text-cain-gray-text text-sm">Payment financing</p>
+</div>
+</div>
+<p class="text-cain-gray-text mb-12 max-w-sm leading-relaxed">
+              Investment grade short-duration payment receivables. Designed for consistent, risk-adjusted income.
+            </p>
+<div class="grid grid-cols-3 gap-4">
+<div>
+<p class="text-[11px] text-cain-gray-text mb-2">Vault APY</p>
+<p class="text-2xl font-bold">11.37%</p>
+</div>
+<div>
+<p class="text-[11px] text-cain-gray-text mb-2">TVL</p>
+<p class="text-2xl font-bold">$12M</p>
+</div>
+<div>
+<p class="text-[11px] text-cain-gray-text mb-2">Available networks</p>
+<div class="flex -space-x-1.5 pt-1">
+<div class="w-6 h-6 rounded-full border-2 border-cain-black bg-orange-500 flex items-center justify-center text-[10px] text-white">●</div>
+<div class="w-6 h-6 rounded-full border-2 border-cain-black bg-blue-500 flex items-center justify-center text-[10px] text-white">◆</div>
+<div class="w-6 h-6 rounded-full border-2 border-cain-black bg-teal-500 flex items-center justify-center text-[10px] text-white">★</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Vault Card 2 -->
+<div class="glass p-8 rounded-[40px] hover:border-white/20 transition-all cursor-pointer group" data-purpose="vault-card">
+<div class="flex items-start gap-4 mb-10">
+<div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center p-3">
+<img alt="Icon" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVmnJCRKUJY-Xgn1mX3pU5A42uA_i9BAPwhRVxTf3jFKmDDG-oyyojRp39K1KD7UHYGbKavMFvumgUmT-zB_pWd6yHZMzGqLSERCMMQ2-AbhHyGm-bcJb6H7PSzEjz8ngEvxBzHStPBJF_D1UiaDsydbbDQ0gknVa02rPXm8fITivM2Sg4QoK40J1s0gjiDG43-uBGnAV9vbpbpvysGV4WR1cyVGdM-jLsMtm3oqBvFndo8EFMi5nw4uMXrsYMbTZrvoKjAsa6rMaU">
+</div>
+<div>
+<h4 class="text-xl font-bold">Alpha</h4>
+<p class="text-cain-gray-text text-sm">Diversified Index</p>
+</div>
+</div>
+<p class="text-cain-gray-text mb-12 max-w-sm leading-relaxed">
+              Cain's flagship real-world yield vault, providing passive exposure to a diversified portfolio of Nest's top yield-generating assets
+            </p>
+<div class="grid grid-cols-3 gap-4">
+<div>
+<p class="text-[11px] text-cain-gray-text mb-2">Vault APY</p>
+<p class="text-2xl font-bold">9.84%</p>
+</div>
+<div>
+<p class="text-[11px] text-cain-gray-text mb-2">TVL</p>
+<p class="text-2xl font-bold">$6.8M</p>
+</div>
+<div>
+<p class="text-[11px] text-cain-gray-text mb-2">Available networks</p>
+<div class="flex -space-x-1.5 pt-1">
+<div class="w-6 h-6 rounded-full border-2 border-cain-black bg-orange-500 flex items-center justify-center text-[10px] text-white">●</div>
+<div class="w-6 h-6 rounded-full border-2 border-cain-black bg-blue-500 flex items-center justify-center text-[10px] text-white">◆</div>
+<div class="w-6 h-6 rounded-full border-2 border-cain-black bg-teal-500 flex items-center justify-center text-[10px] text-white">★</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: Explore Vaults -->
+</main>
+<!-- END: Main Content Area -->
+</div>
+</body></html>

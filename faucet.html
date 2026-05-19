@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cain.finance - Free Faucet for ERC-20 Tokens </title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0a;
+  --bg-card: #111111;
+  --bg-card2: #161616;
+  --bg-pill: #1e1e1e;
+  --border: rgba(255,255,255,0.08);
+  --border-bright: rgba(255,255,255,0.14);
+  --text-primary: #f0ede6;
+  --text-secondary: #888882;
+  --text-muted: #555550;
+  --accent: #c8b68a;
+  --accent-dim: rgba(200,182,138,0.15);
+  --green: #4ade80;
+  --blue-from: #4F46E5;
+  --blue-to: #7C3AED;
+  --font: 'Geist', sans-serif;
+  --mono: 'Geist Mono', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── NAV ── */
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  height: 60px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: rgba(10,10,10,0.92);
+  backdrop-filter: blur(12px);
+  z-index: 100;
+}
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.nav-logo-icon {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-logo-icon svg { width: 16px; height: 16px; }
+.nav-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg-pill);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 7px;
+  margin-left: 4px;
+  font-family: var(--mono);
+  letter-spacing: 0.04em;
+}
+.nav-links {
+  display: flex; gap: 6px; align-items: center;
+}
+.nav-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+.nav-link:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+.nav-link.active { color: var(--accent); }
+.nav-btn {
+  background: var(--text-primary);
+  color: #0a0a0a;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.nav-btn:hover { opacity: 0.85; }
+
+/* ── HERO SECTION ── */
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 72px 32px 80px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 520px;
+  gap: 48px;
+  align-items: center;
+}
+
+.hero::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-glow {
+  position: absolute;
+  top: -120px;
+  left: -80px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(200,182,138,0.07) 0%, transparent 70%);
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+.hero-left { position: relative; z-index: 1; }
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-family: var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid rgba(200,182,138,0.25);
+  background: rgba(200,182,138,0.08);
+  border-radius: 100px;
+  padding: 4px 12px;
+  margin-bottom: 22px;
+}
+.eyebrow-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.hero-title {
+  font-size: 52px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin-bottom: 18px;
+}
+.hero-title span { color: var(--accent); }
+
+.hero-desc {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 420px;
+  margin-bottom: 32px;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 32px;
+}
+.hero-stat-item { display: flex; flex-direction: column; gap: 3px; }
+.hero-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+}
+.hero-stat-value {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  font-family: var(--mono);
+}
+.hero-stat-value.green { color: var(--green); }
+
+/* ── FAUCET CARD ── */
+.faucet-card {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(135deg, var(--blue-from) 0%, var(--blue-to) 100%);
+  border-radius: 28px;
+  padding: 36px;
+  box-shadow: 0 32px 72px rgba(79,70,229,0.35), 0 8px 24px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+
+.faucet-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.08) 1px, transparent 1px);
+  background-size: 36px 36px;
+  pointer-events: none;
+  border-radius: 28px;
+}
+
+.faucet-card::after {
+  content: '';
+  position: absolute;
+  top: -80px; right: -80px;
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.faucet-card-inner {
+  position: relative;
+  z-index: 2;
+}
+
+.faucet-card-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+.faucet-card-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 28px;
+}
+
+.field-label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 8px;
+}
+
+.field-group { margin-bottom: 18px; }
+
+/* Chain selector */
+.chain-selector { position: relative; }
+
+.chain-select-btn {
+  width: 100%;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  color: #fff;
+  font-family: var(--font);
+  font-size: 13px;
+  backdrop-filter: blur(8px);
+}
+.chain-select-btn:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.28); }
+.chain-select-btn.open { border-color: rgba(255,255,255,0.4); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+
+.chain-select-left { display: flex; align-items: center; gap: 10px; }
+.chain-icon {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.chain-name { font-size: 14px; font-weight: 500; color: #fff; }
+.chain-amount { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 1px; font-family: var(--mono); }
+
+.chevron {
+  color: rgba(255,255,255,0.5);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+.chevron.open { transform: rotate(180deg); }
+
+.chain-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0; right: 0;
+  background: #3730a3;
+  border: 1px solid rgba(255,255,255,0.22);
+  border-top: none;
+  border-bottom-left-radius: 14px;
+  border-bottom-right-radius: 14px;
+  overflow: hidden;
+  z-index: 50;
+}
+.chain-dropdown.open { display: block; }
+.chain-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.1s;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.chain-option:last-child { border-bottom: none; }
+.chain-option:hover { background: rgba(255,255,255,0.08); }
+.chain-option.selected { background: rgba(255,255,255,0.12); }
+
+/* Wallet input */
+.wallet-input {
+  width: 100%;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #fff;
+  font-family: var(--mono);
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  backdrop-filter: blur(8px);
+}
+.wallet-input::placeholder { color: rgba(255,255,255,0.3); font-family: var(--font); }
+.wallet-input:focus { border-color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.15); }
+
+.input-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+}
+.input-hint strong { color: rgba(255,255,255,0.75); }
+
+/* Turnstile container */
+.cf-turnstile-container { margin-bottom: 18px; }
+
+/* Turnstile fallback */
+.turnstile-wrap {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  backdrop-filter: blur(8px);
+}
+.turnstile-left { display: flex; align-items: center; gap: 10px; }
+.turnstile-check {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--green);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.turnstile-check svg { width: 14px; height: 14px; }
+.turnstile-text { font-size: 13px; font-weight: 500; color: #fff; }
+.turnstile-sub { font-size: 11px; color: rgba(255,255,255,0.45); }
+.turnstile-brand { text-align: right; flex-shrink: 0; }
+.turnstile-brand-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.7);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-end;
+}
+.cf-logo { width: 14px; height: 14px; color: #f6821f; }
+.turnstile-brand-links { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 2px; }
+.turnstile-brand-links a { color: rgba(255,255,255,0.35); text-decoration: none; }
+.turnstile-brand-links a:hover { color: rgba(255,255,255,0.6); }
+
+/* Send button */
+.faucet-btn {
+  width: 100%;
+  padding: 16px;
+  background: #fff;
+  color: #3730a3;
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: -0.01em;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+.faucet-btn:hover { opacity: 0.93; box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+.faucet-btn:active { transform: scale(0.99); }
+.faucet-btn-icon { font-size: 16px; }
+
+.faucet-footer {
+  margin-top: 16px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  text-align: center;
+  line-height: 1.6;
+}
+.faucet-footer a { color: rgba(255,255,255,0.5); text-decoration: none; }
+.faucet-footer a:hover { color: rgba(255,255,255,0.8); }
+
+/* Chain color tokens */
+.ic-algo  { background: #000; color: #fff; }
+.ic-eth   { background: #627EEA; color: #fff; }
+.ic-sol   { background: linear-gradient(135deg,#9945FF,#14F195); color: #fff; }
+.ic-matic { background: #8247E5; color: #fff; }
+.ic-avax  { background: #E84142; color: #fff; }
+
+/* ── DIVIDER ── */
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0;
+}
+
+/* ── CTA SECTION ── */
+.cta-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 64px 32px;
+}
+.cta-inner {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  position: relative;
+  overflow: hidden;
+}
+.cta-inner::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 240px; height: 240px;
+  background: radial-gradient(circle, rgba(200,182,138,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.cta-left { flex: 1; }
+.cta-eyebrow {
+  font-size: 11px;
+  font-family: var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.cta-title {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.cta-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  max-width: 420px;
+}
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #0a0a0a;
+  border: none;
+  border-radius: 9px;
+  padding: 12px 22px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.cta-btn:hover { opacity: 0.88; }
+.cta-btn:active { transform: scale(0.98); }
+.metamask-icon { font-size: 18px; }
+
+/* ── POOLS SECTION ── */
+.pools-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px 80px;
+}
+.pools-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.pools-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+}
+.pools-subtitle {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-top: 4px;
+}
+.pools-link {
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pools-link:hover { opacity: 0.75; }
+
+.pools-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.pool-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+  text-decoration: none;
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+.pool-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(200,182,138,0.04) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.2s;
+  border-radius: 14px;
+}
+.pool-card:hover { border-color: var(--border-bright); transform: translateY(-2px); }
+.pool-card:hover::after { opacity: 1; }
+
+.pool-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.pool-tokens { display: flex; align-items: center; }
+.pool-token-icon {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-card);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.pool-token-icon:nth-child(2) { margin-left: -10px; }
+
+.pool-badge {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 100px;
+  border: 1px solid;
+}
+.pool-badge.active {
+  background: rgba(74,222,128,0.1);
+  border-color: rgba(74,222,128,0.25);
+  color: var(--green);
+}
+.pool-badge.new {
+  background: rgba(200,182,138,0.1);
+  border-color: rgba(200,182,138,0.25);
+  color: var(--accent);
+}
+
+.pool-pair {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+  letter-spacing: -0.01em;
+}
+.pool-vault-name {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  font-family: var(--mono);
+}
+.pool-stats { display: flex; gap: 20px; }
+.pool-stat { display: flex; flex-direction: column; gap: 2px; }
+.pool-stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.pool-stat-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  font-family: var(--mono);
+}
+.pool-stat-value.green { color: var(--green); }
+
+.pool-action {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.pool-action-text { font-size: 12px; color: var(--text-muted); }
+.pool-action-arrow { color: var(--accent); font-size: 14px; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+footer a { color: var(--text-muted); text-decoration: none; }
+footer a:hover { color: var(--text-secondary); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hero-left { animation: fadeUp 0.45s ease both; }
+.faucet-card { animation: fadeUp 0.45s ease 0.08s both; }
+.cta-inner { animation: fadeUp 0.45s ease 0.12s both; }
+.pool-card { animation: fadeUp 0.4s ease both; }
+.pool-card:nth-child(1) { animation-delay: 0.10s; }
+.pool-card:nth-child(2) { animation-delay: 0.16s; }
+.pool-card:nth-child(3) { animation-delay: 0.22s; }
+.pool-card:nth-child(4) { animation-delay: 0.28s; }
+.pool-card:nth-child(5) { animation-delay: 0.34s; }
+.pool-card:nth-child(6) { animation-delay: 0.40s; }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; padding: 40px 20px 48px; }
+  .faucet-card { animation-delay: 0s; }
+  .pools-grid { grid-template-columns: 1fr; }
+  .cta-inner { flex-direction: column; align-items: flex-start; padding: 28px; }
+  .hero-title { font-size: 36px; }
+  nav { padding: 0 20px; }
+  .pools-section, .cta-section { padding-left: 20px; padding-right: 20px; }
+  footer { flex-direction: column; gap: 12px; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" fill="#0a0a0a"/>
+      </svg>
+    </div>
+    cain
+    <span class="nav-sub">faucet</span>
+  </a>
+  <div class="nav-links">
+    <a href="#" class="nav-link">Vaults</a>
+    <a href="#" class="nav-link active">Faucet</a>
+    <a href="#" class="nav-link">Docs</a>
+    <button class="nav-btn" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+  </div>
+</nav>
+
+<!-- HERO + FAUCET -->
+<div style="max-width:1200px;margin:0 auto;position:relative;">
+  <div class="hero">
+    <div class="hero-glow"></div>
+
+    <!-- LEFT -->
+    <div class="hero-left">
+      <div class="hero-eyebrow">
+        <span class="eyebrow-dot"></span>
+        Mainnet Token Faucet
+      </div>
+      <h1 class="hero-title">
+        Cain<br/><span>Finance</span><br/>Faucet
+      </h1>
+      <p class="hero-desc">
+        Get tokens across supported mainnet networks to explore Cain vaults and interact with our private credit infrastructure.
+      </p>
+      <div class="hero-stats">
+        <div class="hero-stat-item">
+          <span class="hero-stat-label">Distributed</span>
+          <span class="hero-stat-value">$2.4M</span>
+        </div>
+        <div class="hero-stat-item">
+          <span class="hero-stat-label">Networks</span>
+          <span class="hero-stat-value">5</span>
+        </div>
+        <div class="hero-stat-item">
+          <span class="hero-stat-label">Daily Limit</span>
+          <span class="hero-stat-value green">0.1 / chain</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAUCET CARD -->
+    <div class="faucet-card">
+      <div class="faucet-card-inner">
+        <div class="faucet-card-title">Request Tokens</div>
+        <div class="faucet-card-sub">One request per wallet, per day. Pick a network.</div>
+
+        <!-- Network Selector -->
+        <div class="field-group">
+          <label class="field-label">Select Network</label>
+          <div class="chain-selector" id="chainSelector">
+            <button class="chain-select-btn" type="button" onclick="toggleDropdown()" id="chainBtn">
+              <div class="chain-select-left">
+                <div class="chain-icon ic-algo" id="selectedIcon">A</div>
+                <div>
+                  <div class="chain-name" id="selectedName">Algorand</div>
+                  <div class="chain-amount" id="selectedAmount">0.1 ALGO / day</div>
+                </div>
+              </div>
+              <svg class="chevron" id="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="chain-dropdown" id="chainDropdown">
+              <div class="chain-option selected" onclick="selectChain('algo','Algorand','0.1 ALGO / day','A','ic-algo','0.1 ALGO',this)">
+                <div class="chain-select-left">
+                  <div class="chain-icon ic-algo">A</div>
+                  <div>
+                    <div class="chain-name">Algorand</div>
+                    <div class="chain-amount">0.1 ALGO / day</div>
+                  </div>
+                </div>
+              </div>
+              <div class="chain-option" onclick="selectChain('eth','Ethereum','0.1 ETH / day','Ξ','ic-eth','0.1 ETH',this)">
+                <div class="chain-select-left">
+                  <div class="chain-icon ic-eth">Ξ</div>
+                  <div>
+                    <div class="chain-name">Ethereum</div>
+                    <div class="chain-amount">0.1 ETH / day</div>
+                  </div>
+                </div>
+              </div>
+              <div class="chain-option" onclick="selectChain('sol','Solana','1 SOL / day','◎','ic-sol','1 SOL',this)">
+                <div class="chain-select-left">
+                  <div class="chain-icon ic-sol">◎</div>
+                  <div>
+                    <div class="chain-name">Solana</div>
+                    <div class="chain-amount">1 SOL / day</div>
+                  </div>
+                </div>
+              </div>
+              <div class="chain-option" onclick="selectChain('matic','Polygon','0.1 POL / day','⬡','ic-matic','0.1 POL',this)">
+                <div class="chain-select-left">
+                  <div class="chain-icon ic-matic">⬡</div>
+                  <div>
+                    <div class="chain-name">Polygon</div>
+                    <div class="chain-amount">0.1 POL / day</div>
+                  </div>
+                </div>
+              </div>
+              <div class="chain-option" onclick="selectChain('avax','Avalanche','0.1 AVAX / day','▲','ic-avax','0.1 AVAX',this)">
+                <div class="chain-select-left">
+                  <div class="chain-icon ic-avax">▲</div>
+                  <div>
+                    <div class="chain-name">Avalanche</div>
+                    <div class="chain-amount">0.1 AVAX / day</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wallet Address -->
+        <div class="field-group">
+          <label class="field-label">Wallet Address</label>
+          <input class="wallet-input" type="text" id="walletAddr" placeholder="0x... or your chain address" autocomplete="off" />
+          <p class="input-hint">You can request <strong id="hintToken">0.1 ALGO</strong> per day on this network.</p>
+        </div>
+
+        <!-- Cloudflare Turnstile -->
+        <div class="field-group">
+          <label class="field-label">Verification</label>
+          <div class="cf-turnstile-container">
+            <div class="cf-turnstile"
+                 data-sitekey="1x00000000000000000000AA"
+                 data-theme="dark"
+                 data-callback="onTurnstileSuccess"
+                 data-expired-callback="onTurnstileExpire">
+            </div>
+          </div>
+          <div class="turnstile-wrap" id="turnstileFallback" style="display:none;">
+            <div class="turnstile-left">
+              <div class="turnstile-check">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                  <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div>
+                <div class="turnstile-text">Verified</div>
+                <div class="turnstile-sub">Human check passed</div>
+              </div>
+            </div>
+            <div class="turnstile-brand">
+              <div class="turnstile-brand-name">
+                CLOUDFLARE
+                <svg class="cf-logo" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M10.8,11.3c0-1.2,0.9-2.1,2.1-2.1c0.7,0,1.3,0.3,1.7,0.9l1.6-1.1c-0.8-1-2.1-1.6-3.4-1.6c-2.4,0-4.3,1.9-4.3,4.3c0,2.4,1.9,4.3,4.3,4.3c1.3,0,2.6-0.6,3.4-1.6l-1.6-1.1c-0.4,0.6-1,0.9-1.7,0.9C11.7,14.3,10.8,13.4,10.8,12.3L10.8,11.3z"/>
+                  <path d="M19.1,10.2c-0.1,0-0.2,0-0.4,0c0-2.8-2.3-5.1-5.1-5.1c-2,0-3.8,1.2-4.6,3c-0.5-0.1-1-0.2-1.5-0.2c-2.7,0-4.9,2.2-4.9,4.9c0,0.2,0,0.4,0,0.6C1.1,14.1,0,15.6,0,17.4c0,2.4,1.9,4.3,4.3,4.3h14.8c2.7,0,4.9-2.2,4.9-4.9C24,14.1,21.8,11.9,19.1,11.9L19.1,10.2z"/>
+                </svg>
+              </div>
+              <div class="turnstile-brand-links">
+                <a href="#">Privacy</a> · <a href="#">Terms</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button class="faucet-btn" id="faucetBtn" onclick="requestTokens()">
+          <span class="faucet-btn-icon">⬡</span>
+          <span id="faucetBtnText">Send 0.1 ALGO</span>
+        </button>
+
+        <div class="faucet-footer">
+          Powered by <a href="#">Cain Finance</a> · Real assets on mainnet networks.<br/>
+          Need help? <a href="#">Join Discord</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="section-divider" />
+
+<!-- CTA SECTION -->
+<div class="cta-section">
+  <div class="cta-inner">
+    <div class="cta-left">
+      <div class="cta-eyebrow">— Start Staking</div>
+      <h2 class="cta-title">Connect your wallet to see<br/>what tokens you could stake</h2>
+      <p class="cta-desc">Earn upto 25%* APR - Link MetaMask or any EVM wallet to discover eligible pools based on your holdings. Earn real yield across Cain's private credit vaults with tokens you already own.</p>
+    </div>
+    <button class="cta-btn" onclick="connectWallet()">
+      <span class="metamask-icon">🦊</span>
+      Connect MetaMask
+    </button>
+  </div>
+</div>
+
+<!-- POOLS SECTION -->
+<div class="pools-section">
+  <div class="pools-header">
+    <div>
+      <div class="pools-title">Available Vaults</div>
+      <div class="pools-subtitle">Live Pools &amp; Staking Opportunities</div>
+    </div>
+    <a href="#" class="pools-link">View all vaults ↗</a>
+  </div>
+
+  <div class="pools-grid">
+
+    <a class="pool-card" href="#">
+      <div class="pool-top">
+        <div class="pool-tokens">
+          <div class="pool-token-icon ic-algo">A</div>
+          <div class="pool-token-icon" style="background:var(--bg-pill);border-color:var(--border);color:var(--accent);margin-left:-10px;">$</div>
+        </div>
+        <span class="pool-badge active">● Live</span>
+      </div>
+      <div class="pool-pair">ALGO / USDC</div>
+      <div class="pool-vault-name">Cain Omega Liquid · I</div>
+      <div class="pool-stats">
+        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value green">11.91%</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value">$4.2M</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">Duration</span><span class="pool-stat-value">90d</span></div>
+      </div>
+      <div class="pool-action">
+        <span class="pool-action-text">Private Credit · Short Duration</span>
+        <span class="pool-action-arrow">↗</span>
+      </div>
+    </a>
+
+    <a class="pool-card" href="#">
+      <div class="pool-top">
+        <div class="pool-tokens">
+          <div class="pool-token-icon ic-eth">Ξ</div>
+          <div class="pool-token-icon" style="background:var(--bg-pill);border-color:var(--border);color:var(--accent);margin-left:-10px;">$</div>
+        </div>
+        <span class="pool-badge active">● Live</span>
+      </div>
+      <div class="pool-pair">ETH / USDC</div>
+      <div class="pool-vault-name">Cain BlackIron LiquidVein · II</div>
+      <div class="pool-stats">
+        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value green">9.44%</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value">$6.8M</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">Duration</span><span class="pool-stat-value">60d</span></div>
+      </div>
+      <div class="pool-action">
+        <span class="pool-action-text">Investment Grade · Senior</span>
+        <span class="pool-action-arrow">↗</span>
+      </div>
+    </a>
+
+    <a class="pool-card" href="#">
+      <div class="pool-top">
+        <div class="pool-tokens">
+          <div class="pool-token-icon ic-sol">◎</div>
+          <div class="pool-token-icon" style="background:var(--bg-pill);border-color:var(--border);color:var(--accent);margin-left:-10px;">$</div>
+        </div>
+        <span class="pool-badge new">✦ New</span>
+      </div>
+      <div class="pool-pair">SOL / USDC</div>
+      <div class="pool-vault-name">Cain VoidSpar LiquidEdge · I</div>
+      <div class="pool-stats">
+        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value green">13.20%</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value">$1.9M</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">Duration</span><span class="pool-stat-value">45d</span></div>
+      </div>
+      <div class="pool-action">
+        <span class="pool-action-text">Working Capital · SEA</span>
+        <span class="pool-action-arrow">↗</span>
+      </div>
+    </a>
+
+    <a class="pool-card" href="#">
+      <div class="pool-top">
+        <div class="pool-tokens">
+          <div class="pool-token-icon ic-matic">⬡</div>
+          <div class="pool-token-icon" style="background:var(--bg-pill);border-color:var(--border);color:var(--accent);margin-left:-10px;">$</div>
+        </div>
+        <span class="pool-badge active">● Live</span>
+      </div>
+      <div class="pool-pair">POL / USDC</div>
+      <div class="pool-vault-name">Cain PaleOnyx ColdFlow · I</div>
+      <div class="pool-stats">
+        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value green">10.75%</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value">$3.1M</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">Duration</span><span class="pool-stat-value">90d</span></div>
+      </div>
+      <div class="pool-action">
+        <span class="pool-action-text">Payment Receivables · MENA</span>
+        <span class="pool-action-arrow">↗</span>
+      </div>
+    </a>
+
+    <a class="pool-card" href="#">
+      <div class="pool-top">
+        <div class="pool-tokens">
+          <div class="pool-token-icon ic-avax">▲</div>
+          <div class="pool-token-icon" style="background:var(--bg-pill);border-color:var(--border);color:var(--accent);margin-left:-10px;">$</div>
+        </div>
+        <span class="pool-badge new">✦ New</span>
+      </div>
+      <div class="pool-pair">AVAX / USDC</div>
+      <div class="pool-vault-name">Cain GunOpal IronFlow · II</div>
+      <div class="pool-stats">
+        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value green">14.08%</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value">$890K</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">Duration</span><span class="pool-stat-value">30d</span></div>
+      </div>
+      <div class="pool-action">
+        <span class="pool-action-text">High Yield · LATAM</span>
+        <span class="pool-action-arrow">↗</span>
+      </div>
+    </a>
+
+    <a class="pool-card" href="#" style="opacity:0.5;pointer-events:none;">
+      <div class="pool-top">
+        <div class="pool-tokens">
+          <div class="pool-token-icon" style="background:var(--bg-pill);color:var(--text-muted);">?</div>
+          <div class="pool-token-icon" style="background:var(--bg-pill);border-color:var(--border);color:var(--text-muted);margin-left:-10px;">$</div>
+        </div>
+        <span class="pool-badge" style="background:rgba(255,255,255,0.04);border-color:var(--border);color:var(--text-muted);">🔒 Soon</span>
+      </div>
+      <div class="pool-pair" style="color:var(--text-secondary);">??? / USDC</div>
+      <div class="pool-vault-name">Cain BlackAgate VoidStream · I</div>
+      <div class="pool-stats">
+        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value">—</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value">—</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">Duration</span><span class="pool-stat-value">—</span></div>
+      </div>
+      <div class="pool-action">
+        <span class="pool-action-text">Coming soon</span>
+        <span class="pool-action-arrow" style="color:var(--text-muted);">↗</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<hr class="section-divider" style="max-width:1200px;margin:0 auto;" />
+<footer>
+  <span>© 2025 Cain Finance. All rights reserved. · <a href="#">faucet.cain.finance</a></span>
+  <div style="display:flex;gap:20px;">
+    <a href="#">Terms</a>
+    <a href="#">Privacy</a>
+    <a href="#">Docs</a>
+    <a href="#">Discord</a>
+  </div>
+</footer>
+
+<script>
+const chains = {
+  algo:  { name:'Algorand',  amount:'0.1 ALGO / day', icon:'A',  cls:'ic-algo',  token:'0.1 ALGO' },
+  eth:   { name:'Ethereum',  amount:'0.1 ETH / day',  icon:'Ξ',  cls:'ic-eth',   token:'0.1 ETH'  },
+  sol:   { name:'Solana',    amount:'1 SOL / day',    icon:'◎',  cls:'ic-sol',   token:'1 SOL'    },
+  matic: { name:'Polygon',   amount:'0.1 POL / day',  icon:'⬡',  cls:'ic-matic', token:'0.1 POL'  },
+  avax:  { name:'Avalanche', amount:'0.1 AVAX / day', icon:'▲',  cls:'ic-avax',  token:'0.1 AVAX' },
+};
+let selected = 'algo';
+let turnstileVerified = false;
+
+function toggleDropdown() {
+  const btn  = document.getElementById('chainBtn');
+  const dd   = document.getElementById('chainDropdown');
+  const chev = document.getElementById('chevron');
+  btn.classList.toggle('open');
+  dd.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+function selectChain(id, name, amount, icon, cls, token, el) {
+  selected = id;
+  document.getElementById('selectedIcon').textContent   = icon;
+  document.getElementById('selectedIcon').className     = 'chain-icon ' + cls;
+  document.getElementById('selectedName').textContent   = name;
+  document.getElementById('selectedAmount').textContent = amount;
+  document.getElementById('hintToken').textContent      = token;
+  document.getElementById('faucetBtnText').textContent  = 'Send ' + token;
+  document.querySelectorAll('.chain-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('chainBtn').classList.remove('open');
+  document.getElementById('chainDropdown').classList.remove('open');
+  document.getElementById('chevron').classList.remove('open');
+}
+
+document.addEventListener('click', e => {
+  const sel = document.getElementById('chainSelector');
+  if (!sel.contains(e.target)) {
+    document.getElementById('chainBtn').classList.remove('open');
+    document.getElementById('chainDropdown').classList.remove('open');
+    document.getElementById('chevron').classList.remove('open');
+  }
+});
+
+function onTurnstileSuccess(token) {
+  turnstileVerified = true;
+  console.log('Turnstile token:', token);
+}
+function onTurnstileExpire() {
+  turnstileVerified = false;
+}
+
+setTimeout(() => {
+  const widget = document.querySelector('.cf-turnstile iframe');
+  if (!widget) {
+    document.querySelector('.cf-turnstile-container').style.display = 'none';
+    document.getElementById('turnstileFallback').style.display = 'flex';
+    turnstileVerified = true;
+  }
+}, 2000);
+
+function requestTokens() {
+  const addr = document.getElementById('walletAddr').value.trim();
+  const btn  = document.getElementById('faucetBtn');
+  const txt  = document.getElementById('faucetBtnText');
+  const c    = chains[selected];
+
+  if (!addr) {
+    document.getElementById('walletAddr').style.borderColor = 'rgba(248,113,113,0.6)';
+    setTimeout(() => document.getElementById('walletAddr').style.borderColor = '', 1500);
+    return;
+  }
+  if (!turnstileVerified) {
+    alert('Please complete the human verification first.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+  txt.textContent = 'Sending…';
+
+  setTimeout(() => {
+    txt.textContent = '✓ Sent ' + c.token + ' to your wallet';
+    btn.style.background = '#4ade80';
+    btn.style.color = '#0a0a0a';
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.style.opacity = '';
+      btn.style.background = '';
+      btn.style.color = '';
+      txt.textContent = 'Send ' + c.token;
+    }, 4000);
+  }, 1800);
+}
+
+async function connectWallet() {
+  if (typeof window.ethereum !== 'undefined') {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      document.getElementById('walletAddr').value = accounts[0];
+      document.getElementById('connectBtn').textContent = accounts[0].slice(0,6) + '...' + accounts[0].slice(-4);
+    } catch(e) { console.log('Wallet rejected'); }
+  } else {
+    alert('MetaMask not detected. Install MetaMask to connect.');
+  }
+}
+</script>
+</body>
+</html>

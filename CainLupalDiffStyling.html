@@ -1,0 +1,359 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Cain Lupal II | Cain by Cain.Finance</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style data-purpose="custom-fonts">
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #060606;
+      color: #ffffff;
+    }
+  </style>
+<style data-purpose="background-texture">
+    /* Subtle dot grid pattern */
+    .bg-dot-grid {
+      background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    
+    .glass-card {
+      background: rgba(18, 18, 18, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .sidebar-active {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+    }
+
+    .mint-button-gradient {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transition: all 0.2s;
+    }
+    .mint-button-gradient:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+  </style>
+</head>
+<body class="bg-[#060606] text-[#e5e5e5] selection:bg-blue-500/30">
+<div class="flex min-h-screen">
+<!-- BEGIN: Sidebar -->
+<aside class="w-64 border-r border-white/5 flex flex-col p-6 sticky top-0 h-screen" data-purpose="sidebar">
+<div class="flex items-center gap-2 mb-10">
+<div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+<div class="w-4 h-4 bg-black rounded-sm"></div>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tight text-white leading-none">Nest</h1>
+<span class="text-[10px] uppercase tracking-widest text-zinc-500">by Plume</span>
+</div>
+</div>
+<nav class="space-y-6 flex-1">
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">Earn</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">Borrow</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">Portfolio</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white transition-colors" href="#">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-sm font-medium">More</span>
+</a>
+</div>
+<div class="pt-4 border-t border-white/5">
+<p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-3 mb-4">Recents</p>
+<div class="space-y-1">
+<div class="flex items-center gap-3 px-3 py-2 sidebar-active text-white">
+<img alt="Icon" class="w-6 h-6 rounded-full object-cover grayscale brightness-200" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeHk2G5rIqDnKeU_5GXQztUkU9fxjJUzpaUrSj9eXsoqqIMvnjA9L57f1VJ9Q9grHIESj4AqS2mCdNIPBdvqFmiFtMA_HvPICJAxt-Z-7rVJI4qQJ3xxY-a3M5VeqPjP-qTcNQZBghHvphcXXeaZZG8WaFREPpDKLwAt0doD01vSwgX8jBYRt7Im5deK8WHB9v1_ZDgewwCeKXK8hI2aziAfQrU-Aq9eRSIsMrBEgoC1lKAOQPxcQrMQCTyFoMosq7iOXU97SPxu0b">
+<span class="text-sm font-medium">aCain</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-zinc-400">
+<div class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px]">P</div>
+<span class="text-sm font-medium">aCain · pUSD</span>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 text-zinc-400">
+<div class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px]">A</div>
+<span class="text-sm font-medium">aAlpha · pUSD</span>
+</div>
+</div>
+</div>
+</nav>
+<div class="mt-auto pt-6">
+<button class="p-2 text-zinc-500 hover:text-white">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16m-7 6h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>
+</button>
+</div>
+</aside>
+<!-- END: Sidebar -->
+<!-- BEGIN: Main Content Area -->
+<main class="flex-1 bg-dot-grid overflow-y-auto" data-purpose="main-viewport">
+<!-- BEGIN: Top Navigation Bar -->
+<header class="flex items-center justify-between px-10 py-4 sticky top-0 z-20 bg-[#060606]/80 backdrop-blur-md border-b border-white/5">
+<div class="relative w-96">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<svg class="h-4 w-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+<input class="block w-full bg-[#121212] border-white/10 rounded-lg py-2 pl-10 pr-3 text-sm placeholder-zinc-500 focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all" placeholder="Cain Lupal II" type="text">
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+<span class="text-[10px] text-zinc-500 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">⌘ K</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-zinc-400 hover:bg-white/5 rounded-lg transition-colors">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="p-2 text-zinc-400 hover:bg-white/5 rounded-lg transition-colors">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div class="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
+<div class="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center">
+<div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+</div>
+<span class="text-sm font-medium">0xA4...5D4f</span>
+</div>
+</div>
+</header>
+<!-- END: Top Navigation Bar -->
+<div class="max-w-[1400px] mx-auto px-10 pt-12 pb-24">
+<!-- BEGIN: Vault Hero Section -->
+<div class="mb-12">
+<div class="w-20 h-20 bg-zinc-900 rounded-2xl mb-6 flex items-center justify-center border border-white/10 shadow-2xl overflow-hidden">
+<img alt="Vault Logo" class="w-full h-full object-cover grayscale brightness-125" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeHk2G5rIqDnKeU_5GXQztUkU9fxjJUzpaUrSj9eXsoqqIMvnjA9L57f1VJ9Q9grHIESj4AqS2mCdNIPBdvqFmiFtMA_HvPICJAxt-Z-7rVJI4qQJ3xxY-a3M5VeqPjP-qTcNQZBghHvphcXXeaZZG8WaFREPpDKLwAt0doD01vSwgX8jBYRt7Im5deK8WHB9v1_ZDgewwCeKXK8hI2aziAfQrU-Aq9eRSIsMrBEgoC1lKAOQPxcQrMQCTyFoMosq7iOXU97SPxu0b">
+</div>
+<div class="flex items-center gap-4 mb-4">
+<h2 class="text-6xl font-semibold text-white tracking-tight">Cain Lupal II</h2>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-white/5 rounded-lg border border-white/5">
+<svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<button class="p-2 hover:bg-white/5 rounded-lg border border-white/5">
+<svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</div>
+<div class="flex gap-2">
+<span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">Payment financing</span>
+<span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">Audited</span>
+</div>
+</div>
+<!-- END: Vault Hero Section -->
+<!-- BEGIN: Navigation Tabs -->
+<div class="flex gap-8 mb-12 border-b border-white/5" data-purpose="nav-tabs">
+<button class="pb-4 text-zinc-500 font-medium hover:text-white transition-colors">Overview</button>
+<button class="pb-4 text-zinc-500 font-medium hover:text-white transition-colors">Transparency</button>
+<button class="pb-4 text-zinc-500 font-medium hover:text-white transition-colors">Performance</button>
+<button class="pb-4 border-b-2 border-white text-white font-medium">Risk</button>
+</div>
+<!-- END: Navigation Tabs -->
+<div class="grid grid-cols-12 gap-12">
+<!-- BEGIN: Left Details Column -->
+<div class="col-span-8 space-y-16">
+<!-- Key Metrics -->
+<div class="grid grid-cols-3 gap-8">
+<div>
+<p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3 underline decoration-dotted underline-offset-4">Vault APY</p>
+<p class="text-5xl font-medium text-white tracking-tight">11.4%</p>
+</div>
+<div>
+<p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3 underline decoration-dotted underline-offset-4">TVL</p>
+<p class="text-5xl font-medium text-white tracking-tight">$12M</p>
+</div>
+<div>
+<p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3">Available networks</p>
+<div class="flex items-center -space-x-2">
+<div class="w-8 h-8 rounded-full bg-orange-500 border-2 border-[#060606] flex items-center justify-center text-[10px]">O</div>
+<div class="w-8 h-8 rounded-full bg-blue-400 border-2 border-[#060606] flex items-center justify-center text-[10px]">E</div>
+<div class="w-8 h-8 rounded-full bg-teal-400 border-2 border-[#060606] flex items-center justify-center text-[10px]">S</div>
+<div class="w-8 h-8 rounded-full bg-yellow-400 border-2 border-[#060606] flex items-center justify-center text-[10px]">C</div>
+</div>
+</div>
+</div>
+<!-- About Section -->
+<div data-purpose="about-text">
+<h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">About</h3>
+<div class="space-y-4 text-lg leading-relaxed text-zinc-300">
+<p>
+                  The vault takes stablecoin deposits and allocates them into tokenized exposure to Cain's LiquidStone II fund, which invests in FX-hedged, short-dated Brazilian credit card receivables for yield generation and Superstate's USCC market-neutral strategy for liquidity management.
+                </p>
+<p>
+                  Cash flows generated by the underlying assets are automatically reinvested into the vault, with returns reflected directly in the aLupal token price rather than distributed — providing passive exposure to diversified, real-world credit income.
+                </p>
+<p>
+                  The strategy is designed to deliver yield through credit card receivables backstopped by credit card networks with higher liquidity through the market-neutral sleeve. <span class="text-white font-medium cursor-pointer underline underline-offset-2 hover:text-zinc-200">Show less</span>
+</p>
+</div>
+</div>
+<!-- Technical Table -->
+<div class="space-y-8" data-purpose="technical-specs">
+<div class="grid grid-cols-3 gap-y-12 gap-x-8">
+<!-- Row 1 -->
+<div>
+<p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4 underline decoration-dotted underline-offset-4">Payout schedule</p>
+<p class="text-base text-white">Hourly on Weekdays</p>
+</div>
+<div>
+<p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Supported apps</p>
+<div class="flex gap-2">
+<div class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[8px]">M</div>
+<div class="w-6 h-6 rounded-full bg-orange-800 flex items-center justify-center text-[8px]">O</div>
+<div class="w-6 h-6 rounded-full bg-emerald-800 flex items-center justify-center text-[8px]">S</div>
+</div>
+</div>
+<div>
+<!-- Empty but maintains grid -->
+</div>
+<!-- Row 2 -->
+<div>
+<p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Yield type</p>
+<p class="text-base text-white underline decoration-dotted underline-offset-4">Directional</p>
+</div>
+<div>
+<p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Security reviews</p>
+<p class="text-base text-white underline decoration-dotted underline-offset-4">Fully audited</p>
+</div>
+<div></div>
+<!-- Row 3 -->
+<div>
+<p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Avg. redeem time</p>
+<p class="text-base text-white font-semibold">30 min</p>
+</div>
+<div>
+<p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Management fees</p>
+<p class="text-base text-white underline decoration-dotted underline-offset-4">Free for a limited time</p>
+</div>
+<div></div>
+<!-- Row 4 -->
+<div>
+<p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Max redeem time</p>
+<p class="text-base text-white font-semibold">4 days</p>
+</div>
+<div>
+<p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">No. of holders</p>
+<p class="text-base text-white font-semibold">1,648.00</p>
+</div>
+<div></div>
+</div>
+</div>
+<!-- BEGIN: FAQ Accordion Section -->
+<div class="space-y-8 pt-16 border-t border-white/5" data-purpose="faq-section">
+<h3 class="text-2xl font-semibold text-white">Risk FAQ</h3>
+<div class="space-y-4">
+<!-- Accordion Item 1 -->
+<details class="group glass-card rounded-xl overflow-hidden" open="">
+<summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
+<span class="text-lg font-medium text-white">What are the primary risks associated with this vault?</span>
+<svg class="w-5 h-5 text-zinc-500 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</summary>
+<div class="px-6 pb-6 text-zinc-400 leading-relaxed">
+                    The primary risks include credit risk from the underlying Brazilian credit card receivables, FX volatility between BRL and USD (though hedged), and liquidity risk associated with the redemption window. Market-neutral strategies in Superstate's USCC also carry specific smart contract and operational risks.
+                  </div>
+</details>
+<!-- Accordion Item 2 -->
+<details class="group glass-card rounded-xl overflow-hidden">
+<summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
+<span class="text-lg font-medium text-white">How is the FX hedging managed?</span>
+<svg class="w-5 h-5 text-zinc-500 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</summary>
+<div class="px-6 pb-6 text-zinc-400 leading-relaxed">
+                    FX hedging is managed at the fund level using rolling forward contracts to minimize exposure to BRL fluctuations, ensuring the yields are delivered in USD terms for vault participants.
+                  </div>
+</details>
+<!-- Accordion Item 3 -->
+<details class="group glass-card rounded-xl overflow-hidden">
+<summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
+<span class="text-lg font-medium text-white">Who provides the security audits for the vault?</span>
+<svg class="w-5 h-5 text-zinc-500 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</summary>
+<div class="px-6 pb-6 text-zinc-400 leading-relaxed">
+                    The vault's smart contracts have undergone rigorous audits by leading firms including OpenZeppelin and Trail of Bits. Continuous monitoring is provided by Forta.
+                  </div>
+</details>
+</div>
+</div>
+<!-- END: FAQ Accordion Section -->
+<!-- BEGIN: Discord CTA Card -->
+<div class="glass-card rounded-2xl p-8 flex items-center justify-between border border-blue-500/20 bg-blue-500/5" data-purpose="discord-cta">
+<div>
+<h4 class="text-xl font-bold text-white mb-2">Still have a question?</h4>
+<p class="text-zinc-400">Join our Discord community and chat with our technical team directly.</p>
+</div>
+<button class="bg-white text-black px-6 py-3 rounded-xl font-bold hover:bg-zinc-200 transition-colors">
+                Join our Discord
+              </button>
+</div>
+<!-- END: Discord CTA Card -->
+</div>
+<!-- END: Left Details Column -->
+<!-- BEGIN: Right Interactive Column (Mint Card) -->
+<aside class="col-span-4 sticky top-28 h-fit">
+<div class="glass-card rounded-[32px] p-8 border-white/10 shadow-2xl overflow-hidden relative" data-purpose="transaction-card">
+<!-- Card Background Glow -->
+<div class="absolute -bottom-20 -left-20 w-64 h-64 bg-orange-500/20 rounded-full blur-[80px] -z-10"></div>
+<div class="flex items-center gap-6 mb-8 text-sm font-medium border-b border-white/5 pb-4">
+<button class="text-white border-b border-white pb-4 -mb-[17px]">Mint</button>
+<button class="text-zinc-500 hover:text-white transition-colors pb-4 -mb-[17px]">Redeem</button>
+<button class="text-zinc-500 hover:text-white transition-colors pb-4 -mb-[17px]">Bridge</button>
+</div>
+<!-- Deposit Input -->
+<div class="space-y-4 mb-8">
+<div class="flex justify-between items-center">
+<label class="text-sm text-zinc-400">Deposit</label>
+<div class="flex gap-1">
+<button class="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10">25%</button>
+<button class="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10">50%</button>
+<button class="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10">75%</button>
+<button class="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10">Max</button>
+</div>
+</div>
+<div class="flex items-center justify-between py-2">
+<div class="flex flex-col">
+<input class="bg-transparent border-none p-0 text-3xl font-medium focus:ring-0 placeholder-zinc-700 w-32" placeholder="0.00" type="text">
+<span class="text-sm text-zinc-500">$0.00</span>
+</div>
+<div class="bg-white/5 border border-white/10 rounded-full px-3 py-2 flex items-center gap-2 cursor-pointer hover:bg-white/10">
+<div class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-[10px]">$</div>
+<span class="text-sm font-bold text-white">USDC</span>
+<svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+</div>
+<p class="text-xs text-zinc-500 flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-orange-500"></span> 0.00 USDC
+                </p>
+</div>
+<div class="border-t border-white/5 pt-8 mb-10">
+<label class="text-sm text-zinc-400 mb-4 block">Receive</label>
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<p class="text-3xl font-medium text-zinc-700">0.00</p>
+<span class="text-sm text-zinc-500">$0.00</span>
+</div>
+<div class="bg-white/5 border border-white/10 rounded-full px-3 py-2 flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-[10px]">O</div>
+<span class="text-sm font-bold text-white">aLupal</span>
+</div>
+</div>
+<p class="text-xs text-zinc-500 mt-2">0.00 aLupal</p>
+</div>
+<button class="w-full mint-button-gradient py-4 rounded-2xl text-white font-bold shadow-lg shadow-black/40">
+                Get USDC &amp; gas to deposit
+              </button>
+</div>
+</aside>
+<!-- END: Right Interactive Column -->
+</div>
+</div>
+</main>
+<!-- END: Main Content Area -->
+</div>
+</body></html>
