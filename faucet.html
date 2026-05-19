@@ -849,7 +849,7 @@ footer a:hover { color: var(--text-secondary); }
           <label class="field-label">Verification</label>
           <div class="cf-turnstile-container">
             <div class="cf-turnstile"
-                 data-sitekey="1x00000000000000000000AA"
+                 data-sitekey="0x4AAAAAADSm6Mwd6EeNXj7W"
                  data-theme="dark"
                  data-callback="onTurnstileSuccess"
                  data-expired-callback="onTurnstileExpire">
@@ -1068,6 +1068,8 @@ footer a:hover { color: var(--text-secondary); }
 </footer>
 
 <script>
+const WORKER_URL = 'https://cainfin-worker.doffecul.workers.dev';
+
 const chains = {
   algo:  { name:'Algorand',  amount:'0.1 ALGO / day', icon:'A',  cls:'ic-algo',  token:'0.1 ALGO' },
   eth:   { name:'Ethereum',  amount:'0.1 ETH / day',  icon:'Ξ',  cls:'ic-eth',   token:'0.1 ETH'  },
@@ -1077,6 +1079,7 @@ const chains = {
 };
 let selected = 'algo';
 let turnstileVerified = false;
+let turnstileToken = null;
 
 function toggleDropdown() {
   const btn  = document.getElementById('chainBtn');
@@ -1113,10 +1116,11 @@ document.addEventListener('click', e => {
 
 function onTurnstileSuccess(token) {
   turnstileVerified = true;
-  console.log('Turnstile token:', token);
+  turnstileToken = token;
 }
 function onTurnstileExpire() {
   turnstileVerified = false;
+  turnstileToken = null;
 }
 
 setTimeout(() => {
@@ -1125,10 +1129,11 @@ setTimeout(() => {
     document.querySelector('.cf-turnstile-container').style.display = 'none';
     document.getElementById('turnstileFallback').style.display = 'flex';
     turnstileVerified = true;
+    turnstileToken = 'fallback';
   }
 }, 2000);
 
-function requestTokens() {
+async function requestTokens() {
   const addr = document.getElementById('walletAddr').value.trim();
   const btn  = document.getElementById('faucetBtn');
   const txt  = document.getElementById('faucetBtnText');
@@ -1139,7 +1144,7 @@ function requestTokens() {
     setTimeout(() => document.getElementById('walletAddr').style.borderColor = '', 1500);
     return;
   }
-  if (!turnstileVerified) {
+  if (!turnstileVerified || !turnstileToken) {
     alert('Please complete the human verification first.');
     return;
   }
@@ -1148,18 +1153,52 @@ function requestTokens() {
   btn.style.opacity = '0.6';
   txt.textContent = 'Sending…';
 
-  setTimeout(() => {
-    txt.textContent = '✓ Sent ' + c.token + ' to your wallet';
-    btn.style.background = '#4ade80';
-    btn.style.color = '#0a0a0a';
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: turnstileToken,
+        address: addr,
+        chain: selected,
+        chainName: c.name,
+        amount: c.token,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      txt.textContent = '✓ Sent ' + c.token + ' to your wallet';
+      btn.style.background = '#4ade80';
+      btn.style.color = '#0a0a0a';
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.style.opacity = '';
+        btn.style.background = '';
+        btn.style.color = '';
+        txt.textContent = 'Send ' + c.token;
+      }, 4000);
+    } else {
+      txt.textContent = data.error || 'Failed — try again';
+      btn.style.background = 'rgba(248,113,113,0.3)';
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.style.opacity = '';
+        btn.style.background = '';
+        txt.textContent = 'Send ' + c.token;
+      }, 3000);
+    }
+  } catch (e) {
+    txt.textContent = 'Network error — try again';
+    btn.style.background = 'rgba(248,113,113,0.3)';
     setTimeout(() => {
       btn.disabled = false;
       btn.style.opacity = '';
       btn.style.background = '';
-      btn.style.color = '';
       txt.textContent = 'Send ' + c.token;
-    }, 4000);
-  }, 1800);
+    }, 3000);
+  }
 }
 
 async function connectWallet() {
