@@ -1,359 +1,890 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
-<title>Cain Lupal II | Cain by Cain.Finance</title>
+<title>aCain | Cain by Cain.Finance</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
 <style data-purpose="custom-fonts">
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #060606;
-      color: #ffffff;
-    }
-  </style>
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #060606;
+    color: #ffffff;
+  }
+</style>
+
 <style data-purpose="background-texture">
-    /* Subtle dot grid pattern */
-    .bg-dot-grid {
-      background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-      background-size: 24px 24px;
-    }
-    
-    .glass-card {
-      background: rgba(18, 18, 18, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
+  .bg-dot-grid {
+    background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .glass-card {
+    background: rgba(18,18,18,0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .sidebar-active {
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+  }
+  .mint-button-gradient {
+    background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    border: 1px solid rgba(255,255,255,0.15);
+    transition: all 0.2s;
+  }
+  .mint-button-gradient:hover { background: rgba(255,255,255,0.12); }
 
-    .sidebar-active {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-    }
+  /* ── SIDEBAR COLLAPSE ── */
+  #sidebar {
+    width: 256px;
+    transition: width 0.3s cubic-bezier(0.4,0,0.2,1);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  #sidebar.collapsed { width: 64px; }
 
-    .mint-button-gradient {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      transition: all 0.2s;
-    }
-    .mint-button-gradient:hover {
-      background: rgba(255, 255, 255, 0.12);
-    }
-  </style>
+  #sidebar .sidebar-label,
+  #sidebar .brand-text,
+  #sidebar .nav-text,
+  #sidebar .recents-section {
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  #sidebar.collapsed .sidebar-label,
+  #sidebar.collapsed .brand-text,
+  #sidebar.collapsed .nav-text,
+  #sidebar.collapsed .recents-section {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-6px);
+  }
+
+  /* ── WALLET CONNECTED PILL ── */
+  #wallet-connected-pill {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    background: rgba(34,197,94,0.08);
+    border: 1px solid rgba(34,197,94,0.25);
+    border-radius: 9999px;
+    padding: 5px 12px 5px 8px;
+    animation: pillIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  #wallet-connected-pill.visible { display: flex; }
+
+  @keyframes pillIn {
+    from { opacity:0; transform: translateX(10px) scale(0.94); }
+    to   { opacity:1; transform: translateX(0) scale(1); }
+  }
+
+  .green-pulse {
+    width: 7px; height: 7px;
+    background: #22c55e;
+    border-radius: 50%;
+    box-shadow: 0 0 6px #22c55e;
+    animation: gPulse 2s ease-in-out infinite;
+  }
+  @keyframes gPulse {
+    0%,100% { opacity:1; }
+    50%      { opacity:0.35; }
+  }
+
+  /* ── TOGGLE BUTTON ── */
+  #sidebar-toggle {
+    position: absolute;
+    top: 22px;
+    right: -12px;
+    width: 24px; height: 24px;
+    background: #121212;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    z-index: 30;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  #sidebar-toggle:hover { border-color: rgba(255,255,255,0.3); background: #1a1a1a; }
+  #sidebar-toggle svg { transition: transform 0.3s; }
+  #sidebar.collapsed #sidebar-toggle svg { transform: rotate(180deg); }
+
+  /* ── TABS ── */
+  .tab-active   { color:#fff; border-bottom: 2px solid #fff; }
+  .tab-inactive { color:#71717a; border-bottom: 2px solid transparent; }
+  .tab-inactive:hover { color:#fff; }
+
+  /* ── MINT TABS ── */
+  .mtab-active   { color:#fff; border-bottom: 1px solid #fff; }
+  .mtab-inactive { color:#71717a; }
+  .mtab-inactive:hover { color:#fff; }
+
+  /* ── ACCORDION ── */
+  details summary::-webkit-details-marker { display:none; }
+  details[open] summary svg { transform: rotate(180deg); }
+  details summary svg { transition: transform 0.2s; }
+
+  /* ── CHART ── */
+  #perf-canvas { display:block; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom:24px; right:24px;
+    background: #121212;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 11px 18px;
+    font-size: 13px;
+    color: #e5e5e5;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+  }
+  #toast.show { opacity:1; transform:translateY(0); }
+  #toast.green { border-color: rgba(34,197,94,0.35); color:#4ade80; }
+  #toast.red   { border-color: rgba(239,68,68,0.35);  color:#f87171; }
+
+  /* ── PAGE FADE ── */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(14px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.45s ease both; }
+  .delay-1 { animation-delay: 0.05s; }
+  .delay-2 { animation-delay: 0.12s; }
+  .delay-3 { animation-delay: 0.20s; }
+</style>
 </head>
+
 <body class="bg-[#060606] text-[#e5e5e5] selection:bg-blue-500/30">
-<div class="flex min-h-screen">
-<!-- BEGIN: Sidebar -->
-<aside class="w-64 border-r border-white/5 flex flex-col p-6 sticky top-0 h-screen" data-purpose="sidebar">
-<div class="flex items-center gap-2 mb-10">
-<div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-<div class="w-4 h-4 bg-black rounded-sm"></div>
-</div>
-<div>
-<h1 class="text-xl font-bold tracking-tight text-white leading-none">Nest</h1>
-<span class="text-[10px] uppercase tracking-widest text-zinc-500">by Plume</span>
-</div>
-</div>
-<nav class="space-y-6 flex-1">
-<div class="space-y-1">
-<a class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white transition-colors" href="#">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-<span class="text-sm font-medium">Earn</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white transition-colors" href="#">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-<span class="text-sm font-medium">Borrow</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white transition-colors" href="#">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-<span class="text-sm font-medium">Portfolio</span>
-</a>
-<a class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white transition-colors" href="#">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-<span class="text-sm font-medium">More</span>
-</a>
-</div>
-<div class="pt-4 border-t border-white/5">
-<p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-3 mb-4">Recents</p>
-<div class="space-y-1">
-<div class="flex items-center gap-3 px-3 py-2 sidebar-active text-white">
-<img alt="Icon" class="w-6 h-6 rounded-full object-cover grayscale brightness-200" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeHk2G5rIqDnKeU_5GXQztUkU9fxjJUzpaUrSj9eXsoqqIMvnjA9L57f1VJ9Q9grHIESj4AqS2mCdNIPBdvqFmiFtMA_HvPICJAxt-Z-7rVJI4qQJ3xxY-a3M5VeqPjP-qTcNQZBghHvphcXXeaZZG8WaFREPpDKLwAt0doD01vSwgX8jBYRt7Im5deK8WHB9v1_ZDgewwCeKXK8hI2aziAfQrU-Aq9eRSIsMrBEgoC1lKAOQPxcQrMQCTyFoMosq7iOXU97SPxu0b">
-<span class="text-sm font-medium">aCain</span>
-</div>
-<div class="flex items-center gap-3 px-3 py-2 text-zinc-400">
-<div class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px]">P</div>
-<span class="text-sm font-medium">aCain · pUSD</span>
-</div>
-<div class="flex items-center gap-3 px-3 py-2 text-zinc-400">
-<div class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px]">A</div>
-<span class="text-sm font-medium">aAlpha · pUSD</span>
-</div>
-</div>
-</div>
-</nav>
-<div class="mt-auto pt-6">
-<button class="p-2 text-zinc-500 hover:text-white">
-<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16m-7 6h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></path></svg>
-</button>
-</div>
-</aside>
-<!-- END: Sidebar -->
-<!-- BEGIN: Main Content Area -->
-<main class="flex-1 bg-dot-grid overflow-y-auto" data-purpose="main-viewport">
-<!-- BEGIN: Top Navigation Bar -->
-<header class="flex items-center justify-between px-10 py-4 sticky top-0 z-20 bg-[#060606]/80 backdrop-blur-md border-b border-white/5">
-<div class="relative w-96">
-<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-<svg class="h-4 w-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</div>
-<input class="block w-full bg-[#121212] border-white/10 rounded-lg py-2 pl-10 pr-3 text-sm placeholder-zinc-500 focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all" placeholder="Cain Lupal II" type="text">
-<div class="absolute inset-y-0 right-0 pr-3 flex items-center">
-<span class="text-[10px] text-zinc-500 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">⌘ K</span>
-</div>
-</div>
-<div class="flex items-center gap-4">
-<button class="p-2 text-zinc-400 hover:bg-white/5 rounded-lg transition-colors">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
-<button class="p-2 text-zinc-400 hover:bg-white/5 rounded-lg transition-colors">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
-<div class="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-<div class="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center">
-<div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-</div>
-<span class="text-sm font-medium">0xA4...5D4f</span>
-</div>
-</div>
-</header>
-<!-- END: Top Navigation Bar -->
-<div class="max-w-[1400px] mx-auto px-10 pt-12 pb-24">
-<!-- BEGIN: Vault Hero Section -->
-<div class="mb-12">
-<div class="w-20 h-20 bg-zinc-900 rounded-2xl mb-6 flex items-center justify-center border border-white/10 shadow-2xl overflow-hidden">
-<img alt="Vault Logo" class="w-full h-full object-cover grayscale brightness-125" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeHk2G5rIqDnKeU_5GXQztUkU9fxjJUzpaUrSj9eXsoqqIMvnjA9L57f1VJ9Q9grHIESj4AqS2mCdNIPBdvqFmiFtMA_HvPICJAxt-Z-7rVJI4qQJ3xxY-a3M5VeqPjP-qTcNQZBghHvphcXXeaZZG8WaFREPpDKLwAt0doD01vSwgX8jBYRt7Im5deK8WHB9v1_ZDgewwCeKXK8hI2aziAfQrU-Aq9eRSIsMrBEgoC1lKAOQPxcQrMQCTyFoMosq7iOXU97SPxu0b">
-</div>
-<div class="flex items-center gap-4 mb-4">
-<h2 class="text-6xl font-semibold text-white tracking-tight">Cain Lupal II</h2>
-<div class="flex gap-2">
-<button class="p-2 hover:bg-white/5 rounded-lg border border-white/5">
-<svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
-<button class="p-2 hover:bg-white/5 rounded-lg border border-white/5">
-<svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
-</div>
-</div>
-<div class="flex gap-2">
-<span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">Payment financing</span>
-<span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">Audited</span>
-</div>
-</div>
-<!-- END: Vault Hero Section -->
-<!-- BEGIN: Navigation Tabs -->
-<div class="flex gap-8 mb-12 border-b border-white/5" data-purpose="nav-tabs">
-<button class="pb-4 text-zinc-500 font-medium hover:text-white transition-colors">Overview</button>
-<button class="pb-4 text-zinc-500 font-medium hover:text-white transition-colors">Transparency</button>
-<button class="pb-4 text-zinc-500 font-medium hover:text-white transition-colors">Performance</button>
-<button class="pb-4 border-b-2 border-white text-white font-medium">Risk</button>
-</div>
-<!-- END: Navigation Tabs -->
-<div class="grid grid-cols-12 gap-12">
-<!-- BEGIN: Left Details Column -->
-<div class="col-span-8 space-y-16">
-<!-- Key Metrics -->
-<div class="grid grid-cols-3 gap-8">
-<div>
-<p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3 underline decoration-dotted underline-offset-4">Vault APY</p>
-<p class="text-5xl font-medium text-white tracking-tight">11.4%</p>
-</div>
-<div>
-<p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3 underline decoration-dotted underline-offset-4">TVL</p>
-<p class="text-5xl font-medium text-white tracking-tight">$12M</p>
-</div>
-<div>
-<p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3">Available networks</p>
-<div class="flex items-center -space-x-2">
-<div class="w-8 h-8 rounded-full bg-orange-500 border-2 border-[#060606] flex items-center justify-center text-[10px]">O</div>
-<div class="w-8 h-8 rounded-full bg-blue-400 border-2 border-[#060606] flex items-center justify-center text-[10px]">E</div>
-<div class="w-8 h-8 rounded-full bg-teal-400 border-2 border-[#060606] flex items-center justify-center text-[10px]">S</div>
-<div class="w-8 h-8 rounded-full bg-yellow-400 border-2 border-[#060606] flex items-center justify-center text-[10px]">C</div>
-</div>
-</div>
-</div>
-<!-- About Section -->
-<div data-purpose="about-text">
-<h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">About</h3>
-<div class="space-y-4 text-lg leading-relaxed text-zinc-300">
-<p>
-                  The vault takes stablecoin deposits and allocates them into tokenized exposure to Cain's LiquidStone II fund, which invests in FX-hedged, short-dated Brazilian credit card receivables for yield generation and Superstate's USCC market-neutral strategy for liquidity management.
-                </p>
-<p>
-                  Cash flows generated by the underlying assets are automatically reinvested into the vault, with returns reflected directly in the aLupal token price rather than distributed — providing passive exposure to diversified, real-world credit income.
-                </p>
-<p>
-                  The strategy is designed to deliver yield through credit card receivables backstopped by credit card networks with higher liquidity through the market-neutral sleeve. <span class="text-white font-medium cursor-pointer underline underline-offset-2 hover:text-zinc-200">Show less</span>
-</p>
-</div>
-</div>
-<!-- Technical Table -->
-<div class="space-y-8" data-purpose="technical-specs">
-<div class="grid grid-cols-3 gap-y-12 gap-x-8">
-<!-- Row 1 -->
-<div>
-<p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4 underline decoration-dotted underline-offset-4">Payout schedule</p>
-<p class="text-base text-white">Hourly on Weekdays</p>
-</div>
-<div>
-<p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Supported apps</p>
-<div class="flex gap-2">
-<div class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[8px]">M</div>
-<div class="w-6 h-6 rounded-full bg-orange-800 flex items-center justify-center text-[8px]">O</div>
-<div class="w-6 h-6 rounded-full bg-emerald-800 flex items-center justify-center text-[8px]">S</div>
-</div>
-</div>
-<div>
-<!-- Empty but maintains grid -->
-</div>
-<!-- Row 2 -->
-<div>
-<p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Yield type</p>
-<p class="text-base text-white underline decoration-dotted underline-offset-4">Directional</p>
-</div>
-<div>
-<p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Security reviews</p>
-<p class="text-base text-white underline decoration-dotted underline-offset-4">Fully audited</p>
-</div>
-<div></div>
-<!-- Row 3 -->
-<div>
-<p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Avg. redeem time</p>
-<p class="text-base text-white font-semibold">30 min</p>
-</div>
-<div>
-<p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Management fees</p>
-<p class="text-base text-white underline decoration-dotted underline-offset-4">Free for a limited time</p>
-</div>
-<div></div>
-<!-- Row 4 -->
-<div>
-<p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Max redeem time</p>
-<p class="text-base text-white font-semibold">4 days</p>
-</div>
-<div>
-<p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">No. of holders</p>
-<p class="text-base text-white font-semibold">1,648.00</p>
-</div>
-<div></div>
-</div>
-</div>
-<!-- BEGIN: FAQ Accordion Section -->
-<div class="space-y-8 pt-16 border-t border-white/5" data-purpose="faq-section">
-<h3 class="text-2xl font-semibold text-white">Risk FAQ</h3>
-<div class="space-y-4">
-<!-- Accordion Item 1 -->
-<details class="group glass-card rounded-xl overflow-hidden" open="">
-<summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
-<span class="text-lg font-medium text-white">What are the primary risks associated with this vault?</span>
-<svg class="w-5 h-5 text-zinc-500 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</summary>
-<div class="px-6 pb-6 text-zinc-400 leading-relaxed">
-                    The primary risks include credit risk from the underlying Brazilian credit card receivables, FX volatility between BRL and USD (though hedged), and liquidity risk associated with the redemption window. Market-neutral strategies in Superstate's USCC also carry specific smart contract and operational risks.
-                  </div>
-</details>
-<!-- Accordion Item 2 -->
-<details class="group glass-card rounded-xl overflow-hidden">
-<summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
-<span class="text-lg font-medium text-white">How is the FX hedging managed?</span>
-<svg class="w-5 h-5 text-zinc-500 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</summary>
-<div class="px-6 pb-6 text-zinc-400 leading-relaxed">
-                    FX hedging is managed at the fund level using rolling forward contracts to minimize exposure to BRL fluctuations, ensuring the yields are delivered in USD terms for vault participants.
-                  </div>
-</details>
-<!-- Accordion Item 3 -->
-<details class="group glass-card rounded-xl overflow-hidden">
-<summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
-<span class="text-lg font-medium text-white">Who provides the security audits for the vault?</span>
-<svg class="w-5 h-5 text-zinc-500 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</summary>
-<div class="px-6 pb-6 text-zinc-400 leading-relaxed">
-                    The vault's smart contracts have undergone rigorous audits by leading firms including OpenZeppelin and Trail of Bits. Continuous monitoring is provided by Forta.
-                  </div>
-</details>
-</div>
-</div>
-<!-- END: FAQ Accordion Section -->
-<!-- BEGIN: Discord CTA Card -->
-<div class="glass-card rounded-2xl p-8 flex items-center justify-between border border-blue-500/20 bg-blue-500/5" data-purpose="discord-cta">
-<div>
-<h4 class="text-xl font-bold text-white mb-2">Still have a question?</h4>
-<p class="text-zinc-400">Join our Discord community and chat with our technical team directly.</p>
-</div>
-<button class="bg-white text-black px-6 py-3 rounded-xl font-bold hover:bg-zinc-200 transition-colors">
-                Join our Discord
+<div class="flex min-h-screen relative">
+
+  <!-- ══════════════ SIDEBAR ══════════════ -->
+  <aside id="sidebar" class="border-r border-white/5 flex flex-col p-5 sticky top-0 h-screen relative">
+
+    <!-- Toggle button -->
+    <button id="sidebar-toggle" title="Toggle sidebar">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+        <path d="M6.5 2L3.5 5l3 3" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <!-- Brand -->
+    <div class="flex items-center gap-2.5 mb-10 overflow-hidden whitespace-nowrap">
+      <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+        <div class="w-4 h-4 bg-black rounded-sm"></div>
+      </div>
+      <div class="brand-text">
+        <h1 class="text-xl font-bold tracking-tight text-white leading-none">Nest</h1>
+        <span class="text-[10px] uppercase tracking-widest text-zinc-500">by Cain.Finance</span>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="space-y-6 flex-1 overflow-hidden">
+      <div class="space-y-1">
+        <a class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5 whitespace-nowrap" href="#">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          <span class="nav-text text-sm font-medium">Earn</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5 whitespace-nowrap" href="#">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          <span class="nav-text text-sm font-medium">Borrow</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5 whitespace-nowrap" href="#">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          <span class="nav-text text-sm font-medium">Portfolio</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/5 whitespace-nowrap" href="#">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          <span class="nav-text text-sm font-medium">More</span>
+        </a>
+      </div>
+
+      <!-- Recents -->
+      <div class="recents-section pt-4 border-t border-white/5 overflow-hidden whitespace-nowrap">
+        <p class="sidebar-label text-[10px] font-bold text-zinc-500 uppercase tracking-widest px-3 mb-4">Recents</p>
+        <div class="space-y-1">
+          <div class="flex items-center gap-3 px-3 py-2 sidebar-active text-white">
+            <div class="w-6 h-6 rounded-full bg-gradient-to-br from-zinc-600 to-zinc-800 border border-white/10 flex items-center justify-center text-[10px] font-bold flex-shrink-0">aC</div>
+            <span class="nav-text text-sm font-medium">aCain</span>
+          </div>
+          <div class="flex items-center gap-3 px-3 py-2 text-zinc-400 rounded-lg hover:bg-white/5 cursor-pointer whitespace-nowrap">
+            <div class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] flex-shrink-0">P</div>
+            <span class="nav-text text-sm font-medium">aCain · pUSD</span>
+          </div>
+          <div class="flex items-center gap-3 px-3 py-2 text-zinc-400 rounded-lg hover:bg-white/5 cursor-pointer whitespace-nowrap">
+            <div class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] flex-shrink-0">A</div>
+            <span class="nav-text text-sm font-medium">aAlpha · pUSD</span>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Bottom toggle icon -->
+    <div class="mt-auto pt-6 border-t border-white/5">
+      <button id="sidebar-toggle-bottom" class="p-2 text-zinc-500 hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16m-7 6h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/></svg>
+      </button>
+    </div>
+  </aside>
+  <!-- ══ END SIDEBAR ══ -->
+
+  <!-- ══════════════ MAIN ══════════════ -->
+  <main class="flex-1 bg-dot-grid overflow-y-auto">
+
+    <!-- TOP NAV -->
+    <header class="flex items-center justify-between px-10 py-4 sticky top-0 z-20 bg-[#060606]/80 backdrop-blur-md border-b border-white/5">
+      <div class="relative w-80">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-4 w-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </div>
+        <input class="block w-full bg-[#121212] border border-white/10 rounded-lg py-2 pl-10 pr-3 text-sm placeholder-zinc-500 focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all" placeholder="Search vaults…" type="text">
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+          <span class="text-[10px] text-zinc-500 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">⌘K</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+
+        <!-- ── METAMASK CONNECTED PILL ── -->
+        <div id="wallet-connected-pill">
+          <div class="green-pulse"></div>
+          <span class="text-xs font-medium text-green-400">MetaMask connected</span>
+          <span id="wallet-address-short" class="text-xs text-green-600 font-mono"></span>
+        </div>
+
+        <!-- Disconnect button -->
+        <button id="disconnect-btn" class="hidden items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-400 border border-white/10 rounded-lg hover:border-red-500/40 hover:text-red-400 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          Disconnect
+        </button>
+
+        <!-- Utility icons -->
+        <button class="p-2 text-zinc-400 hover:bg-white/5 rounded-lg transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </button>
+        <button class="p-2 text-zinc-400 hover:bg-white/5 rounded-lg transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </button>
+
+        <!-- Connect wallet button (hidden when connected) -->
+        <button id="connect-btn" class="flex items-center gap-2 bg-white text-black px-4 py-1.5 rounded-lg text-sm font-bold hover:bg-zinc-200 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9 10h.01M15 10h.01M12 14s1.5 1 3 0" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          Connect Wallet
+        </button>
+
+        <!-- Wallet address chip (shown when connected) -->
+        <div id="wallet-chip" class="hidden items-center gap-2 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
+          <div class="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center">
+            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+          </div>
+          <span id="wallet-chip-address" class="text-sm font-medium font-mono"></span>
+        </div>
+      </div>
+    </header>
+    <!-- END TOP NAV -->
+
+    <div class="max-w-[1400px] mx-auto px-10 pt-12 pb-24">
+
+      <!-- VAULT HERO -->
+      <div class="mb-12 fade-up delay-1">
+        <div class="w-20 h-20 bg-zinc-900 rounded-2xl mb-6 flex items-center justify-center border border-white/10 shadow-2xl">
+          <span class="text-3xl font-bold text-white tracking-tight">aC</span>
+        </div>
+        <div class="flex items-center gap-4 mb-4">
+          <h2 class="text-6xl font-semibold text-white tracking-tight">aCain</h2>
+          <div class="flex gap-2">
+            <button class="p-2 hover:bg-white/5 rounded-lg border border-white/5 transition-colors">
+              <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            </button>
+            <button class="p-2 hover:bg-white/5 rounded-lg border border-white/5 transition-colors">
+              <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">Diversified Asset Pool</span>
+          <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">xSTOCK SPY · Solana</span>
+          <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">Audited</span>
+        </div>
+      </div>
+
+      <!-- NAV TABS -->
+      <div class="flex gap-8 mb-12 border-b border-white/5 fade-up delay-2" id="page-tabs">
+        <button class="pb-4 text-sm font-medium transition-colors tab-inactive" data-tab="overview">Overview</button>
+        <button class="pb-4 text-sm font-medium transition-colors tab-inactive" data-tab="transparency">Transparency</button>
+        <button class="pb-4 text-sm font-medium transition-colors tab-active" data-tab="performance">Performance</button>
+        <button class="pb-4 text-sm font-medium transition-colors tab-inactive" data-tab="risk">Risk</button>
+      </div>
+
+      <div class="grid grid-cols-12 gap-12 fade-up delay-3">
+
+        <!-- ══ LEFT COLUMN ══ -->
+        <div class="col-span-8 space-y-16">
+
+          <!-- Key metrics -->
+          <div class="grid grid-cols-3 gap-8">
+            <div>
+              <p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3 underline decoration-dotted underline-offset-4">Vault APY</p>
+              <p class="text-5xl font-medium text-white tracking-tight">14.0%</p>
+            </div>
+            <div>
+              <p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3 underline decoration-dotted underline-offset-4">TVL</p>
+              <p class="text-5xl font-medium text-white tracking-tight">$2.41M</p>
+            </div>
+            <div>
+              <p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3">Available networks</p>
+              <div class="flex items-center -space-x-2">
+                <div class="w-8 h-8 rounded-full bg-purple-600 border-2 border-[#060606] flex items-center justify-center text-[10px] font-bold">SOL</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- About -->
+          <div>
+            <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">About</h3>
+            <div class="space-y-4 text-lg leading-relaxed text-zinc-300">
+              <p>The aCain vault accepts USDC deposits on Solana and allocates 100% of capital into xSTOCK SPY — a tokenized representation of the S&P 500 index traded on-chain via Solana. Swaps are executed automatically through Jupiter aggregator at best available price.</p>
+              <p>Returns are reflected directly in the aCain token price rather than distributed as yield — providing passive, compounding exposure to U.S. large-cap equities entirely on-chain. Upon redemption, USDC is returned net of a 30% performance fee on profits only.</p>
+              <p>The vault is designed for investors who want equity-like returns without brokerage accounts, custody friction, or off-chain settlement. <span class="text-white font-medium cursor-pointer underline underline-offset-2 hover:text-zinc-200">Show less</span></p>
+            </div>
+          </div>
+
+          <!-- Performance chart -->
+          <div>
+            <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">YTD Performance</h3>
+            <div class="glass-card rounded-2xl p-6">
+              <canvas id="perf-canvas" height="180"></canvas>
+            </div>
+          </div>
+
+          <!-- Technical specs -->
+          <div class="space-y-8">
+            <div class="grid grid-cols-3 gap-y-12 gap-x-8">
+              <div>
+                <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4 underline decoration-dotted underline-offset-4">Payout schedule</p>
+                <p class="text-base text-white">Continuous (price-based)</p>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Supported apps</p>
+                <div class="flex gap-2">
+                  <div class="w-6 h-6 rounded-full bg-orange-800 flex items-center justify-center text-[8px]">MM</div>
+                  <div class="w-6 h-6 rounded-full bg-purple-800 flex items-center justify-center text-[8px]">Ph</div>
+                </div>
+              </div>
+              <div></div>
+              <div>
+                <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Yield type</p>
+                <p class="text-base text-white underline decoration-dotted underline-offset-4">Directional equity</p>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Security reviews</p>
+                <p class="text-base text-white underline decoration-dotted underline-offset-4">Fully audited</p>
+              </div>
+              <div></div>
+              <div>
+                <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Avg. redeem time</p>
+                <p class="text-base text-white font-semibold">~30 sec</p>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Performance fee</p>
+                <p class="text-base text-white underline decoration-dotted underline-offset-4">30% of profits only</p>
+              </div>
+              <div></div>
+              <div>
+                <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Flat tx fee</p>
+                <p class="text-base text-white font-semibold">$0.20 deposit &amp; withdraw</p>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">No. of holders</p>
+                <p class="text-base text-white font-semibold">1,284</p>
+              </div>
+              <div></div>
+            </div>
+          </div>
+
+          <!-- FAQ -->
+          <div class="space-y-8 pt-16 border-t border-white/5">
+            <h3 class="text-2xl font-semibold text-white">Risk FAQ</h3>
+            <div class="space-y-4">
+              <details class="group glass-card rounded-xl overflow-hidden" open>
+                <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
+                  <span class="text-lg font-medium text-white">What are the primary risks associated with this vault?</span>
+                  <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                </summary>
+                <div class="px-6 pb-6 text-zinc-400 leading-relaxed">The primary risks include equity market risk (the S&P 500 can decline), smart contract risk in the Kamino vault program, xSTOCK SPY liquidity risk during off-market hours, and oracle manipulation risk on the Pyth price feed. The vault does not hedge market downside.</div>
+              </details>
+              <details class="group glass-card rounded-xl overflow-hidden">
+                <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
+                  <span class="text-lg font-medium text-white">How is the performance fee calculated?</span>
+                  <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                </summary>
+                <div class="px-6 pb-6 text-zinc-400 leading-relaxed">The 30% fee applies only to realised profit at the time of withdrawal. Your cost basis is recorded at deposit. If your position is flat or in loss, only the $0.20 flat fee is deducted. No management fee is charged on AUM.</div>
+              </details>
+              <details class="group glass-card rounded-xl overflow-hidden">
+                <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
+                  <span class="text-lg font-medium text-white">What happens if xSTOCK SPY has no liquidity?</span>
+                  <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                </summary>
+                <div class="px-6 pb-6 text-zinc-400 leading-relaxed">Outside NYSE trading hours, on-chain liquidity for xSTOCK SPY may be thin. Deposits during these windows are queued and executed at market open to protect against bad fills. Withdrawals follow the same slippage-protected routing via Jupiter aggregator.</div>
+              </details>
+            </div>
+          </div>
+
+          <!-- Discord CTA -->
+          <div class="glass-card rounded-2xl p-8 flex items-center justify-between border border-blue-500/20 bg-blue-500/5">
+            <div>
+              <h4 class="text-xl font-bold text-white mb-2">Still have a question?</h4>
+              <p class="text-zinc-400">Join our Discord and chat with the technical team directly.</p>
+            </div>
+            <button class="bg-white text-black px-6 py-3 rounded-xl font-bold hover:bg-zinc-200 transition-colors">Join our Discord</button>
+          </div>
+
+        </div>
+        <!-- ══ END LEFT ══ -->
+
+        <!-- ══ RIGHT: MINT CARD ══ -->
+        <aside class="col-span-4 sticky top-28 h-fit">
+          <div class="glass-card rounded-[32px] p-8 shadow-2xl overflow-hidden relative">
+
+            <!-- Glow -->
+            <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-green-500/10 rounded-full blur-[80px] -z-10 pointer-events-none"></div>
+
+            <!-- Mint/Redeem tabs -->
+            <div class="flex items-center gap-6 mb-8 border-b border-white/5 pb-4 text-sm font-medium">
+              <button class="mtab-active pb-4 -mb-[17px] transition-colors" data-mtab="mint">Mint</button>
+              <button class="mtab-inactive pb-4 -mb-[17px] transition-colors" data-mtab="redeem">Redeem</button>
+            </div>
+
+            <!-- ── LOCKED STATE (no wallet) ── -->
+            <div id="card-locked" class="py-8 text-center space-y-4">
+              <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mx-auto border border-white/10 text-2xl">🔒</div>
+              <p class="text-base font-semibold text-white">Connect your wallet</p>
+              <p class="text-sm text-zinc-500 leading-relaxed">Connect MetaMask (Solana) to deposit into the aCain pool.</p>
+              <button id="connect-card-btn" class="w-full mt-2 mint-button-gradient py-3.5 rounded-2xl text-white font-bold shadow-lg shadow-black/40">
+                Connect MetaMask
               </button>
-</div>
-<!-- END: Discord CTA Card -->
-</div>
-<!-- END: Left Details Column -->
-<!-- BEGIN: Right Interactive Column (Mint Card) -->
-<aside class="col-span-4 sticky top-28 h-fit">
-<div class="glass-card rounded-[32px] p-8 border-white/10 shadow-2xl overflow-hidden relative" data-purpose="transaction-card">
-<!-- Card Background Glow -->
-<div class="absolute -bottom-20 -left-20 w-64 h-64 bg-orange-500/20 rounded-full blur-[80px] -z-10"></div>
-<div class="flex items-center gap-6 mb-8 text-sm font-medium border-b border-white/5 pb-4">
-<button class="text-white border-b border-white pb-4 -mb-[17px]">Mint</button>
-<button class="text-zinc-500 hover:text-white transition-colors pb-4 -mb-[17px]">Redeem</button>
-<button class="text-zinc-500 hover:text-white transition-colors pb-4 -mb-[17px]">Bridge</button>
-</div>
-<!-- Deposit Input -->
-<div class="space-y-4 mb-8">
-<div class="flex justify-between items-center">
-<label class="text-sm text-zinc-400">Deposit</label>
-<div class="flex gap-1">
-<button class="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10">25%</button>
-<button class="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10">50%</button>
-<button class="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10">75%</button>
-<button class="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10">Max</button>
-</div>
-</div>
-<div class="flex items-center justify-between py-2">
-<div class="flex flex-col">
-<input class="bg-transparent border-none p-0 text-3xl font-medium focus:ring-0 placeholder-zinc-700 w-32" placeholder="0.00" type="text">
-<span class="text-sm text-zinc-500">$0.00</span>
-</div>
-<div class="bg-white/5 border border-white/10 rounded-full px-3 py-2 flex items-center gap-2 cursor-pointer hover:bg-white/10">
-<div class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-[10px]">$</div>
-<span class="text-sm font-bold text-white">USDC</span>
-<svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</div>
-</div>
-<p class="text-xs text-zinc-500 flex items-center gap-1">
-<span class="w-2 h-2 rounded-full bg-orange-500"></span> 0.00 USDC
+            </div>
+
+            <!-- ── MINT FORM ── -->
+            <div id="mint-form" class="hidden">
+              <!-- Deposit input -->
+              <div class="space-y-4 mb-6">
+                <div class="flex justify-between items-center">
+                  <label class="text-sm text-zinc-400">Deposit</label>
+                  <div class="flex gap-1">
+                    <button class="quick-pct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10 transition-colors" data-pct="25">25%</button>
+                    <button class="quick-pct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10 transition-colors" data-pct="50">50%</button>
+                    <button class="quick-pct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10 transition-colors" data-pct="75">75%</button>
+                    <button class="quick-pct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10 transition-colors" data-pct="100">Max</button>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between py-2">
+                  <div class="flex flex-col">
+                    <input id="mint-amount" class="bg-transparent border-none p-0 text-3xl font-medium focus:ring-0 placeholder-zinc-700 w-36 text-white outline-none" placeholder="0.00" type="number" min="0" step="0.01">
+                    <span id="mint-usd" class="text-sm text-zinc-500">$0.00</span>
+                  </div>
+                  <div class="bg-white/5 border border-white/10 rounded-full px-3 py-2 flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-[10px] font-bold">$</div>
+                    <span class="text-sm font-bold text-white">USDC</span>
+                  </div>
+                </div>
+                <p class="text-xs text-zinc-500 flex items-center gap-1">
+                  <span class="w-2 h-2 rounded-full bg-orange-500 inline-block"></span>
+                  Balance: 0.00 USDC
                 </p>
-</div>
-<div class="border-t border-white/5 pt-8 mb-10">
-<label class="text-sm text-zinc-400 mb-4 block">Receive</label>
-<div class="flex items-center justify-between">
-<div class="flex flex-col">
-<p class="text-3xl font-medium text-zinc-700">0.00</p>
-<span class="text-sm text-zinc-500">$0.00</span>
-</div>
-<div class="bg-white/5 border border-white/10 rounded-full px-3 py-2 flex items-center gap-2">
-<div class="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-[10px]">O</div>
-<span class="text-sm font-bold text-white">aLupal</span>
-</div>
-</div>
-<p class="text-xs text-zinc-500 mt-2">0.00 aLupal</p>
-</div>
-<button class="w-full mint-button-gradient py-4 rounded-2xl text-white font-bold shadow-lg shadow-black/40">
-                Get USDC &amp; gas to deposit
+              </div>
+
+              <!-- Fee breakdown -->
+              <div class="bg-white/3 border border-white/5 rounded-xl p-4 mb-6 space-y-2">
+                <div class="flex justify-between text-xs text-zinc-500">
+                  <span>Flat fee</span><span>−$0.20</span>
+                </div>
+                <div class="flex justify-between text-xs text-zinc-500">
+                  <span>Invested in pool</span><span id="mint-net" class="text-zinc-300">$0.00</span>
+                </div>
+                <div class="border-t border-white/5 pt-2 flex justify-between text-xs">
+                  <span class="text-zinc-500">aCain minted (est.)</span>
+                  <span id="mint-acain" class="text-white font-medium">0.000 aC</span>
+                </div>
+              </div>
+
+              <!-- Receive row -->
+              <div class="border-t border-white/5 pt-6 mb-8">
+                <label class="text-sm text-zinc-400 mb-4 block">Receive</label>
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p id="receive-acain" class="text-3xl font-medium text-zinc-700">0.000</p>
+                    <span id="receive-usd" class="text-sm text-zinc-500">$0.00</span>
+                  </div>
+                  <div class="bg-white/5 border border-white/10 rounded-full px-3 py-2 flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-[10px] font-bold">aC</div>
+                    <span class="text-sm font-bold text-white">aCain</span>
+                  </div>
+                </div>
+              </div>
+
+              <button id="mint-btn" class="w-full mint-button-gradient py-4 rounded-2xl text-white font-bold shadow-lg shadow-black/40 transition-all">
+                Mint aCain
               </button>
+            </div>
+
+            <!-- ── REDEEM FORM ── -->
+            <div id="redeem-form" class="hidden">
+              <div class="space-y-4 mb-6">
+                <label class="text-sm text-zinc-400">aCain to redeem</label>
+                <div class="flex items-center justify-between py-2">
+                  <div class="flex flex-col">
+                    <input id="redeem-amount" class="bg-transparent border-none p-0 text-3xl font-medium focus:ring-0 placeholder-zinc-700 w-36 text-white outline-none" placeholder="0.000" type="number" min="0" step="0.001">
+                    <span id="redeem-gross-usd" class="text-sm text-zinc-500">$0.00 gross</span>
+                  </div>
+                  <div class="bg-white/5 border border-white/10 rounded-full px-3 py-2 flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-[10px] font-bold">aC</div>
+                    <span class="text-sm font-bold text-white">aCain</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white/3 border border-white/5 rounded-xl p-4 mb-6 space-y-2">
+                <div class="flex justify-between text-xs text-zinc-500">
+                  <span>Gross value</span><span id="rd-gross" class="text-zinc-300">$0.00</span>
+                </div>
+                <div class="flex justify-between text-xs text-zinc-500">
+                  <span>Performance fee (30% of profit)</span><span id="rd-perf" class="text-zinc-500">−$0.00</span>
+                </div>
+                <div class="flex justify-between text-xs text-zinc-500">
+                  <span>Flat fee</span><span>−$0.20</span>
+                </div>
+                <div class="border-t border-white/5 pt-2 flex justify-between text-xs">
+                  <span class="text-zinc-400">You receive</span>
+                  <span id="rd-net" class="text-white font-medium">$0.00 USDC</span>
+                </div>
+              </div>
+
+              <button id="redeem-btn" class="w-full mint-button-gradient py-4 rounded-2xl text-white font-bold shadow-lg shadow-black/40">
+                Redeem aCain
+              </button>
+            </div>
+
+          </div>
+        </aside>
+        <!-- ══ END RIGHT ══ -->
+
+      </div>
+    </div>
+  </main>
+  <!-- ══ END MAIN ══ -->
+
 </div>
-</aside>
-<!-- END: Right Interactive Column -->
-</div>
-</div>
-</main>
-<!-- END: Main Content Area -->
-</div>
-</body></html>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
+<script>
+// ─── CONSTANTS ───────────────────────────
+const ACAIN_PRICE  = 1.140;   // current aCain NAV per token
+const COST_BASIS   = 1.000;   // demo inception price (cost basis per aCain)
+const FLAT_FEE     = 0.20;
+const PERF_FEE_PCT = 0.30;
+
+// ─── SIDEBAR ─────────────────────────────
+const sidebar = document.getElementById('sidebar');
+document.getElementById('sidebar-toggle').addEventListener('click', toggle);
+document.getElementById('sidebar-toggle-bottom').addEventListener('click', toggle);
+function toggle() { sidebar.classList.toggle('collapsed'); }
+
+// ─── PAGE TABS ───────────────────────────
+document.querySelectorAll('#page-tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#page-tabs button').forEach(b => {
+      b.className = 'pb-4 text-sm font-medium transition-colors tab-inactive';
+    });
+    btn.className = 'pb-4 text-sm font-medium transition-colors tab-active';
+  });
+});
+
+// ─── MINT / REDEEM CARD TABS ─────────────
+let activeMTab = 'mint';
+document.querySelectorAll('[data-mtab]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeMTab = btn.dataset.mtab;
+    document.querySelectorAll('[data-mtab]').forEach(b => {
+      b.className = b.dataset.mtab === activeMTab ? 'mtab-active pb-4 -mb-[17px] transition-colors' : 'mtab-inactive pb-4 -mb-[17px] transition-colors';
+    });
+    // show correct form if wallet connected
+    if (walletAddress) showWalletForms();
+  });
+});
+
+// ─── WALLET STATE ─────────────────────────
+let walletAddress = null;
+
+function onConnect(address) {
+  walletAddress = address;
+  const short = address.slice(0,4) + '…' + address.slice(-4);
+
+  // Pill
+  document.getElementById('wallet-connected-pill').classList.add('visible');
+  document.getElementById('wallet-address-short').textContent = short;
+
+  // Chip
+  document.getElementById('wallet-chip').classList.remove('hidden');
+  document.getElementById('wallet-chip').classList.add('flex');
+  document.getElementById('wallet-chip-address').textContent = short;
+
+  // Buttons
+  document.getElementById('connect-btn').classList.add('hidden');
+  document.getElementById('disconnect-btn').classList.remove('hidden');
+  document.getElementById('disconnect-btn').classList.add('flex');
+
+  showWalletForms();
+  showToast('Wallet connected · ' + short, 'green');
+}
+
+function onDisconnect() {
+  walletAddress = null;
+  document.getElementById('wallet-connected-pill').classList.remove('visible');
+  document.getElementById('wallet-chip').classList.add('hidden');
+  document.getElementById('wallet-chip').classList.remove('flex');
+  document.getElementById('wallet-address-short').textContent = '';
+  document.getElementById('wallet-chip-address').textContent = '';
+  document.getElementById('connect-btn').classList.remove('hidden');
+  document.getElementById('disconnect-btn').classList.add('hidden');
+  document.getElementById('disconnect-btn').classList.remove('flex');
+
+  document.getElementById('card-locked').classList.remove('hidden');
+  document.getElementById('mint-form').classList.add('hidden');
+  document.getElementById('redeem-form').classList.add('hidden');
+  showToast('Wallet disconnected');
+}
+
+function showWalletForms() {
+  document.getElementById('card-locked').classList.add('hidden');
+  document.getElementById('mint-form').classList.toggle('hidden', activeMTab !== 'mint');
+  document.getElementById('redeem-form').classList.toggle('hidden', activeMTab !== 'redeem');
+}
+
+// ─── METAMASK / SOLANA CONNECTION ────────
+// MetaMask v12.18+ injects window.solana with isMetaMask=true for Solana.
+// Falls back to window.ethereum (EVM) for older versions.
+function getSolanaProvider() {
+  if (window.solana?.isMetaMask)    return window.solana;   // MM Solana native
+  if (window.solana?.isPhantom)     return window.solana;   // Phantom fallback
+  if (window.solana)                return window.solana;   // Generic Solana
+  return null;
+}
+
+async function connectWallet() {
+  // 1. MetaMask Solana (Extension v12.18+, window.solana injected)
+  const sol = getSolanaProvider();
+  if (sol) {
+    try {
+      const resp = await sol.connect();
+      const pk = resp?.publicKey?.toString() || sol.publicKey?.toString();
+      if (pk) { onConnect(pk); return; }
+    } catch (e) {
+      if (e.code === 4001) { showToast('Connection rejected', 'red'); return; }
+    }
+  }
+
+  // 2. MetaMask EVM fallback (shows EVM address, warns to switch)
+  if (window.ethereum) {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      if (accounts.length) {
+        showToast('MetaMask EVM detected — switch to Solana in MetaMask settings');
+        onConnect(accounts[0]);
+        return;
+      }
+    } catch (e) {
+      if (e.code === 4001) { showToast('Connection rejected', 'red'); return; }
+    }
+  }
+
+  // 3. Not installed
+  showToast('MetaMask not found — install or update to v12.18+', 'red');
+  setTimeout(() => window.open('https://metamask.io/download/', '_blank'), 800);
+}
+
+async function disconnectWallet() {
+  try { await getSolanaProvider()?.disconnect?.(); } catch (_) {}
+  onDisconnect();
+}
+
+// Account change listeners
+if (window.solana) {
+  window.solana.on?.('accountChanged', pk => pk ? onConnect(pk.toString()) : onDisconnect());
+}
+if (window.ethereum) {
+  window.ethereum.on?.('accountsChanged', a => { if (!a.length) onDisconnect(); });
+}
+
+document.getElementById('connect-btn').addEventListener('click', connectWallet);
+document.getElementById('connect-card-btn').addEventListener('click', connectWallet);
+document.getElementById('disconnect-btn').addEventListener('click', disconnectWallet);
+
+// ─── FEE CALCULATOR ──────────────────────
+document.getElementById('mint-amount').addEventListener('input', updateMint);
+document.getElementById('redeem-amount').addEventListener('input', updateRedeem);
+
+function updateMint() {
+  const gross = parseFloat(document.getElementById('mint-amount').value) || 0;
+  const net   = Math.max(0, gross - FLAT_FEE);
+  const acain = net / ACAIN_PRICE;
+  document.getElementById('mint-usd').textContent      = '$' + gross.toFixed(2);
+  document.getElementById('mint-net').textContent      = '$' + net.toFixed(2);
+  document.getElementById('mint-acain').textContent    = acain.toFixed(3) + ' aC';
+  document.getElementById('receive-acain').textContent = acain.toFixed(3);
+  document.getElementById('receive-usd').textContent   = '$' + (acain * ACAIN_PRICE).toFixed(2);
+  document.getElementById('receive-acain').className   = acain > 0
+    ? 'text-3xl font-medium text-white' : 'text-3xl font-medium text-zinc-700';
+}
+
+function updateRedeem() {
+  const acain   = parseFloat(document.getElementById('redeem-amount').value) || 0;
+  const gross   = acain * ACAIN_PRICE;
+  const profit  = Math.max(0, acain * ACAIN_PRICE - acain * COST_BASIS);
+  const perfFee = profit * PERF_FEE_PCT;
+  const net     = Math.max(0, gross - perfFee - FLAT_FEE);
+  document.getElementById('redeem-gross-usd').textContent = '$' + gross.toFixed(2) + ' gross';
+  document.getElementById('rd-gross').textContent         = '$' + gross.toFixed(2);
+  document.getElementById('rd-perf').textContent          = '−$' + perfFee.toFixed(2);
+  document.getElementById('rd-net').textContent           = '$' + net.toFixed(2) + ' USDC';
+}
+
+// Quick % buttons (demo — no real balance)
+document.querySelectorAll('.quick-pct').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const demo = 500; // demo balance
+    document.getElementById('mint-amount').value = ((demo * parseInt(btn.dataset.pct)) / 100).toFixed(2);
+    updateMint();
+  });
+});
+
+// ─── MINT / REDEEM ACTIONS ───────────────
+document.getElementById('mint-btn').addEventListener('click', async () => {
+  const amt = parseFloat(document.getElementById('mint-amount').value);
+  if (!amt || amt < 0.21) { showToast('Minimum deposit is $0.21', 'red'); return; }
+  const btn = document.getElementById('mint-btn');
+  btn.disabled = true; btn.textContent = 'Building transaction…';
+  // ── Cloudflare Worker call goes here ──
+  // const res = await fetch('/api/build-deposit-tx', { method:'POST', body: JSON.stringify({ userWallet: walletAddress, amountUSDC: amt }) });
+  // const { tx } = await res.json();
+  // const sig = await window.solana.signAndSendTransaction(tx);
+  await new Promise(r => setTimeout(r, 1400));
+  showToast('Deposit submitted · tx: demo1234…', 'green');
+  document.getElementById('mint-amount').value = '';
+  updateMint();
+  btn.disabled = false; btn.textContent = 'Mint aCain';
+});
+
+document.getElementById('redeem-btn').addEventListener('click', async () => {
+  const amt = parseFloat(document.getElementById('redeem-amount').value);
+  if (!amt || amt <= 0) { showToast('Enter aCain amount to redeem', 'red'); return; }
+  const btn = document.getElementById('redeem-btn');
+  btn.disabled = true; btn.textContent = 'Building transaction…';
+  await new Promise(r => setTimeout(r, 1400));
+  showToast('Redemption submitted · tx: demo5678…', 'green');
+  document.getElementById('redeem-amount').value = '';
+  updateRedeem();
+  btn.disabled = false; btn.textContent = 'Redeem aCain';
+});
+
+// ─── TOAST ───────────────────────────────
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (type ? ' ' + type : '');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => { t.className = ''; }, 3500);
+}
+
+// ─── PERFORMANCE CHART (pure canvas) ─────
+(function() {
+  const canvas = document.getElementById('perf-canvas');
+  const ctx    = canvas.getContext('2d');
+  const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const data   = [1.000,1.009,1.022,1.018,1.035,1.049,1.063,1.072,1.090,1.106,1.122,1.140];
+
+  function draw() {
+    const W = canvas.parentElement.clientWidth - 48; // account for padding
+    const H = 180;
+    canvas.width  = W * devicePixelRatio;
+    canvas.height = H * devicePixelRatio;
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+
+    const pad = { top:10, right:12, bottom:28, left:44 };
+    const cW  = W - pad.left - pad.right;
+    const cH  = H - pad.top  - pad.bottom;
+    const min = 0.98, max = 1.16;
+
+    const xOf = i => pad.left + (i / (data.length-1)) * cW;
+    const yOf = v => pad.top  + cH - ((v-min)/(max-min)) * cH;
+
+    ctx.clearRect(0,0,W,H);
+
+    // Grid
+    for (let i=0;i<=4;i++) {
+      const y = pad.top + (cH/4)*i;
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+      ctx.lineWidth = 1;
+      ctx.moveTo(pad.left,y); ctx.lineTo(W-pad.right,y); ctx.stroke();
+      const v = max - ((max-min)/4)*i;
+      ctx.fillStyle = '#52525b';
+      ctx.font = '10px Inter, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(((v-1)*100).toFixed(1)+'%', pad.left-6, y+4);
+    }
+
+    // X labels
+    ctx.fillStyle = '#52525b';
+    ctx.textAlign = 'center';
+    labels.forEach((l,i) => {
+      if (i%2===0) ctx.fillText(l, xOf(i), H-pad.bottom+14);
+    });
+
+    // Gradient fill
+    const grad = ctx.createLinearGradient(0,pad.top,0,pad.top+cH);
+    grad.addColorStop(0,'rgba(255,255,255,0.07)');
+    grad.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.beginPath();
+    data.forEach((v,i) => i===0 ? ctx.moveTo(xOf(i),yOf(v)) : ctx.lineTo(xOf(i),yOf(v)));
+    ctx.lineTo(xOf(data.length-1),pad.top+cH);
+    ctx.lineTo(xOf(0),pad.top+cH);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    data.forEach((v,i) => i===0 ? ctx.moveTo(xOf(i),yOf(v)) : ctx.lineTo(xOf(i),yOf(v)));
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth   = 1.5;
+    ctx.lineJoin    = 'round';
+    ctx.stroke();
+
+    // End dot
+    ctx.beginPath();
+    ctx.arc(xOf(data.length-1), yOf(data[data.length-1]), 4, 0, Math.PI*2);
+    ctx.fillStyle   = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#060606';
+    ctx.lineWidth   = 2;
+    ctx.stroke();
+  }
+
+  draw();
+  window.addEventListener('resize', draw);
+})();
+</script>
+</body>
+</html>
