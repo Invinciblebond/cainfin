@@ -32,10 +32,21 @@
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255,255,255,0.08);
   }
-  .sidebar-scroll::-webkit-scrollbar { width: 4px; }
-  .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
-  /* Vault table styles from codebase 1 */
+  /* Sidebar transition */
+  #sidebar {
+    width: 220px;
+    transition: width 0.25s ease, padding 0.25s ease;
+    overflow: hidden;
+  }
+  #sidebar.collapsed {
+    width: 56px;
+  }
+  #sidebar.collapsed .sidebar-label { display: none; }
+  #sidebar.collapsed .sidebar-wordmark { display: none; }
+  #sidebar.collapsed #toggle-icon { transform: rotate(180deg); }
+
+  /* Vault table styles */
   .table-wrap { background:#111; border:1px solid #1e1e1e; border-radius:14px; overflow:hidden; }
   .table-wrap table { width:100%; border-collapse:collapse; }
   .table-wrap thead th { font-size:11px; color:#444; font-weight:400; padding:13px 16px; text-align:left; border-bottom:1px solid #1c1c1c; }
@@ -56,12 +67,8 @@
   .supported-dash { color:#333; }
   .nets { display:flex; gap:4px; }
   .nd { width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:700; flex-shrink:0; }
-  .nd-or { background:#f97316; color:#fff; }
-  .nd-bl { background:#3b82f6; color:#fff; }
   .nd-pu { background:#7c3aed; color:#fff; }
-  .nd-tl { background:#0d9488; color:#fff; }
   .nd-gr { background:#3d3d3d; color:#aaa; }
-  .nd-pi { background:#db2777; color:#fff; }
   .c-alpha    { background:#132040; color:#5b9bd5; }
   .c-opal     { background:#252525; color:#999; }
   .c-basis    { background:#16184a; color:#818cf8; }
@@ -71,8 +78,6 @@
   .c-falcon   { background:#10103a; color:#a78bfa; }
   .c-acrdx    { background:#122212; color:#4ade80; }
   .c-axi      { background:#2a122a; color:#c084fc; }
-
-  /* Featured vault cards */
   .featured-card { background:#141414; border:1px solid #242424; border-radius:14px; padding:22px; }
   .vault-header { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
   .vault-icon { width:38px; height:38px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
@@ -83,68 +88,83 @@
   .vs-item label { font-size:11px; color:#444; display:block; margin-bottom:3px; }
   .vs-item .vs-val { font-size:23px; font-weight:600; color:#fff; }
   .vs-item .vs-val.green { color:#4ade80; }
+
+  /* Dropdown */
+  .dropdown { position:relative; display:inline-block; }
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    min-width: 160px;
+    z-index: 50;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+  .dropdown-menu.open { display: block; }
+  .dropdown-menu a {
+    display: block;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: #bbb;
+    text-decoration: none;
+    transition: background 0.12s, color 0.12s;
+  }
+  .dropdown-menu a:hover { background: #1e1e1e; color: #fff; }
 </style>
 </head>
 <body class="h-full font-sans overflow-hidden">
 <div class="flex h-full">
 
 <!-- Sidebar -->
-<aside class="w-64 bg-cain-sidebar border-r border-cain-border flex flex-col shrink-0">
-<div class="p-6">
-  <div class="flex items-center gap-2 mb-10">
-    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-      <div class="w-4 h-4 bg-black rounded-sm"></div>
+<aside id="sidebar" class="bg-cain-sidebar border-r border-cain-border flex flex-col shrink-0">
+  <div class="p-4">
+    <!-- Logo + toggle -->
+    <div class="flex items-center justify-between mb-10" style="min-height:32px;">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+          <div class="w-4 h-4 bg-black rounded-sm"></div>
+        </div>
+        <div class="sidebar-wordmark">
+          <h1 class="text-xl font-bold tracking-tight leading-none">Cain</h1>
+          <p class="text-[10px] text-cain-gray-text uppercase tracking-widest">by Plume</p>
+        </div>
+      </div>
+      <button id="sidebar-toggle" onclick="toggleSidebar()" class="ml-2 p-1 rounded-md text-cain-gray-text hover:text-white hover:bg-white/5 flex-shrink-0">
+        <svg id="toggle-icon" style="transition:transform 0.25s;" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M10 3L5 8l5 5"/>
+        </svg>
+      </button>
     </div>
-    <div>
-      <h1 class="text-xl font-bold tracking-tight">Cain</h1>
-      <p class="text-[10px] text-cain-gray-text -mt-1 uppercase tracking-widest">by Plume</p>
-    </div>
+
+    <nav class="space-y-1">
+      <a class="flex items-center gap-3 px-3 py-2 bg-white/5 rounded-lg text-white font-medium" href="#">
+        <svg class="w-5 h-5 text-cain-gray-text flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        <span class="sidebar-label">Earn</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="#">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        <span class="sidebar-label">Borrow</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="#">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        <span class="sidebar-label">Portfolio</span>
+      </a>
+      <button class="w-full flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        <span class="sidebar-label">More</span>
+      </button>
+    </nav>
   </div>
-  <nav class="space-y-1">
-    <a class="flex items-center gap-3 px-3 py-2 bg-white/5 rounded-lg text-white font-medium" href="#">
-      <svg class="w-5 h-5 text-cain-gray-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-      Earn
-    </a>
-    <a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="#">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-      Borrow
-    </a>
-    <a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="#">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-      Portfolio
-    </a>
-    <button class="w-full flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-      More
+
+  <div class="mt-auto p-4 border-t border-cain-border">
+    <button class="text-cain-gray-text hover:text-white">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
     </button>
-  </nav>
-  <div class="mt-10">
-    <p class="px-3 text-[11px] font-bold text-cain-gray-text uppercase tracking-widest mb-4">Recents</p>
-    <div class="space-y-4 px-3 sidebar-scroll overflow-y-auto">
-      <div class="flex items-center gap-3 text-sm text-cain-gray-text hover:text-white cursor-pointer">
-        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 border border-white/10 flex items-center justify-center text-[10px]">💰</div>
-        nOPAL · pUSD
-      </div>
-      <div class="flex items-center gap-3 text-sm text-cain-gray-text hover:text-white cursor-pointer">
-        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-700 to-blue-900 border border-white/10 flex items-center justify-center text-[10px]">💎</div>
-        nALPHA · pUSD
-      </div>
-      <div class="flex items-center gap-3 text-sm text-cain-gray-text hover:text-white cursor-pointer">
-        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-green-700 to-green-900 border border-white/10 flex items-center justify-center text-[10px]">📜</div>
-        nTBILL
-      </div>
-      <div class="flex items-center gap-3 text-sm text-cain-gray-text hover:text-white cursor-pointer">
-        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-700 to-indigo-900 border border-white/10 flex items-center justify-center text-[10px]">✨</div>
-        nALPHA
-      </div>
-    </div>
   </div>
-</div>
-<div class="mt-auto p-6 border-t border-cain-border">
-  <button class="text-cain-gray-text hover:text-white">
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-  </button>
-</div>
 </aside>
 
 <!-- Main Content -->
@@ -165,11 +185,38 @@
       </div>
     </div>
     <div class="flex items-center gap-3">
-      <button class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
-      <button class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+      <!-- Question mark → /Legal -->
+      <a href="/Legal" class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+      </a>
+      <!-- Grid icon with dropdown -->
+      <div class="dropdown">
+        <button onclick="toggleDropdown()" class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        </button>
+        <div id="community-dropdown" class="dropdown-menu">
+          <a href="https://discord.gg/FILL_IN" target="_blank">Discord</a>
+          <a href="https://reddit.com/r/FILL_IN" target="_blank">Reddit</a>
+          <a href="https://t.me/FILL_IN" target="_blank">Telegram</a>
+          <a href="https://FILL_IN.com/token" target="_blank">Cain Token</a>
+          <a href="mailto:contact@FILL_IN.com">Contact</a>
+        </div>
+      </div>
       <div class="h-8 w-px bg-white/10 mx-1"></div>
-      <button class="p-1.5 hover:bg-white/5 rounded-lg border border-white/10"><div class="w-5 h-5 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full"></div></button>
-      <button class="bg-white/10 border border-white/10 px-4 py-2 rounded-xl text-xs font-mono font-medium hover:bg-white/20 transition-colors">0xA4...5D4f</button>
+      <!-- Connect Metamask -->
+      <button class="bg-white/10 border border-white/10 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-white/20 transition-colors flex items-center gap-2">
+        <svg width="14" height="14" viewBox="0 0 35 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M32.958 1L19.174 11.03l2.52-5.958L32.958 1z" fill="#E17726" stroke="#E17726" stroke-width=".25" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2.042 1l13.67 10.118-2.396-6.046L2.042 1z" fill="#E27625" stroke="#E27625" stroke-width=".25" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M28.147 23.533l-3.673 5.628 7.858 2.162 2.254-7.668-6.44-.122z" fill="#E27625" stroke="#E27625" stroke-width=".25" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M.42 23.655l2.24 7.668 7.845-2.162-3.66-5.628-6.425.122z" fill="#E27625" stroke="#E27625" stroke-width=".25" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10.12 14.452l-2.19 3.313 7.806.354-.268-8.396-5.348 4.729z" fill="#E27625" stroke="#E27625" stroke-width=".25" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M24.88 14.452l-5.415-4.816-.178 8.483 7.793-.354-2.2-3.313z" fill="#E27625" stroke="#E27625" stroke-width=".25" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10.505 29.161l4.694-2.285-4.048-3.154-.646 5.44z" fill="#E27625" stroke="#E27625" stroke-width=".25" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M19.8 26.876l4.707 2.285-.659-5.44-4.048 3.155z" fill="#E27625" stroke="#E27625" stroke-width=".25" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Connect MetaMask
+      </button>
     </div>
   </header>
 
@@ -244,7 +291,6 @@
 
     <!-- Featured Cards -->
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
-      <!-- BlackOpal -->
       <div class="featured-card">
         <div class="vault-header">
           <div class="vault-icon" style="background:#1e1e1e;">
@@ -265,14 +311,10 @@
           <div class="vs-item"><label>TVL</label><div class="vs-val">$12M</div></div>
           <div class="vs-item">
             <label>Available networks</label>
-            <div class="nets">
-              <div class="nd nd-or">A</div><div class="nd nd-bl">P</div>
-              <div class="nd nd-pu">S</div><div class="nd nd-tl">≡</div>
-            </div>
+            <div class="nets"><div class="nd nd-pu">S</div></div>
           </div>
         </div>
       </div>
-      <!-- Alpha -->
       <div class="featured-card">
         <div class="vault-header">
           <div class="vault-icon" style="background:#122040;">
@@ -292,10 +334,7 @@
           <div class="vs-item"><label>TVL</label><div class="vs-val">$6.9M</div></div>
           <div class="vs-item">
             <label>Available networks</label>
-            <div class="nets">
-              <div class="nd nd-or">A</div><div class="nd nd-bl">P</div>
-              <div class="nd nd-pu">S</div><div class="nd nd-tl">≡</div>
-            </div>
+            <div class="nets"><div class="nd nd-pu">S</div></div>
           </div>
         </div>
       </div>
@@ -317,8 +356,8 @@
             <td><span class="apy-plain">10.37%</span></td>
             <td>$6,939,915.92</td>
             <td><div class="asset-dots"><div class="ad" style="background:#3b82f6;color:#fff;">A</div><div class="ad" style="background:#7c3aed;color:#fff;">X</div><div class="ad" style="background:#0d9488;color:#fff;">U</div><div class="ad" style="background:#16a34a;color:#fff;">B</div><span class="count-pill">+1</span></div></td>
-            <td><div class="nets" style="gap:3px;"><div class="nd nd-or">A</div><div class="nd nd-bl">P</div><div class="nd nd-pu">S</div><div class="nd nd-tl">≡</div></div></td>
-            <td><div class="nets" style="gap:3px;"><div class="nd nd-gr">☁</div><div class="nd" style="background:#f97316;color:#fff;">$</div></div></td>
+            <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
+            <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
           </tr>
           <tr>
             <td><div class="row-flex"><div class="row-logo c-opal">◈</div><div><div class="rv-name">BlackOpal LiquidStone II</div><div class="rv-cat">Payment financing</div></div></div></td>
@@ -326,8 +365,8 @@
             <td><span class="apy-plain">12.23%</span></td>
             <td>$12,028,891.86</td>
             <td><div class="asset-dots"><div class="ad" style="background:#3b82f6;color:#fff;">B</div><div class="ad" style="background:#eab308;color:#000;">T</div></div></td>
-            <td><div class="nets" style="gap:3px;"><div class="nd nd-or">A</div><div class="nd nd-bl">P</div><div class="nd nd-pu">S</div><div class="nd nd-tl">≡</div></div></td>
-            <td><div class="nets" style="gap:3px;"><div class="nd nd-gr">☁</div><div class="nd" style="background:#f97316;color:#fff;">$</div></div></td>
+            <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
+            <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
           </tr>
           <tr>
             <td><div class="row-flex"><div class="row-logo c-basis">B</div><div><div class="rv-name">Basis</div><div class="rv-cat">Crypto Basis</div></div></div></td>
@@ -335,8 +374,8 @@
             <td><span class="apy-plain">4.27%</span></td>
             <td>$25,597,521.25</td>
             <td><div class="asset-dots"><div class="ad" style="background:#f97316;color:#fff;">B</div><div class="ad" style="background:#0d9488;color:#fff;">E</div></div></td>
-            <td><div class="nets" style="gap:3px;"><div class="nd nd-or">A</div><div class="nd nd-bl">P</div><div class="nd nd-pu">S</div><div class="nd nd-tl">≡</div></div></td>
-            <td><div class="nets" style="gap:3px;"><div class="nd nd-gr">☁</div><div class="nd" style="background:#f97316;color:#fff;">$</div></div></td>
+            <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
+            <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
           </tr>
           <tr>
             <td><div class="row-flex"><div class="row-logo c-treasury">T</div><div><div class="rv-name">Treasury</div><div class="rv-cat">US Treasuries</div></div></div></td>
@@ -344,8 +383,8 @@
             <td><span class="apy-plain">2.88%</span></td>
             <td>$865,377.71</td>
             <td><div class="asset-dots"><div class="ad" style="background:#3b82f6;color:#fff;">M</div><div class="ad" style="background:#16a34a;color:#fff;">O</div></div></td>
-            <td><div class="nets" style="gap:3px;"><div class="nd nd-or">A</div><div class="nd nd-bl">P</div><div class="nd nd-pu">S</div><div class="nd nd-tl">≡</div></div></td>
-            <td><div class="nets" style="gap:3px;"><div class="nd nd-gr">☁</div><div class="nd" style="background:#f97316;color:#fff;">$</div></div></td>
+            <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
+            <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
           </tr>
           <tr>
             <td><div class="row-flex"><div class="row-logo c-wisdom">W</div><div><div class="rv-name">WisdomTree CRDYX</div><div class="rv-cat">Private Credit</div></div></div></td>
@@ -353,8 +392,8 @@
             <td><span class="apy-link">6.00%</span><span class="info-icon">ⓘ</span></td>
             <td>$2,805,502.85</td>
             <td><div class="asset-dots"><div class="ad" style="background:#38bdf8;color:#0c2233;">W</div><div class="ad" style="background:#eab308;color:#000;">T</div></div></td>
-            <td><div class="nets" style="gap:3px;"><div class="nd nd-or">A</div><div class="nd nd-bl">P</div><div class="nd nd-pu">S</div><div class="nd nd-tl">≡</div></div></td>
-            <td><div class="nets" style="gap:3px;"><div class="nd nd-gr">☁</div></div></td>
+            <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
+            <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
           </tr>
           <tr>
             <td><div class="row-flex"><div class="row-logo c-credit">C</div><div><div class="rv-name">Credit</div><div class="rv-cat">Private Credit</div></div></div></td>
@@ -362,8 +401,8 @@
             <td><span class="apy-link">8.00%</span><span class="info-icon">ⓘ</span></td>
             <td>$39,771.18</td>
             <td><div class="asset-dots"><div class="ad" style="background:#f87171;color:#2a1212;">C</div><div class="ad" style="background:#f97316;color:#fff;">R</div></div></td>
-            <td><div class="nets" style="gap:3px;"><div class="nd nd-or">A</div><div class="nd nd-bl">P</div><div class="nd nd-pi">S</div></div></td>
-            <td><div class="nets" style="gap:3px;"><div class="nd nd-gr">☁</div><div class="nd" style="background:#f97316;color:#fff;">$</div></div></td>
+            <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
+            <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
           </tr>
           <tr>
             <td><div class="row-flex"><div class="row-logo c-falcon">X</div><div><div class="rv-name">FalconX Overcollateralized Loans</div><div class="rv-cat">Prime Brokerage Lending</div></div></div></td>
@@ -371,8 +410,8 @@
             <td><span class="apy-plain">7.68%</span></td>
             <td>$4,141,720.20</td>
             <td><div class="asset-dots"><div class="ad" style="background:#1d4ed8;color:#fff;">F</div></div></td>
-            <td><div class="nets" style="gap:3px;"><div class="nd nd-or">A</div><div class="nd nd-bl">P</div></div></td>
-            <td><span class="supported-dash">—</span></td>
+            <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
+            <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
           </tr>
           <tr>
             <td><div class="row-flex"><div class="row-logo c-acrdx">A</div><div><div class="rv-name">ACRDX</div><div class="rv-cat">Private Credit</div></div></div></td>
@@ -380,8 +419,8 @@
             <td><span class="apy-link">2.00%</span><span class="info-icon">ⓘ</span></td>
             <td>$99,845.09</td>
             <td><div class="asset-dots"><div class="ad" style="background:#4ade80;color:#122212;">A</div></div></td>
-            <td><div class="nets" style="gap:3px;"><div class="nd nd-or">A</div><div class="nd nd-bl">P</div><div class="nd nd-pi">R</div></div></td>
-            <td><span class="supported-dash">—</span></td>
+            <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
+            <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
           </tr>
         </tbody>
       </table>
@@ -392,7 +431,7 @@
       <h2 class="text-4xl font-bold mb-2">Private vaults</h2>
       <p style="font-size:12px; color:#555; line-height:1.5;">
         Private investment strategies backed by large institutions and built on Nest.
-        Reach out to us on <a href="#" style="color:#6b9eff;">Discord</a> or <a href="#" style="color:#6b9eff;">X</a> to work with us on creating a new vault.
+        Reach out to us on <a href="https://discord.gg/FILL_IN" style="color:#6b9eff;">Discord</a> or <a href="https://twitter.com/FILL_IN" style="color:#6b9eff;">X</a> to work with us on creating a new vault.
       </p>
       <div class="table-wrap" style="margin-top:16px;">
         <table>
@@ -414,4 +453,22 @@
   </section>
 </main>
 </div>
+
+<script>
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  }
+
+  function toggleDropdown() {
+    document.getElementById('community-dropdown').classList.toggle('open');
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    const dropdown = document.querySelector('.dropdown');
+    if (!dropdown.contains(e.target)) {
+      document.getElementById('community-dropdown').classList.remove('open');
+    }
+  });
+</script>
 </body></html>

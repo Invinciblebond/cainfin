@@ -109,6 +109,26 @@ nav {
 }
 .nav-btn:hover { opacity: 0.85; }
 
+/* Connected wallet display in nav */
+.nav-wallet-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border-bright);
+  border-radius: 7px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--text-secondary);
+}
+.nav-wallet-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+}
+
 /* ── HERO SECTION ── */
 .hero {
   position: relative;
@@ -308,6 +328,26 @@ nav {
 .chain-name { font-size: 14px; font-weight: 500; color: #fff; }
 .chain-amount { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 1px; font-family: var(--mono); }
 
+/* Processing speed badge in dropdown */
+.chain-speed {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 100px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.chain-speed.fast {
+  background: rgba(74,222,128,0.15);
+  border: 1px solid rgba(74,222,128,0.3);
+  color: #4ade80;
+}
+.chain-speed.eod {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.45);
+}
+
 .chevron {
   color: rgba(255,255,255,0.5);
   transition: transform 0.2s;
@@ -363,8 +403,15 @@ nav {
   margin-top: 8px;
   font-size: 11px;
   color: rgba(255,255,255,0.45);
+  line-height: 1.55;
 }
 .input-hint strong { color: rgba(255,255,255,0.75); }
+.input-hint .processing-note {
+  display: block;
+  margin-top: 4px;
+}
+.processing-note.fast-note { color: #4ade80; }
+.processing-note.eod-note  { color: rgba(255,255,255,0.4); }
 
 /* Turnstile container */
 .cf-turnstile-container { margin-bottom: 18px; }
@@ -728,7 +775,12 @@ footer a:hover { color: var(--text-secondary); }
     <a href="#" class="nav-link">Vaults</a>
     <a href="#" class="nav-link active">Faucet</a>
     <a href="#" class="nav-link">Docs</a>
+    <!-- Connect button shown when not connected; wallet display shown when connected -->
     <button class="nav-btn" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+    <div class="nav-wallet-display" id="walletDisplay" style="display:none;">
+      <span class="nav-wallet-dot"></span>
+      <span id="walletShort"></span>
+    </div>
   </div>
 </nav>
 
@@ -760,7 +812,7 @@ footer a:hover { color: var(--text-secondary); }
         </div>
         <div class="hero-stat-item">
           <span class="hero-stat-label">Daily Limit</span>
-          <span class="hero-stat-value green">0.1 / chain</span>
+          <span class="hero-stat-value green">$0.01 / chain</span>
         </div>
       </div>
     </div>
@@ -780,7 +832,7 @@ footer a:hover { color: var(--text-secondary); }
                 <div class="chain-icon ic-algo" id="selectedIcon">A</div>
                 <div>
                   <div class="chain-name" id="selectedName">Algorand</div>
-                  <div class="chain-amount" id="selectedAmount">0.1 ALGO / day</div>
+                  <div class="chain-amount" id="selectedAmount">$0.01 / day</div>
                 </div>
               </div>
               <svg class="chevron" id="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -788,50 +840,55 @@ footer a:hover { color: var(--text-secondary); }
               </svg>
             </button>
             <div class="chain-dropdown" id="chainDropdown">
-              <div class="chain-option selected" onclick="selectChain('algo','Algorand','0.1 ALGO / day','A','ic-algo','0.1 ALGO',this)">
+              <div class="chain-option selected" onclick="selectChain('algo','Algorand','$0.01 / day','A','ic-algo','$0.01 in ALGO','fast',this)">
                 <div class="chain-select-left">
                   <div class="chain-icon ic-algo">A</div>
                   <div>
                     <div class="chain-name">Algorand</div>
-                    <div class="chain-amount">0.1 ALGO / day</div>
+                    <div class="chain-amount">$0.01 / day</div>
                   </div>
                 </div>
+                <span class="chain-speed fast">⚡ Fast</span>
               </div>
-              <div class="chain-option" onclick="selectChain('eth','Ethereum','0.1 ETH / day','Ξ','ic-eth','0.1 ETH',this)">
+              <div class="chain-option" onclick="selectChain('eth','Ethereum','$0.01 / day','Ξ','ic-eth','$0.01 in ETH','eod',this)">
                 <div class="chain-select-left">
                   <div class="chain-icon ic-eth">Ξ</div>
                   <div>
                     <div class="chain-name">Ethereum</div>
-                    <div class="chain-amount">0.1 ETH / day</div>
+                    <div class="chain-amount">$0.01 / day</div>
                   </div>
                 </div>
+                <span class="chain-speed eod">End of day</span>
               </div>
-              <div class="chain-option" onclick="selectChain('sol','Solana','1 SOL / day','◎','ic-sol','1 SOL',this)">
+              <div class="chain-option" onclick="selectChain('sol','Solana','$0.01 / day','◎','ic-sol','$0.01 in SOL','eod',this)">
                 <div class="chain-select-left">
                   <div class="chain-icon ic-sol">◎</div>
                   <div>
                     <div class="chain-name">Solana</div>
-                    <div class="chain-amount">1 SOL / day</div>
+                    <div class="chain-amount">$0.01 / day</div>
                   </div>
                 </div>
+                <span class="chain-speed eod">End of day</span>
               </div>
-              <div class="chain-option" onclick="selectChain('matic','Polygon','0.1 POL / day','⬡','ic-matic','0.1 POL',this)">
+              <div class="chain-option" onclick="selectChain('matic','Polygon','$0.01 / day','⬡','ic-matic','$0.01 in POL','fast',this)">
                 <div class="chain-select-left">
                   <div class="chain-icon ic-matic">⬡</div>
                   <div>
                     <div class="chain-name">Polygon</div>
-                    <div class="chain-amount">0.1 POL / day</div>
+                    <div class="chain-amount">$0.01 / day</div>
                   </div>
                 </div>
+                <span class="chain-speed fast">⚡ Fast</span>
               </div>
-              <div class="chain-option" onclick="selectChain('avax','Avalanche','0.1 AVAX / day','▲','ic-avax','0.1 AVAX',this)">
+              <div class="chain-option" onclick="selectChain('avax','Avalanche','$0.01 / day','▲','ic-avax','$0.01 in AVAX','eod',this)">
                 <div class="chain-select-left">
                   <div class="chain-icon ic-avax">▲</div>
                   <div>
                     <div class="chain-name">Avalanche</div>
-                    <div class="chain-amount">0.1 AVAX / day</div>
+                    <div class="chain-amount">$0.01 / day</div>
                   </div>
                 </div>
+                <span class="chain-speed eod">End of day</span>
               </div>
             </div>
           </div>
@@ -841,7 +898,10 @@ footer a:hover { color: var(--text-secondary); }
         <div class="field-group">
           <label class="field-label">Wallet Address</label>
           <input class="wallet-input" type="text" id="walletAddr" placeholder="Connect your wallet or enter your chain address" autocomplete="off" />
-          <p class="input-hint">You can request <strong id="hintToken">0.1 ALGO</strong> per day on this network.</p>
+          <p class="input-hint">
+            You can request <strong id="hintToken">$0.01 in ALGO</strong> per day on this network.
+            <span class="processing-note fast-note" id="processingNote">⚡ Algorand &amp; Polygon process quickly due to low on-chain gas fees.</span>
+          </p>
         </div>
 
         <!-- Cloudflare Turnstile -->
@@ -885,7 +945,7 @@ footer a:hover { color: var(--text-secondary); }
         <!-- Submit -->
         <button class="faucet-btn" id="faucetBtn" onclick="requestTokens()">
           <span class="faucet-btn-icon">⬡</span>
-          <span id="faucetBtnText">Send 0.1 ALGO</span>
+          <span id="faucetBtnText">Send $0.01 in ALGO</span>
         </button>
 
         <div class="faucet-footer">
@@ -1070,13 +1130,20 @@ footer a:hover { color: var(--text-secondary); }
 <script>
 const WORKER_URL = 'https://cainfin-worker.doffecul.workers.dev';
 
+// fast = Algorand & Polygon (low gas); eod = processed end of day
 const chains = {
-  algo:  { name:'Algorand',  amount:'0.1 ALGO / day', icon:'A',  cls:'ic-algo',  token:'0.1 ALGO' },
-  eth:   { name:'Ethereum',  amount:'0.1 ETH / day',  icon:'Ξ',  cls:'ic-eth',   token:'0.1 ETH'  },
-  sol:   { name:'Solana',    amount:'1 SOL / day',    icon:'◎',  cls:'ic-sol',   token:'1 SOL'    },
-  matic: { name:'Polygon',   amount:'0.1 POL / day',  icon:'⬡',  cls:'ic-matic', token:'0.1 POL'  },
-  avax:  { name:'Avalanche', amount:'0.1 AVAX / day', icon:'▲',  cls:'ic-avax',  token:'0.1 AVAX' },
+  algo:  { name:'Algorand',  amount:'$0.01 / day', icon:'A',  cls:'ic-algo',  token:'$0.01 in ALGO', speed:'fast' },
+  eth:   { name:'Ethereum',  amount:'$0.01 / day', icon:'Ξ',  cls:'ic-eth',   token:'$0.01 in ETH',  speed:'eod'  },
+  sol:   { name:'Solana',    amount:'$0.01 / day', icon:'◎',  cls:'ic-sol',   token:'$0.01 in SOL',  speed:'eod'  },
+  matic: { name:'Polygon',   amount:'$0.01 / day', icon:'⬡',  cls:'ic-matic', token:'$0.01 in POL',  speed:'fast' },
+  avax:  { name:'Avalanche', amount:'$0.01 / day', icon:'▲',  cls:'ic-avax',  token:'$0.01 in AVAX', speed:'eod'  },
 };
+
+const processingMessages = {
+  fast: { cls: 'processing-note fast-note', text: '⚡ Algorand & Polygon process quickly due to low on-chain gas fees.' },
+  eod:  { cls: 'processing-note eod-note',  text: '🕐 This network is processed at the end of each day due to higher gas fees.' },
+};
+
 let selected = 'algo';
 let turnstileVerified = false;
 let turnstileToken = null;
@@ -1090,7 +1157,7 @@ function toggleDropdown() {
   chev.classList.toggle('open');
 }
 
-function selectChain(id, name, amount, icon, cls, token, el) {
+function selectChain(id, name, amount, icon, cls, token, speed, el) {
   selected = id;
   document.getElementById('selectedIcon').textContent   = icon;
   document.getElementById('selectedIcon').className     = 'chain-icon ' + cls;
@@ -1098,6 +1165,13 @@ function selectChain(id, name, amount, icon, cls, token, el) {
   document.getElementById('selectedAmount').textContent = amount;
   document.getElementById('hintToken').textContent      = token;
   document.getElementById('faucetBtnText').textContent  = 'Send ' + token;
+
+  // Update processing note
+  const note = document.getElementById('processingNote');
+  const msg  = processingMessages[speed];
+  note.className = msg.cls;
+  note.innerHTML = msg.text;
+
   document.querySelectorAll('.chain-option').forEach(o => o.classList.remove('selected'));
   el.classList.add('selected');
   document.getElementById('chainBtn').classList.remove('open');
@@ -1169,7 +1243,7 @@ async function requestTokens() {
     const data = await res.json();
 
     if (data.success) {
-      txt.textContent = 'Claimed! It may take upto 2 hours to process your claim.' + c.token + ' to your wallet';
+      txt.textContent = 'Claimed! It may take up to 2 hours to process your claim of ' + c.token;
       btn.style.background = '#4ade80';
       btn.style.color = '#0a0a0a';
       setTimeout(() => {
@@ -1205,13 +1279,33 @@ async function connectWallet() {
   if (typeof window.ethereum !== 'undefined') {
     try {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      document.getElementById('walletAddr').value = accounts[0];
-      document.getElementById('connectBtn').textContent = accounts[0].slice(0,6) + '...' + accounts[0].slice(-4);
+      const addr = accounts[0];
+      document.getElementById('walletAddr').value = addr;
+      // Swap button for wallet display
+      document.getElementById('connectBtn').style.display = 'none';
+      document.getElementById('walletShort').textContent = addr.slice(0,6) + '...' + addr.slice(-4);
+      document.getElementById('walletDisplay').style.display = 'flex';
     } catch(e) { console.log('Wallet rejected'); }
   } else {
     alert('MetaMask not detected. Install MetaMask to connect.');
   }
 }
+
+// If wallet already connected on page load (e.g. persistent connection), reflect it
+window.addEventListener('load', async () => {
+  if (typeof window.ethereum !== 'undefined') {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (accounts && accounts.length > 0) {
+        const addr = accounts[0];
+        document.getElementById('walletAddr').value = addr;
+        document.getElementById('connectBtn').style.display = 'none';
+        document.getElementById('walletShort').textContent = addr.slice(0,6) + '...' + addr.slice(-4);
+        document.getElementById('walletDisplay').style.display = 'flex';
+      }
+    } catch(e) {}
+  }
+});
 </script>
 </body>
 </html>
