@@ -2,17 +2,13 @@
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Cain Finance Dashboard</title>
-<!-- Tailwind CSS v3 CDN -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<!-- Google Fonts: Inter for high-fidelity financial UI -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script>
     tailwind.config = {
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          },
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
           colors: {
             'cain-black': '#060606',
             'cain-sidebar': '#0a0a0a',
@@ -24,262 +20,398 @@
         },
       },
     }
-  </script>
-<style data-purpose="layout">
-    body {
-      background-color: #060606;
-      color: white;
-      -webkit-font-smoothing: antialiased;
-    }
+</script>
+<style>
+  body { background-color: #060606; color: white; -webkit-font-smoothing: antialiased; }
+  .dot-grid {
+    background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .glass {
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+  .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
-    /* Dot-grid background texture */
-    .dot-grid {
-      background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-      background-size: 24px 24px;
-    }
+  /* Vault table styles from codebase 1 */
+  .table-wrap { background:#111; border:1px solid #1e1e1e; border-radius:14px; overflow:hidden; }
+  .table-wrap table { width:100%; border-collapse:collapse; }
+  .table-wrap thead th { font-size:11px; color:#444; font-weight:400; padding:13px 16px; text-align:left; border-bottom:1px solid #1c1c1c; }
+  .table-wrap tbody td { padding:13px 16px; border-bottom:1px solid #181818; vertical-align:middle; font-size:13px; }
+  .table-wrap tbody tr:last-child td { border-bottom:none; }
+  .table-wrap tbody tr:hover td { background:#151515; }
+  .row-flex { display:flex; align-items:center; gap:10px; }
+  .row-logo { width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+  .rv-name { font-size:13px; font-weight:500; color:#e2e2e2; }
+  .rv-cat { font-size:11px; color:#444; margin-top:2px; }
+  .token-badge { background:#1c1c1c; border:1px solid #2a2a2a; border-radius:5px; padding:3px 9px; font-size:11px; color:#777; display:inline-block; }
+  .apy-plain { color:#e2e2e2; }
+  .apy-link { color:#6b9eff; text-decoration:underline; text-decoration-style:dotted; cursor:pointer; }
+  .info-icon { color:#444; font-size:12px; margin-left:3px; cursor:pointer; }
+  .asset-dots { display:flex; gap:3px; align-items:center; }
+  .ad { width:19px; height:19px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:700; }
+  .count-pill { background:#1c1c1c; border:1px solid #2a2a2a; border-radius:10px; font-size:10px; color:#666; padding:1px 6px; }
+  .supported-dash { color:#333; }
+  .nets { display:flex; gap:4px; }
+  .nd { width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:700; flex-shrink:0; }
+  .nd-or { background:#f97316; color:#fff; }
+  .nd-bl { background:#3b82f6; color:#fff; }
+  .nd-pu { background:#7c3aed; color:#fff; }
+  .nd-tl { background:#0d9488; color:#fff; }
+  .nd-gr { background:#3d3d3d; color:#aaa; }
+  .nd-pi { background:#db2777; color:#fff; }
+  .c-alpha    { background:#132040; color:#5b9bd5; }
+  .c-opal     { background:#252525; color:#999; }
+  .c-basis    { background:#16184a; color:#818cf8; }
+  .c-treasury { background:#122212; color:#4ade80; }
+  .c-wisdom   { background:#0c2233; color:#38bdf8; }
+  .c-credit   { background:#2a1212; color:#f87171; }
+  .c-falcon   { background:#10103a; color:#a78bfa; }
+  .c-acrdx    { background:#122212; color:#4ade80; }
+  .c-axi      { background:#2a122a; color:#c084fc; }
 
-    .glass {
-      background: rgba(255, 255, 255, 0.03);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    /* Custom scrollbar for sidebar */
-    .sidebar-scroll::-webkit-scrollbar {
-      width: 4px;
-    }
-    .sidebar-scroll::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-    }
-  </style>
+  /* Featured vault cards */
+  .featured-card { background:#141414; border:1px solid #242424; border-radius:14px; padding:22px; }
+  .vault-header { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .vault-icon { width:38px; height:38px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .vault-name { font-size:15px; font-weight:500; color:#fff; }
+  .vault-cat { font-size:12px; color:#555; margin-top:3px; }
+  .vault-desc { font-size:12px; color:#777; line-height:1.55; margin-bottom:18px; }
+  .vault-stats { display:flex; gap:28px; align-items:flex-end; flex-wrap:wrap; }
+  .vs-item label { font-size:11px; color:#444; display:block; margin-bottom:3px; }
+  .vs-item .vs-val { font-size:23px; font-weight:600; color:#fff; }
+  .vs-item .vs-val.green { color:#4ade80; }
+</style>
 </head>
 <body class="h-full font-sans overflow-hidden">
 <div class="flex h-full">
-<!-- BEGIN: Sidebar -->
-<aside class="w-64 bg-cain-sidebar border-r border-cain-border flex flex-col shrink-0" data-purpose="main-navigation">
+
+<!-- Sidebar -->
+<aside class="w-64 bg-cain-sidebar border-r border-cain-border flex flex-col shrink-0">
 <div class="p-6">
-<div class="flex items-center gap-2 mb-10">
-<div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-<div class="w-4 h-4 bg-black rounded-sm"></div>
-</div>
-<div>
-<h1 class="text-xl font-bold tracking-tight">Cain</h1>
-<p class="text-[10px] text-cain-gray-text -mt-1 uppercase tracking-widest">by Plume</p>
-</div>
-</div>
-<nav class="space-y-1">
-<a class="flex items-center gap-3 px-3 py-2 bg-white/5 rounded-lg text-white font-medium" href="#">
-<svg class="w-5 h-5 text-cain-gray-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-            Earn
-          </a>
-<a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="#">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-            Borrow
-          </a>
-<a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="#">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-            Portfolio
-          </a>
-<div class="relative group">
-<button class="w-full flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-              More
-            </button>
-</div>
-</nav>
-<div class="mt-10">
-<p class="px-3 text-[11px] font-bold text-cain-gray-text uppercase tracking-widest mb-4">Recents</p>
-<div class="space-y-4 px-3 sidebar-scroll overflow-y-auto">
-<div class="flex items-center gap-3 text-sm text-cain-gray-text hover:text-white cursor-pointer">
-<div class="w-6 h-6 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 border border-white/10 flex items-center justify-center text-[10px]">💰</div>
-              nOPAL · pUSD
-            </div>
-<div class="flex items-center gap-3 text-sm text-cain-gray-text hover:text-white cursor-pointer">
-<div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-700 to-blue-900 border border-white/10 flex items-center justify-center text-[10px]">💎</div>
-              nALPHA · pUSD
-            </div>
-<div class="flex items-center gap-3 text-sm text-cain-gray-text hover:text-white cursor-pointer">
-<div class="w-6 h-6 rounded-full bg-gradient-to-br from-green-700 to-green-900 border border-white/10 flex items-center justify-center text-[10px]">📜</div>
-              nTBILL
-            </div>
-<div class="flex items-center gap-3 text-sm text-cain-gray-text hover:text-white cursor-pointer">
-<div class="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-700 to-indigo-900 border border-white/10 flex items-center justify-center text-[10px]">✨</div>
-              nALPHA
-            </div>
-</div>
-</div>
+  <div class="flex items-center gap-2 mb-10">
+    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+      <div class="w-4 h-4 bg-black rounded-sm"></div>
+    </div>
+    <div>
+      <h1 class="text-xl font-bold tracking-tight">Cain</h1>
+      <p class="text-[10px] text-cain-gray-text -mt-1 uppercase tracking-widest">by Plume</p>
+    </div>
+  </div>
+  <nav class="space-y-1">
+    <a class="flex items-center gap-3 px-3 py-2 bg-white/5 rounded-lg text-white font-medium" href="#">
+      <svg class="w-5 h-5 text-cain-gray-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+      Earn
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="#">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+      Borrow
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="#">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+      Portfolio
+    </a>
+    <button class="w-full flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+      More
+    </button>
+  </nav>
+  <div class="mt-10">
+    <p class="px-3 text-[11px] font-bold text-cain-gray-text uppercase tracking-widest mb-4">Recents</p>
+    <div class="space-y-4 px-3 sidebar-scroll overflow-y-auto">
+      <div class="flex items-center gap-3 text-sm text-cain-gray-text hover:text-white cursor-pointer">
+        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 border border-white/10 flex items-center justify-center text-[10px]">💰</div>
+        nOPAL · pUSD
+      </div>
+      <div class="flex items-center gap-3 text-sm text-cain-gray-text hover:text-white cursor-pointer">
+        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-700 to-blue-900 border border-white/10 flex items-center justify-center text-[10px]">💎</div>
+        nALPHA · pUSD
+      </div>
+      <div class="flex items-center gap-3 text-sm text-cain-gray-text hover:text-white cursor-pointer">
+        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-green-700 to-green-900 border border-white/10 flex items-center justify-center text-[10px]">📜</div>
+        nTBILL
+      </div>
+      <div class="flex items-center gap-3 text-sm text-cain-gray-text hover:text-white cursor-pointer">
+        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-700 to-indigo-900 border border-white/10 flex items-center justify-center text-[10px]">✨</div>
+        nALPHA
+      </div>
+    </div>
+  </div>
 </div>
 <div class="mt-auto p-6 border-t border-cain-border">
-<button class="text-cain-gray-text hover:text-white">
-<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
+  <button class="text-cain-gray-text hover:text-white">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+  </button>
 </div>
 </aside>
-<!-- END: Sidebar -->
-<!-- BEGIN: Main Content Area -->
-<main class="flex-1 flex flex-col h-full overflow-y-auto dot-grid" data-purpose="content-wrapper">
-<!-- BEGIN: Topbar -->
-<header class="h-16 px-8 flex items-center justify-between shrink-0" data-purpose="top-navigation">
-<div class="flex-1 max-w-md">
-<div class="relative group">
-<span class="absolute inset-y-0 left-3 flex items-center text-cain-gray-text">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</span>
-<input class="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-16 text-sm focus:outline-none focus:ring-1 focus:ring-white/20" placeholder="Search vaults and markets" type="text">
-<span class="absolute inset-y-0 right-3 flex items-center gap-1 text-[10px] text-cain-gray-text font-medium uppercase">
-<kbd class="px-1.5 py-0.5 border border-white/20 rounded bg-white/5">⌘</kbd>
-<kbd class="px-1.5 py-0.5 border border-white/20 rounded bg-white/5">K</kbd>
-</span>
-</div>
-</div>
-<div class="flex items-center gap-3">
-<button class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
-<button class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
-<div class="h-8 w-px bg-white/10 mx-1"></div>
-<button class="p-1.5 hover:bg-white/5 rounded-lg border border-white/10"><div class="w-5 h-5 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full"></div></button>
-<button class="bg-white/10 border border-white/10 px-4 py-2 rounded-xl text-xs font-mono font-medium hover:bg-white/20 transition-colors">0xA4...5D4f</button>
-</div>
-</header>
-<!-- END: Topbar -->
-<!-- BEGIN: Hero & Metrics Section -->
-<section class="px-8 pt-8 pb-12" data-purpose="account-summary">
-<div class="mb-10">
-<div class="flex items-center gap-1 text-cain-gray-text text-sm mb-2 group cursor-pointer">
-            Your balance
-            <svg class="w-3 h-3 group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</div>
-<h2 class="text-6xl font-bold mb-2">$0.00</h2>
-<p class="text-cain-green text-sm font-medium">+$0.00 (0.00%) in the Last 1M</p>
-</div>
-<div class="grid grid-cols-4 gap-8 mb-10 border-t border-white/5 pt-8">
-<div class="space-y-1">
-<p class="text-cain-gray-text text-xs border-b border-dotted border-cain-gray-text w-max">Current APY</p>
-<p class="text-2xl font-medium">0.00%</p>
-</div>
-<div class="space-y-1">
-<p class="text-cain-gray-text text-xs border-b border-dotted border-cain-gray-text w-max">Total earnings</p>
-<p class="text-2xl font-medium">$0.00</p>
-</div>
-<div class="space-y-1">
-<p class="text-cain-gray-text text-xs border-b border-dotted border-cain-gray-text w-max">Active redemptions</p>
-<p class="text-2xl font-medium">$0.00</p>
-</div>
-<div class="space-y-1">
-<p class="text-cain-gray-text text-xs border-b border-dotted border-cain-gray-text w-max">Available to invest</p>
-<p class="text-2xl font-medium">$0.00</p>
-</div>
-</div>
-<div class="flex items-center gap-3">
-<button class="px-6 py-2.5 bg-white text-black font-semibold rounded-xl text-sm hover:bg-gray-200 transition-colors">Start earning</button>
-<button class="px-6 py-2.5 bg-white/10 border border-white/5 font-semibold rounded-xl text-sm hover:bg-white/20 transition-colors">Get USDC</button>
-</div>
-</section>
-<!-- END: Hero & Metrics Section -->
-<!-- BEGIN: Promotion Banner -->
-<section class="px-8 mb-16">
-<div class="glass rounded-3xl overflow-hidden relative group cursor-pointer h-32 flex items-center">
-<div class="flex-1 px-10">
-<h3 class="text-xl font-bold mb-1">Get ready to start earning</h3>
-<p class="text-orange-500 text-xs font-medium">0/3 completed</p>
-</div>
-<!-- Mockup of the 3D coin graphic container -->
-<div class="absolute right-0 top-0 bottom-0 w-1/2 overflow-hidden pointer-events-none">
-<div class="absolute right-[-100px] top-1/2 -translate-y-1/2 w-[600px] h-full flex items-center justify-end opacity-80">
-<img alt="Coin Graphic" class="h-full w-full object-cover object-right" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGkwMuGdnb1d_yN3Sj9GofRIIymoWadf6qnK-LfIPAzlS2NbT0xoKRpxMj46i26Saz5jGW_9wKsMz_q9Yr_Y4pnJqDcFflXtbm08MZftcSicj1XhsEtXJPHxv4XVNVqdp-LQceUFYFAQN185q47h4QXDI3Z0KsFNk-M_ZghtNFB7IOk0uEdH7E2C-M9fg3VDs-kOaT_s4cJQZlFpO53jSIRaF8Zl0w2DL-9OMDEQfoo-xwF8XckuF1bcAHp1HM7aA02Jy7UOMS4nuA">
-</div>
-</div>
-<div class="pr-10 z-10">
-<div class="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center border border-white/10">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</div>
-</div>
-</div>
-</section>
-<!-- END: Promotion Banner -->
-<!-- BEGIN: Explore Vaults -->
-<section class="px-8 pb-20" data-purpose="vaults-grid">
-<div class="flex items-center justify-between mb-8">
-<h2 class="text-4xl font-bold">Explore our vaults</h2>
-<div class="flex items-center gap-3">
-<button class="flex items-center gap-2 px-4 py-2 border border-white/10 rounded-xl text-sm font-medium hover:bg-white/5 transition-colors">
-              Asset classes
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
-<button class="p-2.5 border border-white/10 rounded-xl hover:bg-white/5"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
-</div>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-<!-- Vault Card 1 -->
-<div class="glass p-8 rounded-[40px] hover:border-white/20 transition-all cursor-pointer group" data-purpose="vault-card">
-<div class="flex items-start gap-4 mb-10">
-<div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center p-3">
-<img alt="Icon" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuLpwt_eOBHT663GCG8b88EwWgMzp9sOEJeimynttn57KMk2FwjvSu82q3uIb8EQLra9HaQGOLmaHocjOEwy_mWw3tlgluHWZGTvnERCs9oFwL0wCdZRB-iz9ZZhn1NM7eGZpNfszyD-0e4EowxyKCzv2OnSKhy3R8wVVWTpR4nHzSmmfZveZgbK66wIDaHZ1V55ievySBLtKyw8fPcJr7yH2O63My7Vl-ueiG9C2hjd6d1se3tkksWs0u7Z-W8u-skOfti70ovxly">
-</div>
-<div>
-<h4 class="text-xl font-bold">BlackOpal LiquidStone II</h4>
-<p class="text-cain-gray-text text-sm">Payment financing</p>
-</div>
-</div>
-<p class="text-cain-gray-text mb-12 max-w-sm leading-relaxed">
-              Investment grade short-duration payment receivables. Designed for consistent, risk-adjusted income.
-            </p>
-<div class="grid grid-cols-3 gap-4">
-<div>
-<p class="text-[11px] text-cain-gray-text mb-2">Vault APY</p>
-<p class="text-2xl font-bold">11.37%</p>
-</div>
-<div>
-<p class="text-[11px] text-cain-gray-text mb-2">TVL</p>
-<p class="text-2xl font-bold">$12M</p>
-</div>
-<div>
-<p class="text-[11px] text-cain-gray-text mb-2">Available networks</p>
-<div class="flex -space-x-1.5 pt-1">
-<div class="w-6 h-6 rounded-full border-2 border-cain-black bg-orange-500 flex items-center justify-center text-[10px] text-white">●</div>
-<div class="w-6 h-6 rounded-full border-2 border-cain-black bg-blue-500 flex items-center justify-center text-[10px] text-white">◆</div>
-<div class="w-6 h-6 rounded-full border-2 border-cain-black bg-teal-500 flex items-center justify-center text-[10px] text-white">★</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Vault Card 2 -->
-<div class="glass p-8 rounded-[40px] hover:border-white/20 transition-all cursor-pointer group" data-purpose="vault-card">
-<div class="flex items-start gap-4 mb-10">
-<div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center p-3">
-<img alt="Icon" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVmnJCRKUJY-Xgn1mX3pU5A42uA_i9BAPwhRVxTf3jFKmDDG-oyyojRp39K1KD7UHYGbKavMFvumgUmT-zB_pWd6yHZMzGqLSERCMMQ2-AbhHyGm-bcJb6H7PSzEjz8ngEvxBzHStPBJF_D1UiaDsydbbDQ0gknVa02rPXm8fITivM2Sg4QoK40J1s0gjiDG43-uBGnAV9vbpbpvysGV4WR1cyVGdM-jLsMtm3oqBvFndo8EFMi5nw4uMXrsYMbTZrvoKjAsa6rMaU">
-</div>
-<div>
-<h4 class="text-xl font-bold">Alpha</h4>
-<p class="text-cain-gray-text text-sm">Diversified Index</p>
-</div>
-</div>
-<p class="text-cain-gray-text mb-12 max-w-sm leading-relaxed">
-              Cain's flagship real-world yield vault, providing passive exposure to a diversified portfolio of Nest's top yield-generating assets
-            </p>
-<div class="grid grid-cols-3 gap-4">
-<div>
-<p class="text-[11px] text-cain-gray-text mb-2">Vault APY</p>
-<p class="text-2xl font-bold">9.84%</p>
-</div>
-<div>
-<p class="text-[11px] text-cain-gray-text mb-2">TVL</p>
-<p class="text-2xl font-bold">$6.8M</p>
-</div>
-<div>
-<p class="text-[11px] text-cain-gray-text mb-2">Available networks</p>
-<div class="flex -space-x-1.5 pt-1">
-<div class="w-6 h-6 rounded-full border-2 border-cain-black bg-orange-500 flex items-center justify-center text-[10px] text-white">●</div>
-<div class="w-6 h-6 rounded-full border-2 border-cain-black bg-blue-500 flex items-center justify-center text-[10px] text-white">◆</div>
-<div class="w-6 h-6 rounded-full border-2 border-cain-black bg-teal-500 flex items-center justify-center text-[10px] text-white">★</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- END: Explore Vaults -->
+
+<!-- Main Content -->
+<main class="flex-1 flex flex-col h-full overflow-y-auto dot-grid">
+
+  <!-- Topbar -->
+  <header class="h-16 px-8 flex items-center justify-between shrink-0">
+    <div class="flex-1 max-w-md">
+      <div class="relative">
+        <span class="absolute inset-y-0 left-3 flex items-center text-cain-gray-text">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        </span>
+        <input class="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-16 text-sm focus:outline-none focus:ring-1 focus:ring-white/20" placeholder="Search vaults and markets" type="text">
+        <span class="absolute inset-y-0 right-3 flex items-center gap-1 text-[10px] text-cain-gray-text font-medium uppercase">
+          <kbd class="px-1.5 py-0.5 border border-white/20 rounded bg-white/5">⌘</kbd>
+          <kbd class="px-1.5 py-0.5 border border-white/20 rounded bg-white/5">K</kbd>
+        </span>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <button class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+      <button class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
+      <div class="h-8 w-px bg-white/10 mx-1"></div>
+      <button class="p-1.5 hover:bg-white/5 rounded-lg border border-white/10"><div class="w-5 h-5 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full"></div></button>
+      <button class="bg-white/10 border border-white/10 px-4 py-2 rounded-xl text-xs font-mono font-medium hover:bg-white/20 transition-colors">0xA4...5D4f</button>
+    </div>
+  </header>
+
+  <!-- Hero & Metrics -->
+  <section class="px-8 pt-8 pb-12">
+    <div class="mb-10">
+      <div class="flex items-center gap-1 text-cain-gray-text text-sm mb-2 cursor-pointer">
+        Your balance
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+      </div>
+      <h2 class="text-6xl font-bold mb-2">$0.00</h2>
+      <p class="text-cain-green text-sm font-medium">+$0.00 (0.00%) in the Last 1M</p>
+    </div>
+    <div class="grid grid-cols-4 gap-8 mb-10 border-t border-white/5 pt-8">
+      <div class="space-y-1">
+        <p class="text-cain-gray-text text-xs border-b border-dotted border-cain-gray-text w-max">Current APY</p>
+        <p class="text-2xl font-medium">0.00%</p>
+      </div>
+      <div class="space-y-1">
+        <p class="text-cain-gray-text text-xs border-b border-dotted border-cain-gray-text w-max">Total earnings</p>
+        <p class="text-2xl font-medium">$0.00</p>
+      </div>
+      <div class="space-y-1">
+        <p class="text-cain-gray-text text-xs border-b border-dotted border-cain-gray-text w-max">Active redemptions</p>
+        <p class="text-2xl font-medium">$0.00</p>
+      </div>
+      <div class="space-y-1">
+        <p class="text-cain-gray-text text-xs border-b border-dotted border-cain-gray-text w-max">Available to invest</p>
+        <p class="text-2xl font-medium">$0.00</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <button class="px-6 py-2.5 bg-white text-black font-semibold rounded-xl text-sm hover:bg-gray-200 transition-colors">Start earning</button>
+      <button class="px-6 py-2.5 bg-white/10 border border-white/5 font-semibold rounded-xl text-sm hover:bg-white/20 transition-colors">Get USDC</button>
+    </div>
+  </section>
+
+  <!-- Promotion Banner -->
+  <section class="px-8 mb-10">
+    <div class="glass rounded-3xl overflow-hidden relative cursor-pointer h-32 flex items-center">
+      <div class="flex-1 px-10">
+        <h3 class="text-xl font-bold mb-1">Get ready to start earning</h3>
+        <p class="text-orange-500 text-xs font-medium">0/3 completed</p>
+      </div>
+      <div class="absolute right-0 top-0 bottom-0 w-1/2 overflow-hidden pointer-events-none">
+        <div class="absolute right-[-100px] top-1/2 -translate-y-1/2 w-[600px] h-full flex items-center justify-end opacity-80">
+          <img alt="Coin Graphic" class="h-full w-full object-cover object-right" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGkwMuGdnb1d_yN3Sj9GofRIIymoWadf6qnK-LfIPAzlS2NbT0xoKRpxMj46i26Saz5jGW_9wKsMz_q9Yr_Y4pnJqDcFflXtbm08MZftcSicj1XhsEtXJPHxv4XVNVqdp-LQceUFYFAQN185q47h4QXDI3Z0KsFNk-M_ZghtNFB7IOk0uEdH7E2C-M9fg3VDs-kOaT_s4cJQZlFpO53jSIRaF8Zl0w2DL-9OMDEQfoo-xwF8XckuF1bcAHp1HM7aA02Jy7UOMS4nuA">
+        </div>
+      </div>
+      <div class="pr-10 z-10">
+        <div class="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center border border-white/10">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Explore Vaults -->
+  <section class="px-8 pb-20">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-4xl font-bold">Explore our vaults</h2>
+      <div class="flex items-center gap-3">
+        <button class="flex items-center gap-2 px-4 py-2 border border-white/10 rounded-xl text-sm font-medium hover:bg-white/5 transition-colors">
+          Asset classes
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        </button>
+        <button class="p-2.5 border border-white/10 rounded-xl hover:bg-white/5">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Featured Cards -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+      <!-- BlackOpal -->
+      <div class="featured-card">
+        <div class="vault-header">
+          <div class="vault-icon" style="background:#1e1e1e;">
+            <svg width="22" height="22" viewBox="0 0 22 22">
+              <ellipse cx="11" cy="11" rx="9" ry="9" fill="#2a2a2a" stroke="#666" stroke-width="0.8"/>
+              <ellipse cx="11" cy="11" rx="9" ry="4" fill="none" stroke="#777" stroke-width="0.8"/>
+              <ellipse cx="11" cy="11" rx="4" ry="9" fill="none" stroke="#777" stroke-width="0.8"/>
+            </svg>
+          </div>
+          <div>
+            <div class="vault-name">BlackOpal LiquidStone II</div>
+            <div class="vault-cat">Payment financing</div>
+          </div>
+        </div>
+        <div class="vault-desc">Investment grade short-duration payment receivables. Designed for consistent, risk-adjusted income.</div>
+        <div class="vault-stats">
+          <div class="vs-item"><label>Vault APY</label><div class="vs-val green">12.23%</div></div>
+          <div class="vs-item"><label>TVL</label><div class="vs-val">$12M</div></div>
+          <div class="vs-item">
+            <label>Available networks</label>
+            <div class="nets">
+              <div class="nd nd-or">A</div><div class="nd nd-bl">P</div>
+              <div class="nd nd-pu">S</div><div class="nd nd-tl">≡</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Alpha -->
+      <div class="featured-card">
+        <div class="vault-header">
+          <div class="vault-icon" style="background:#122040;">
+            <svg width="22" height="22" viewBox="0 0 22 22">
+              <polygon points="11,3 20,20 2,20" fill="none" stroke="#5b9bd5" stroke-width="1.4"/>
+              <circle cx="11" cy="12" r="3" fill="#5b9bd5"/>
+            </svg>
+          </div>
+          <div>
+            <div class="vault-name">Alpha</div>
+            <div class="vault-cat">Diversified Index</div>
+          </div>
+        </div>
+        <div class="vault-desc">Nest's flagship real-world yield vault, providing passive exposure to a diversified portfolio of Nest's top yield-generating assets</div>
+        <div class="vault-stats">
+          <div class="vs-item"><label>Vault APY</label><div class="vs-val green">10.37%</div></div>
+          <div class="vs-item"><label>TVL</label><div class="vs-val">$6.9M</div></div>
+          <div class="vs-item">
+            <label>Available networks</label>
+            <div class="nets">
+              <div class="nd nd-or">A</div><div class="nd nd-bl">P</div>
+              <div class="nd nd-pu">S</div><div class="nd nd-tl">≡</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vault Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Vault</th><th>Token</th><th>APY</th><th>TVL</th>
+            <th>Assets</th><th>Available networks</th><th>Supported apps</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="row-flex"><div class="row-logo c-alpha">α</div><div><div class="rv-name">Alpha</div><div class="rv-cat">Diversified Index</div></div></div></td>
+            <td><span class="token-badge">nALPHA</span></td>
+            <td><span class="apy-plain">10.37%</span></td>
+            <td>$6,939,915.92</td>
+            <td><div class="asset-dots"><div class="ad" style="background:#3b82f6;color:#fff;">A</div><div class="ad" style="background:#7c3aed;color:#fff;">X</div><div class="ad" style="background:#0d9488;color:#fff;">U</div><div class="ad" style="background:#16a34a;color:#fff;">B</div><span class="count-pill">+1</span></div></td>
+            <td><div class="nets" style="gap:3px;"><div class="nd nd-or">A</div><div class="nd nd-bl">P</div><div class="nd nd-pu">S</div><div class="nd nd-tl">≡</div></div></td>
+            <td><div class="nets" style="gap:3px;"><div class="nd nd-gr">☁</div><div class="nd" style="background:#f97316;color:#fff;">$</div></div></td>
+          </tr>
+          <tr>
+            <td><div class="row-flex"><div class="row-logo c-opal">◈</div><div><div class="rv-name">BlackOpal LiquidStone II</div><div class="rv-cat">Payment financing</div></div></div></td>
+            <td><span class="token-badge">nOPAL</span></td>
+            <td><span class="apy-plain">12.23%</span></td>
+            <td>$12,028,891.86</td>
+            <td><div class="asset-dots"><div class="ad" style="background:#3b82f6;color:#fff;">B</div><div class="ad" style="background:#eab308;color:#000;">T</div></div></td>
+            <td><div class="nets" style="gap:3px;"><div class="nd nd-or">A</div><div class="nd nd-bl">P</div><div class="nd nd-pu">S</div><div class="nd nd-tl">≡</div></div></td>
+            <td><div class="nets" style="gap:3px;"><div class="nd nd-gr">☁</div><div class="nd" style="background:#f97316;color:#fff;">$</div></div></td>
+          </tr>
+          <tr>
+            <td><div class="row-flex"><div class="row-logo c-basis">B</div><div><div class="rv-name">Basis</div><div class="rv-cat">Crypto Basis</div></div></div></td>
+            <td><span class="token-badge">nBASIS</span></td>
+            <td><span class="apy-plain">4.27%</span></td>
+            <td>$25,597,521.25</td>
+            <td><div class="asset-dots"><div class="ad" style="background:#f97316;color:#fff;">B</div><div class="ad" style="background:#0d9488;color:#fff;">E</div></div></td>
+            <td><div class="nets" style="gap:3px;"><div class="nd nd-or">A</div><div class="nd nd-bl">P</div><div class="nd nd-pu">S</div><div class="nd nd-tl">≡</div></div></td>
+            <td><div class="nets" style="gap:3px;"><div class="nd nd-gr">☁</div><div class="nd" style="background:#f97316;color:#fff;">$</div></div></td>
+          </tr>
+          <tr>
+            <td><div class="row-flex"><div class="row-logo c-treasury">T</div><div><div class="rv-name">Treasury</div><div class="rv-cat">US Treasuries</div></div></div></td>
+            <td><span class="token-badge">nTBILL</span></td>
+            <td><span class="apy-plain">2.88%</span></td>
+            <td>$865,377.71</td>
+            <td><div class="asset-dots"><div class="ad" style="background:#3b82f6;color:#fff;">M</div><div class="ad" style="background:#16a34a;color:#fff;">O</div></div></td>
+            <td><div class="nets" style="gap:3px;"><div class="nd nd-or">A</div><div class="nd nd-bl">P</div><div class="nd nd-pu">S</div><div class="nd nd-tl">≡</div></div></td>
+            <td><div class="nets" style="gap:3px;"><div class="nd nd-gr">☁</div><div class="nd" style="background:#f97316;color:#fff;">$</div></div></td>
+          </tr>
+          <tr>
+            <td><div class="row-flex"><div class="row-logo c-wisdom">W</div><div><div class="rv-name">WisdomTree CRDYX</div><div class="rv-cat">Private Credit</div></div></div></td>
+            <td><span class="token-badge">nWISDOM</span></td>
+            <td><span class="apy-link">6.00%</span><span class="info-icon">ⓘ</span></td>
+            <td>$2,805,502.85</td>
+            <td><div class="asset-dots"><div class="ad" style="background:#38bdf8;color:#0c2233;">W</div><div class="ad" style="background:#eab308;color:#000;">T</div></div></td>
+            <td><div class="nets" style="gap:3px;"><div class="nd nd-or">A</div><div class="nd nd-bl">P</div><div class="nd nd-pu">S</div><div class="nd nd-tl">≡</div></div></td>
+            <td><div class="nets" style="gap:3px;"><div class="nd nd-gr">☁</div></div></td>
+          </tr>
+          <tr>
+            <td><div class="row-flex"><div class="row-logo c-credit">C</div><div><div class="rv-name">Credit</div><div class="rv-cat">Private Credit</div></div></div></td>
+            <td><span class="token-badge">nCREDIT</span></td>
+            <td><span class="apy-link">8.00%</span><span class="info-icon">ⓘ</span></td>
+            <td>$39,771.18</td>
+            <td><div class="asset-dots"><div class="ad" style="background:#f87171;color:#2a1212;">C</div><div class="ad" style="background:#f97316;color:#fff;">R</div></div></td>
+            <td><div class="nets" style="gap:3px;"><div class="nd nd-or">A</div><div class="nd nd-bl">P</div><div class="nd nd-pi">S</div></div></td>
+            <td><div class="nets" style="gap:3px;"><div class="nd nd-gr">☁</div><div class="nd" style="background:#f97316;color:#fff;">$</div></div></td>
+          </tr>
+          <tr>
+            <td><div class="row-flex"><div class="row-logo c-falcon">X</div><div><div class="rv-name">FalconX Overcollateralized Loans</div><div class="rv-cat">Prime Brokerage Lending</div></div></div></td>
+            <td><span class="token-badge">nFALCON</span></td>
+            <td><span class="apy-plain">7.68%</span></td>
+            <td>$4,141,720.20</td>
+            <td><div class="asset-dots"><div class="ad" style="background:#1d4ed8;color:#fff;">F</div></div></td>
+            <td><div class="nets" style="gap:3px;"><div class="nd nd-or">A</div><div class="nd nd-bl">P</div></div></td>
+            <td><span class="supported-dash">—</span></td>
+          </tr>
+          <tr>
+            <td><div class="row-flex"><div class="row-logo c-acrdx">A</div><div><div class="rv-name">ACRDX</div><div class="rv-cat">Private Credit</div></div></div></td>
+            <td><span class="token-badge">nACRDX</span></td>
+            <td><span class="apy-link">2.00%</span><span class="info-icon">ⓘ</span></td>
+            <td>$99,845.09</td>
+            <td><div class="asset-dots"><div class="ad" style="background:#4ade80;color:#122212;">A</div></div></td>
+            <td><div class="nets" style="gap:3px;"><div class="nd nd-or">A</div><div class="nd nd-bl">P</div><div class="nd nd-pi">R</div></div></td>
+            <td><span class="supported-dash">—</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Private Vaults -->
+    <div style="margin-top:40px;">
+      <h2 class="text-4xl font-bold mb-2">Private vaults</h2>
+      <p style="font-size:12px; color:#555; line-height:1.5;">
+        Private investment strategies backed by large institutions and built on Nest.
+        Reach out to us on <a href="#" style="color:#6b9eff;">Discord</a> or <a href="#" style="color:#6b9eff;">X</a> to work with us on creating a new vault.
+      </p>
+      <div class="table-wrap" style="margin-top:16px;">
+        <table>
+          <thead>
+            <tr><th>Vault</th><th>Token</th><th>APY</th><th>TVL</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="row-flex"><div class="row-logo c-axi">A</div><div><div class="rv-name">AXI</div><div class="rv-cat">Private Credit</div></div></div></td>
+              <td><span class="token-badge">nAXI</span></td>
+              <td>11.50%</td>
+              <td>$5,298,101.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
 </main>
-<!-- END: Main Content Area -->
 </div>
 </body></html>
