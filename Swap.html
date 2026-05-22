@@ -1,0 +1,704 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Cain — Swap</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+        colors: {
+          'cain-black':    '#060606',
+          'cain-sidebar':  '#0a0a0a',
+          'cain-gray-text':'#888888',
+          'cain-border':   'rgba(255,255,255,0.1)',
+          'cain-green':    '#00ffa3',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; height:100%; }
+  body { background-color:#060606; color:white; -webkit-font-smoothing:antialiased; font-family:'Inter',sans-serif; }
+  .dot-grid {
+    background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* ── Layout ── */
+  .app-shell { display:flex; height:100vh; overflow:hidden; }
+
+  /* ── Sidebar ── */
+  #sidebar {
+    width: 56px;
+    transition: width 0.25s ease;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #0a0a0a;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    flex-direction: column;
+  }
+  #sidebar.expanded { width: 220px; }
+  #sidebar.expanded .sidebar-label    { display: inline; }
+  #sidebar.expanded .sidebar-wordmark { display: block; }
+  #sidebar.expanded #toggle-icon      { transform: rotate(0deg); }
+  .sidebar-label    { display: none; }
+  .sidebar-wordmark { display: none; }
+  #toggle-icon { transform: rotate(180deg); transition: transform 0.25s; }
+
+  /* ── Dropdown ── */
+  .dropdown { position:relative; display:inline-block; }
+  .dropdown-menu { display:none; position:absolute; right:0; top:calc(100% + 8px); background:#141414; border:1px solid #2a2a2a; border-radius:10px; min-width:160px; z-index:50; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.5); }
+  .dropdown-menu.open { display:block; }
+  .dropdown-menu a { display:block; padding:10px 16px; font-size:13px; color:#bbb; text-decoration:none; transition:background 0.12s,color 0.12s; }
+  .dropdown-menu a:hover { background:#1e1e1e; color:#fff; }
+
+  /* ── Wallet profile dropdown ── */
+  .wallet-dropdown { position:relative; display:inline-block; }
+  .wallet-menu {
+    display:none; position:absolute; right:0; top:calc(100% + 10px);
+    background:#111; border:1px solid rgba(255,255,255,0.1);
+    border-radius:20px; width:300px; z-index:60;
+    box-shadow:0 16px 48px rgba(0,0,0,0.7);
+    overflow:hidden;
+  }
+  .wallet-menu.open { display:block; }
+  .wallet-menu-body { padding:20px; }
+  .wallet-addr { font-size:12px; color:#555; margin-bottom:6px; font-family:monospace; }
+  .wallet-bal { font-size:32px; font-weight:700; color:#fff; letter-spacing:-1px; line-height:1; margin-bottom:4px; }
+  .wallet-change { font-size:13px; color:#4ade80; margin-bottom:18px; }
+  .wallet-actions { display:flex; gap:10px; }
+  .wallet-action-btn { flex:1; padding:10px; border-radius:12px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.07); color:#ccc; transition:background 0.15s,color 0.15s; text-align:center; }
+  .wallet-action-btn:hover { background:rgba(255,255,255,0.13); color:#fff; }
+  .wallet-divider { height:1px; background:rgba(255,255,255,0.06); }
+  .wallet-setting-row { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; font-size:13px; color:#aaa; }
+  .theme-toggle { display:flex; background:rgba(255,255,255,0.06); border-radius:10px; padding:3px; gap:2px; }
+  .theme-btn { padding:5px 10px; border-radius:8px; font-size:11px; cursor:pointer; border:none; background:transparent; color:#555; transition:all 0.15s; }
+  .theme-btn.active { background:rgba(255,255,255,0.1); color:#fff; }
+  .toggle-switch { width:36px; height:20px; background:rgba(255,255,255,0.1); border-radius:10px; position:relative; cursor:pointer; transition:background 0.2s; flex-shrink:0; }
+  .toggle-switch.on { background:#4ade80; }
+  .toggle-knob { position:absolute; top:2px; left:2px; width:16px; height:16px; background:#fff; border-radius:50%; transition:transform 0.2s; }
+  .toggle-switch.on .toggle-knob { transform:translateX(16px); }
+  .wallet-logout { display:block; width:100%; padding:12px 20px; text-align:left; font-size:13px; color:#666; background:none; border:none; cursor:pointer; transition:color 0.15s; }
+  .wallet-logout:hover { color:#f87171; }
+  .connected-btn { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); padding:6px 12px 6px 8px; border-radius:12px; font-size:12px; font-weight:500; color:#ccc; cursor:pointer; transition:background 0.15s; display:flex; align-items:center; gap:8px; }
+  .connected-btn:hover { background:rgba(255,255,255,0.12); }
+  .wallet-dot { width:8px; height:8px; border-radius:50%; background:#4ade80; flex-shrink:0; }
+  .eth-badge { background:rgba(99,102,241,0.2); color:#818cf8; border-radius:6px; padding:2px 7px; font-size:10px; font-weight:600; }
+
+  /* ── Swap card ── */
+  .swap-card {
+    background: rgba(13,13,13,0.95);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 28px;
+    padding: 28px;
+    width: 440px;
+  }
+
+  /* Token input box */
+  .token-box { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:18px; padding:18px 20px; transition:border-color 0.15s; }
+  .token-box:focus-within { border-color:rgba(255,255,255,0.15); }
+  .token-box input { background:transparent; border:none; outline:none; color:#fff; font-size:32px; font-weight:600; width:100%; letter-spacing:-0.5px; min-width:0; font-family:'Inter',sans-serif; }
+  .token-box input::placeholder { color:rgba(255,255,255,0.15); }
+  .token-box input::-webkit-outer-spin-button,
+  .token-box input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+
+  .token-selector { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); border-radius:99px; padding:7px 12px 7px 7px; cursor:pointer; transition:background 0.15s; white-space:nowrap; flex-shrink:0; }
+  .token-selector:hover { background:rgba(255,255,255,0.12); }
+  .token-icon { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; }
+  .token-name { font-size:14px; font-weight:600; color:#fff; }
+
+  .flip-btn { width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; cursor:pointer; margin:10px auto; transition:background 0.15s; color:#555; }
+  .flip-btn:hover { background:rgba(255,255,255,0.1); color:#aaa; }
+
+  .swap-btn { width:100%; padding:15px; border-radius:16px; font-size:15px; font-weight:600; cursor:pointer; transition:all 0.15s; margin-top:16px; letter-spacing:0.01em; border:none; font-family:'Inter',sans-serif; }
+  .swap-btn-active { background:#fff; color:#000; }
+  .swap-btn-active:hover { background:#e8e8e8; }
+  .swap-btn-disabled { background:rgba(255,255,255,0.06); color:#444; cursor:not-allowed; }
+
+  .detail-row { display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#555; padding:4px 0; }
+  .detail-row .val { color:#888; font-weight:500; }
+
+  /* ── Route panel ── */
+  .route-panel { width:300px; opacity:0; transform:translateX(12px); transition:opacity 0.3s ease,transform 0.3s ease; pointer-events:none; }
+  .route-panel.visible { opacity:1; transform:translateX(0); pointer-events:all; }
+  .route-card { background:rgba(13,13,13,0.95); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:20px; }
+
+  .loading-dots span { display:inline-block; width:5px; height:5px; border-radius:50%; background:#444; margin:0 2px; animation:blink 1.2s infinite; }
+  .loading-dots span:nth-child(2) { animation-delay:0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay:0.4s; }
+  @keyframes blink { 0%,80%,100%{background:#333} 40%{background:#888} }
+
+  .route-option { border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:14px 16px; margin-bottom:8px; cursor:pointer; transition:border-color 0.15s,background 0.15s; }
+  .route-option.best { border-color:rgba(74,222,128,0.3); background:rgba(74,222,128,0.04); }
+  .route-option:hover { border-color:rgba(255,255,255,0.15); }
+  .route-badge { font-size:10px; font-weight:600; padding:2px 8px; border-radius:6px; text-transform:uppercase; letter-spacing:0.06em; }
+  .badge-best { background:rgba(74,222,128,0.15); color:#4ade80; }
+  .badge-alt  { background:rgba(255,255,255,0.06); color:#666; }
+
+  /* ── Popular pairs ── */
+  .pairs-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px; width:440px; }
+  .pair-card { background:rgba(13,13,13,0.95); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:14px 16px; cursor:pointer; transition:border-color 0.15s,background 0.15s; display:flex; align-items:center; gap:12px; }
+  .pair-card:hover { border-color:rgba(255,255,255,0.14); background:rgba(255,255,255,0.02); }
+  .pair-icons { display:flex; align-items:center; }
+  .pair-icon { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; border:2px solid #060606; }
+  .pair-icon:not(:first-child) { margin-left:-8px; }
+  .pair-name { font-size:13px; font-weight:600; color:#ccc; line-height:1.2; }
+  .pair-apy  { font-size:12px; color:#4ade80; font-weight:500; margin-top:2px; }
+
+  /* ── Info note ── */
+  .info-note { margin-top:12px; padding:14px 16px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:14px; display:flex; gap:10px; align-items:flex-start; width:440px; }
+
+  /* ── Recent drawer ── */
+  .recent-drawer { position:fixed; top:64px; right:0; width:320px; background:rgba(10,10,10,0.98); border-left:1px solid rgba(255,255,255,0.08); height:calc(100% - 64px); transform:translateX(100%); transition:transform 0.28s ease; z-index:40; display:flex; flex-direction:column; }
+  .recent-drawer.open { transform:translateX(0); }
+  .recent-btn { position:fixed; top:72px; right:0; z-index:41; background:rgba(18,18,18,0.95); border:1px solid rgba(255,255,255,0.08); border-right:none; border-radius:10px 0 0 10px; padding:8px 14px 8px 12px; font-size:12px; font-weight:500; color:#666; cursor:pointer; transition:color 0.15s,background 0.15s; display:flex; align-items:center; gap:7px; font-family:'Inter',sans-serif; }
+  .recent-btn:hover { color:#aaa; background:rgba(25,25,25,0.98); }
+  .recent-btn.drawer-open { right:320px; }
+  .txn-row { padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.04); display:flex; align-items:center; justify-content:space-between; }
+  .txn-row:last-child { border-bottom:none; }
+  .status-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+
+  /* ── Token modal ── */
+  .token-modal { display:none; position:fixed; inset:0; z-index:100; background:rgba(0,0,0,0.75); backdrop-filter:blur(4px); align-items:center; justify-content:center; }
+  .token-modal.open { display:flex; }
+  .token-modal-inner { background:#111; border:1px solid rgba(255,255,255,0.1); border-radius:24px; padding:24px; width:360px; max-height:500px; display:flex; flex-direction:column; gap:14px; }
+  .token-search { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:10px 14px; color:#fff; font-size:13px; outline:none; width:100%; font-family:'Inter',sans-serif; }
+  .token-search::placeholder { color:#444; }
+  .token-list { overflow-y:auto; display:flex; flex-direction:column; gap:2px; }
+  .token-list::-webkit-scrollbar { width:4px; }
+  .token-list::-webkit-scrollbar-thumb { background:#333; border-radius:4px; }
+  .token-list-item { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:12px; cursor:pointer; transition:background 0.12s; }
+  .token-list-item:hover { background:rgba(255,255,255,0.05); }
+  .tl-name { font-size:14px; font-weight:600; color:#e2e2e2; }
+  .tl-full { font-size:11px; color:#555; margin-top:2px; }
+
+  .slip-opt { padding:5px 12px; border-radius:8px; font-size:12px; cursor:pointer; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:#777; transition:all 0.12s; font-family:'Inter',sans-serif; }
+  .slip-opt.active,.slip-opt:hover { background:rgba(255,255,255,0.1); color:#fff; border-color:rgba(255,255,255,0.18); }
+
+  .pairs-label { font-size:10px; color:#333; text-transform:uppercase; letter-spacing:0.1em; margin-top:24px; margin-bottom:10px; width:440px; }
+</style>
+</head>
+<body class="h-full font-sans">
+<div class="app-shell">
+
+<!-- ══ SIDEBAR ══ -->
+<aside id="sidebar">
+  <div style="padding:16px; display:flex; flex-direction:column; height:100%;">
+    <!-- Logo + toggle row -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; min-height:32px;">
+      <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
+        <div style="width:32px; height:32px; background:white; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <div style="width:16px; height:16px; background:black; border-radius:4px;"></div>
+        </div>
+        <div class="sidebar-wordmark">
+          <div style="font-size:18px; font-weight:700; letter-spacing:-0.5px; line-height:1;">Cain</div>
+          <div style="font-size:9px; color:#555; text-transform:uppercase; letter-spacing:0.12em;">by Plume</div>
+        </div>
+      </div>
+      <button onclick="toggleSidebar()" style="background:none; border:none; cursor:pointer; color:#555; padding:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#555'">
+        <svg id="toggle-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3L5 8l5 5"/></svg>
+      </button>
+    </div>
+
+    <!-- Nav -->
+    <nav style="display:flex; flex-direction:column; gap:4px;">
+      <a href="#" style="display:flex; align-items:center; gap:12px; padding:8px; border-radius:10px; color:#555; text-decoration:none; transition:color 0.15s, background 0.15s; white-space:nowrap;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.color='#555'; this.style.background='transparent'">
+        <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        <span class="sidebar-label">Earn</span>
+      </a>
+      <a href="#" style="display:flex; align-items:center; gap:12px; padding:8px; border-radius:10px; background:rgba(255,255,255,0.06); color:#fff; text-decoration:none; white-space:nowrap;">
+        <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        <span class="sidebar-label" style="font-weight:600;">Swap</span>
+      </a>
+      <a href="#" style="display:flex; align-items:center; gap:12px; padding:8px; border-radius:10px; color:#555; text-decoration:none; transition:color 0.15s, background 0.15s; white-space:nowrap;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.color='#555'; this.style.background='transparent'">
+        <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        <span class="sidebar-label">Portfolio</span>
+      </a>
+      <button style="display:flex; align-items:center; gap:12px; padding:8px; border-radius:10px; color:#555; background:none; border:none; cursor:pointer; transition:color 0.15s, background 0.15s; width:100%; text-align:left; font-family:'Inter',sans-serif; white-space:nowrap;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.color='#555'; this.style.background='transparent'">
+        <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        <span class="sidebar-label">More</span>
+      </button>
+    </nav>
+
+    <!-- Bottom icon -->
+    <div style="margin-top:auto; padding-top:16px; border-top:1px solid rgba(255,255,255,0.07);">
+      <button style="background:none; border:none; cursor:pointer; color:#444; padding:8px; display:flex;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#444'">
+        <svg style="width:20px; height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<main style="flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden;" class="dot-grid">
+
+  <!-- Topbar -->
+  <header style="height:64px; padding:0 32px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; border-bottom:1px solid rgba(255,255,255,0.05);">
+    <div style="flex:1; max-width:420px;">
+      <div style="position:relative;">
+        <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#555; display:flex;">
+          <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </span>
+        <input style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:8px 60px 8px 38px; font-size:13px; color:#fff; outline:none; font-family:'Inter',sans-serif;" placeholder="Search tokens and pairs" type="text" onfocus="this.style.borderColor='rgba(255,255,255,0.2)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+        <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); display:flex; gap:4px; align-items:center;">
+          <kbd style="font-size:9px; color:#555; border:1px solid rgba(255,255,255,0.15); border-radius:4px; padding:1px 5px; background:rgba(255,255,255,0.04);">⌘</kbd>
+          <kbd style="font-size:9px; color:#555; border:1px solid rgba(255,255,255,0.15); border-radius:4px; padding:1px 5px; background:rgba(255,255,255,0.04);">K</kbd>
+        </span>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <a href="/Legal" style="padding:8px; color:#555; border-radius:8px; display:flex; transition:color 0.15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#555'">
+        <svg style="width:20px; height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+      </a>
+      <div class="dropdown">
+        <button onclick="toggleDropdown()" style="padding:8px; color:#555; border-radius:8px; background:none; border:none; cursor:pointer; display:flex;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#555'">
+          <svg style="width:20px; height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </button>
+        <div id="community-dropdown" class="dropdown-menu">
+          <a href="https://discord.gg/FILL_IN" target="_blank">Discord</a>
+          <a href="https://reddit.com/r/FILL_IN" target="_blank">Reddit</a>
+          <a href="https://t.me/FILL_IN" target="_blank">Telegram</a>
+          <a href="https://FILL_IN.com/token" target="_blank">Cain Token</a>
+          <a href="mailto:contact@FILL_IN.com">Contact</a>
+        </div>
+      </div>
+      <div style="width:1px; height:32px; background:rgba(255,255,255,0.1);"></div>
+
+      <!-- Disconnected -->
+      <div id="wallet-disconnected">
+        <button onclick="simulateConnect()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.1); padding:7px 14px; border-radius:12px; font-size:12px; font-weight:600; color:#ccc; cursor:pointer; display:flex; align-items:center; gap:8px; transition:background 0.15s; font-family:'Inter',sans-serif;" onmouseover="this.style.background='rgba(255,255,255,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+          <svg width="14" height="14" viewBox="0 0 35 33" fill="none">
+            <path d="M32.958 1L19.174 11.03l2.52-5.958L32.958 1z" fill="#E17726" stroke="#E17726" stroke-width=".25"/>
+            <path d="M2.042 1l13.67 10.118-2.396-6.046L2.042 1z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
+            <path d="M28.147 23.533l-3.673 5.628 7.858 2.162 2.254-7.668-6.44-.122z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
+            <path d="M.42 23.655l2.24 7.668 7.845-2.162-3.66-5.628-6.425.122z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
+            <path d="M10.12 14.452l-2.19 3.313 7.806.354-.268-8.396-5.348 4.729z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
+            <path d="M24.88 14.452l-5.415-4.816-.178 8.483 7.793-.354-2.2-3.313z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
+            <path d="M10.505 29.161l4.694-2.285-4.048-3.154-.646 5.44z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
+            <path d="M19.8 26.876l4.707 2.285-.659-5.44-4.048 3.155z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
+          </svg>
+          Connect MetaMask
+        </button>
+      </div>
+
+      <!-- Connected -->
+      <div id="wallet-connected" style="display:none;" class="wallet-dropdown">
+        <button class="connected-btn" onclick="toggleWalletMenu()">
+          <div class="wallet-dot"></div>
+          <span class="eth-badge">ETH</span>
+          <span style="font-family:monospace; font-size:12px;">0xA4...5D4f</span>
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#555" stroke-width="2"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>
+        </button>
+        <div id="wallet-menu" class="wallet-menu">
+          <div class="wallet-menu-body">
+            <div class="wallet-addr">0xA4...5D4f</div>
+            <div class="wallet-bal">$0.00</div>
+            <div class="wallet-change">+$0.00 (+0.00%) in the last 1M</div>
+            <div class="wallet-actions">
+              <div class="wallet-action-btn">Earn</div>
+              <div class="wallet-action-btn">Get USDC</div>
+            </div>
+          </div>
+          <div class="wallet-divider"></div>
+          <div class="wallet-setting-row">
+            <span>Theme</span>
+            <div class="theme-toggle">
+              <button class="theme-btn" onclick="setTheme('light',this)">☀</button>
+              <button class="theme-btn active" onclick="setTheme('dark',this)">☾</button>
+            </div>
+          </div>
+          <div class="wallet-divider"></div>
+          <div class="wallet-setting-row" style="cursor:pointer;" onclick="toggleAutoClaimUI()">
+            <span style="text-decoration:underline; text-decoration-color:#444; text-underline-offset:3px;">Auto-claim redemptions</span>
+            <div class="toggle-switch" id="autoclaim-toggle"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="wallet-divider"></div>
+          <button class="wallet-logout" onclick="simulateDisconnect()">Logout</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ CONTENT: true center ══ -->
+  <div style="flex:1; overflow-y:auto; display:flex; align-items:flex-start; justify-content:center; padding:48px 32px 80px;">
+    <div style="display:flex; align-items:flex-start; gap:24px;">
+
+      <!-- Left column -->
+      <div style="display:flex; flex-direction:column; align-items:flex-start;">
+
+        <!-- Swap card -->
+        <div class="swap-card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+            <div>
+              <div style="font-size:16px; font-weight:600; color:#e2e2e2;">Swap</div>
+              <div style="font-size:11px; color:#444; margin-top:2px;">Secure, instant exchange</div>
+            </div>
+            <button onclick="toggleSlippage()" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:9px; padding:6px 10px; font-size:11px; color:#555; cursor:pointer; display:flex; align-items:center; gap:6px; font-family:'Inter',sans-serif;" onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#555'">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+              <span id="slip-display">0.5%</span>
+            </button>
+          </div>
+
+          <!-- Slippage panel -->
+          <div id="slip-panel" style="display:none; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:14px 16px; margin-bottom:14px;">
+            <p style="font-size:10px; color:#444; text-transform:uppercase; letter-spacing:0.08em; margin:0 0 10px;">Slippage tolerance</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <button class="slip-opt" onclick="setSlip('0.1',this)">0.1%</button>
+              <button class="slip-opt active" onclick="setSlip('0.5',this)">0.5%</button>
+              <button class="slip-opt" onclick="setSlip('1.0',this)">1.0%</button>
+              <input type="number" placeholder="Custom" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09); border-radius:8px; padding:5px 10px; color:#fff; font-size:12px; width:76px; outline:none; font-family:'Inter',sans-serif;" oninput="setSlipCustom(this.value)">
+            </div>
+          </div>
+
+          <!-- You Pay -->
+          <div class="token-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <span style="font-size:11px; color:#444; text-transform:uppercase; letter-spacing:0.07em;">You pay</span>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <div style="display:flex; gap:4px;">
+                  <button onclick="setPct(25)"  style="font-size:10px; color:#555; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:6px; padding:2px 7px; cursor:pointer; font-family:'Inter',sans-serif;" onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#555'">25%</button>
+                  <button onclick="setPct(50)"  style="font-size:10px; color:#555; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:6px; padding:2px 7px; cursor:pointer; font-family:'Inter',sans-serif;" onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#555'">50%</button>
+                  <button onclick="setPct(100)" style="font-size:10px; color:#555; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:6px; padding:2px 7px; cursor:pointer; font-family:'Inter',sans-serif;" onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#555'">MAX</button>
+                </div>
+                <span style="font-size:11px; color:#444;">Bal: <span id="from-bal" style="color:#666;">0.00</span></span>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <input id="from-input" type="number" placeholder="0.00" oninput="onAmountChange()" style="font-size:32px;" />
+              <button class="token-selector" onclick="openModal('from')">
+                <div class="token-icon" id="from-icon" style="background:#2563eb;color:#fff;">U</div>
+                <span class="token-name" id="from-name">USDC</span>
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#555" stroke-width="2"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>
+              </button>
+            </div>
+            <div style="margin-top:8px; font-size:12px; color:#3a3a3a;" id="from-usd">$0.00</div>
+          </div>
+
+          <!-- Flip -->
+          <div style="display:flex; justify-content:center;">
+            <button class="flip-btn" onclick="flip()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+            </button>
+          </div>
+
+          <!-- You Receive -->
+          <div class="token-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <span style="font-size:11px; color:#444; text-transform:uppercase; letter-spacing:0.07em;">You receive</span>
+              <span style="font-size:11px; color:#444;">Bal: <span id="to-bal" style="color:#666;">0.00</span></span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <input id="to-input" type="number" placeholder="0.00" readonly style="font-size:32px; cursor:default; color:#aaa;" />
+              <button class="token-selector" onclick="openModal('to')">
+                <div class="token-icon" id="to-icon" style="background:#132040;color:#5b9bd5;">α</div>
+                <span class="token-name" id="to-name">nALPHA</span>
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#555" stroke-width="2"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>
+              </button>
+            </div>
+            <div style="margin-top:8px; font-size:12px; color:#3a3a3a;" id="to-usd">$0.00</div>
+          </div>
+
+          <!-- Details -->
+          <div id="detail-block" style="display:none; margin-top:14px; padding:14px 16px; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06); border-radius:14px;">
+            <div class="detail-row"><span>Rate</span><span class="val" id="d-rate">—</span></div>
+            <div class="detail-row"><span>Price impact</span><span class="val" id="d-impact" style="color:#4ade80;">—</span></div>
+            <div class="detail-row"><span>Min. received</span><span class="val" id="d-min">—</span></div>
+            <div class="detail-row"><span>Network fee</span><span class="val">~$0.04</span></div>
+          </div>
+
+          <button id="swap-cta" class="swap-btn swap-btn-disabled" onclick="doSwap()">Enter an amount</button>
+        </div>
+
+        <!-- Popular Pairs -->
+        <div class="pairs-label">Popular pairs</div>
+        <div class="pairs-grid">
+          <div class="pair-card" onclick="selectPair('USDC','nALPHA')">
+            <div class="pair-icons">
+              <div class="pair-icon" style="background:#2563eb;color:#fff;">U</div>
+              <div class="pair-icon" style="background:#132040;color:#5b9bd5;">α</div>
+            </div>
+            <div><div class="pair-name">USDC / nALPHA</div><div class="pair-apy">10.37% APY</div></div>
+          </div>
+          <div class="pair-card" onclick="selectPair('USDC','nOPAL')">
+            <div class="pair-icons">
+              <div class="pair-icon" style="background:#2563eb;color:#fff;">U</div>
+              <div class="pair-icon" style="background:#252525;color:#999;">◈</div>
+            </div>
+            <div><div class="pair-name">USDC / nOPAL</div><div class="pair-apy">12.23% APY</div></div>
+          </div>
+          <div class="pair-card" onclick="selectPair('USDC','nTBILL')">
+            <div class="pair-icons">
+              <div class="pair-icon" style="background:#2563eb;color:#fff;">U</div>
+              <div class="pair-icon" style="background:#122212;color:#4ade80;">T</div>
+            </div>
+            <div><div class="pair-name">USDC / nTBILL</div><div class="pair-apy">2.88% APY</div></div>
+          </div>
+          <div class="pair-card" onclick="selectPair('USDC','nBASIS')">
+            <div class="pair-icons">
+              <div class="pair-icon" style="background:#2563eb;color:#fff;">U</div>
+              <div class="pair-icon" style="background:#16184a;color:#818cf8;">B</div>
+            </div>
+            <div><div class="pair-name">USDC / nBASIS</div><div class="pair-apy">4.27% APY</div></div>
+          </div>
+        </div>
+
+        <!-- Info note -->
+        <div class="info-note">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <p style="font-size:11px; color:#444; line-height:1.7; margin:0;">Swaps on Cain settle directly on <span style="color:#777; font-weight:500;">Plume Network</span>. All vault tokens are backed 1:1 by their underlying real-world assets. Redemption periods may apply — check each vault's terms before swapping.</p>
+        </div>
+      </div>
+
+      <!-- Route panel -->
+      <div class="route-panel" id="route-panel">
+        <div style="font-size:11px; color:#444; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:12px; padding-left:4px;">Route</div>
+        <div id="route-loading" class="route-card" style="text-align:center; padding:28px 20px;">
+          <div class="loading-dots" style="margin-bottom:14px;"><span></span><span></span><span></span></div>
+          <p style="font-size:13px; font-weight:500; color:#777; margin:0 0 6px;">Finding best swap</p>
+          <p style="font-size:11px; color:#444; line-height:1.6; margin:0;">Scanning networks to find<br>the best deal…</p>
+        </div>
+        <div id="route-results" style="display:none; flex-direction:column; gap:8px;">
+          <div class="route-option best" onclick="selectRoute(this,0)">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+              <span class="route-badge badge-best">Best rate</span>
+              <span style="font-size:13px; font-weight:600; color:#e2e2e2;" id="route-0-out">—</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:#555;">
+              <span id="route-0-from" style="background:rgba(37,99,235,0.2); color:#60a5fa; border-radius:5px; padding:2px 8px;">USDC</span>
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#444" stroke-width="1.5"><path d="M2 5h6M6 3l2 2-2 2"/></svg>
+              <span id="route-0-to" style="background:rgba(19,32,64,0.5); color:#5b9bd5; border-radius:5px; padding:2px 8px;">nALPHA</span>
+              <span style="margin-left:auto; color:#555;">Direct · 0.05%</span>
+            </div>
+          </div>
+          <div class="route-option" onclick="selectRoute(this,1)" style="opacity:0.7;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+              <span class="route-badge badge-alt">Alt route</span>
+              <span style="font-size:13px; font-weight:600; color:#777;" id="route-1-out">—</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:#555;">
+              <span id="route-1-from" style="background:rgba(37,99,235,0.2); color:#60a5fa; border-radius:5px; padding:2px 8px;">USDC</span>
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#444" stroke-width="1.5"><path d="M2 5h6M6 3l2 2-2 2"/></svg>
+              <span style="background:rgba(255,255,255,0.05); color:#888; border-radius:5px; padding:2px 8px;">ETH</span>
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#444" stroke-width="1.5"><path d="M2 5h6M6 3l2 2-2 2"/></svg>
+              <span id="route-1-to" style="background:rgba(19,32,64,0.5); color:#5b9bd5; border-radius:5px; padding:2px 8px;">nALPHA</span>
+              <span style="margin-left:auto; color:#555;">0.10%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- Recent drawer -->
+<button class="recent-btn" id="recent-btn" onclick="toggleDrawer()">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+  Recent
+</button>
+<div class="recent-drawer" id="recent-drawer">
+  <div style="padding:20px 20px 14px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between;">
+    <h3 style="font-size:14px; font-weight:600; color:#e2e2e2; margin:0;">Recent transactions</h3>
+    <button onclick="toggleDrawer()" style="color:#555; background:none; border:none; cursor:pointer; font-size:18px; line-height:1;">✕</button>
+  </div>
+  <div style="flex:1; overflow-y:auto;">
+    <div class="txn-row"><div><div style="font-size:13px;font-weight:500;color:#ccc;">USDC → nALPHA</div><div style="font-size:11px;color:#555;margin-top:2px;">50,000 USDC · 2m ago</div></div><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot" style="background:#4ade80;"></div><span style="font-size:11px;color:#4ade80;">Complete</span></div></div>
+    <div class="txn-row"><div><div style="font-size:13px;font-weight:500;color:#ccc;">USDC → nOPAL</div><div style="font-size:11px;color:#555;margin-top:2px;">12,500 USDC · 7m ago</div></div><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot" style="background:#4ade80;"></div><span style="font-size:11px;color:#4ade80;">Complete</span></div></div>
+    <div class="txn-row"><div><div style="font-size:13px;font-weight:500;color:#ccc;">nALPHA → USDC</div><div style="font-size:11px;color:#555;margin-top:2px;">8,200 nALPHA · 14m ago</div></div><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot" style="background:#4ade80;"></div><span style="font-size:11px;color:#4ade80;">Complete</span></div></div>
+    <div class="txn-row"><div><div style="font-size:13px;font-weight:500;color:#ccc;">USDC → nBASIS</div><div style="font-size:11px;color:#555;margin-top:2px;">100,000 USDC · 21m ago</div></div><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot" style="background:#fbbf24;"></div><span style="font-size:11px;color:#fbbf24;">Pending</span></div></div>
+    <div class="txn-row"><div><div style="font-size:13px;font-weight:500;color:#ccc;">USDC → nWISDOM</div><div style="font-size:11px;color:#555;margin-top:2px;">25,000 USDC · 38m ago</div></div><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot" style="background:#4ade80;"></div><span style="font-size:11px;color:#4ade80;">Complete</span></div></div>
+    <div class="txn-row"><div><div style="font-size:13px;font-weight:500;color:#ccc;">nTBILL → USDC</div><div style="font-size:11px;color:#555;margin-top:2px;">5,000 nTBILL · 1h ago</div></div><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot" style="background:#4ade80;"></div><span style="font-size:11px;color:#4ade80;">Complete</span></div></div>
+  </div>
+</div>
+
+<!-- Token modal -->
+<div class="token-modal" id="token-modal" onclick="if(event.target===this)closeModal()">
+  <div class="token-modal-inner">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="font-size:15px; font-weight:600; color:#e2e2e2; margin:0;">Select token</h3>
+      <button onclick="closeModal()" style="color:#555; background:none; border:none; cursor:pointer; font-size:20px; line-height:1;">✕</button>
+    </div>
+    <input class="token-search" id="token-search" placeholder="Search name or symbol…" oninput="filterTokens(this.value)">
+    <div class="token-list" id="token-list"></div>
+  </div>
+</div>
+
+<script>
+const TOKENS = [
+  { symbol:'USDC',    name:'USD Coin',                         bg:'#2563eb', fg:'#fff',    letter:'U' },
+  { symbol:'nALPHA',  name:'Alpha — Diversified Index',        bg:'#132040', fg:'#5b9bd5', letter:'α' },
+  { symbol:'nOPAL',   name:'BlackOpal LiquidStone II',         bg:'#252525', fg:'#999',    letter:'◈' },
+  { symbol:'nBASIS',  name:'Basis — Crypto Basis',             bg:'#16184a', fg:'#818cf8', letter:'B' },
+  { symbol:'nTBILL',  name:'Treasury — US Treasuries',         bg:'#122212', fg:'#4ade80', letter:'T' },
+  { symbol:'nWISDOM', name:'WisdomTree CRDYX',                 bg:'#0c2233', fg:'#38bdf8', letter:'W' },
+  { symbol:'nCREDIT', name:'Credit — Private Credit',          bg:'#2a1212', fg:'#f87171', letter:'C' },
+  { symbol:'nFALCON', name:'FalconX Overcollateralized Loans', bg:'#10103a', fg:'#a78bfa', letter:'X' },
+  { symbol:'nACRDX',  name:'ACRDX — Private Credit',           bg:'#122212', fg:'#4ade80', letter:'A' },
+];
+
+let fromToken = TOKENS[0], toToken = TOKENS[1], modalTarget = 'from', slippage = 0.5, routeTimer = null;
+
+const RATES = {
+  'USDC->nALPHA':0.9979,'USDC->nOPAL':0.9977,'USDC->nBASIS':0.9981,
+  'USDC->nTBILL':0.9985,'USDC->nWISDOM':0.9982,'USDC->nCREDIT':0.9975,
+  'USDC->nFALCON':0.9978,'USDC->nACRDX':0.9984,
+};
+function getRate(a,b) {
+  const k=`${a.symbol}->${b.symbol}`, r=`${b.symbol}->${a.symbol}`;
+  if(RATES[k]) return RATES[k];
+  if(RATES[r]) return 1/RATES[r];
+  return 1;
+}
+function fmt(n) { return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:4}); }
+function fmtUSD(n) { return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function updateTokenUI() {
+  const fi=document.getElementById('from-icon');
+  fi.style.background=fromToken.bg; fi.style.color=fromToken.fg; fi.textContent=fromToken.letter;
+  document.getElementById('from-name').textContent=fromToken.symbol;
+  const ti=document.getElementById('to-icon');
+  ti.style.background=toToken.bg; ti.style.color=toToken.fg; ti.textContent=toToken.letter;
+  document.getElementById('to-name').textContent=toToken.symbol;
+  ['route-0-from','route-1-from'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.style.background=fromToken.bg+'44'; el.style.color=fromToken.fg; el.textContent=fromToken.symbol;
+  });
+  ['route-0-to','route-1-to'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.style.background=toToken.bg+'55'; el.style.color=toToken.fg; el.textContent=toToken.symbol;
+  });
+}
+
+function onAmountChange() {
+  const val=parseFloat(document.getElementById('from-input').value);
+  const cta=document.getElementById('swap-cta');
+  const det=document.getElementById('detail-block');
+  const rp=document.getElementById('route-panel');
+  if(!val||val<=0) {
+    document.getElementById('to-input').value='';
+    document.getElementById('from-usd').textContent='$0.00';
+    document.getElementById('to-usd').textContent='$0.00';
+    cta.textContent='Enter an amount'; cta.className='swap-btn swap-btn-disabled';
+    det.style.display='none'; rp.classList.remove('visible');
+    clearTimeout(routeTimer); return;
+  }
+  const rate=getRate(fromToken,toToken), output=val*rate;
+  const impact=val>100000?0.12:val>10000?0.04:'<0.01';
+  const minOut=output*(1-slippage/100);
+  document.getElementById('to-input').value=output.toFixed(4);
+  document.getElementById('from-usd').textContent=fmtUSD(val);
+  document.getElementById('to-usd').textContent=fmtUSD(output);
+  document.getElementById('d-rate').textContent=`1 ${fromToken.symbol} = ${rate.toFixed(4)} ${toToken.symbol}`;
+  document.getElementById('d-impact').textContent=`< ${impact}%`;
+  document.getElementById('d-min').textContent=`${minOut.toFixed(4)} ${toToken.symbol}`;
+  document.getElementById('route-0-out').textContent=fmt(output);
+  document.getElementById('route-1-out').textContent=fmt(output*0.9985);
+  det.style.display='block';
+  cta.textContent=`Swap ${fromToken.symbol} → ${toToken.symbol}`; cta.className='swap-btn swap-btn-active';
+  rp.classList.add('visible');
+  document.getElementById('route-loading').style.display='block';
+  document.getElementById('route-results').style.display='none';
+  clearTimeout(routeTimer);
+  routeTimer=setTimeout(()=>{
+    document.getElementById('route-loading').style.display='none';
+    document.getElementById('route-results').style.display='flex';
+  },1600);
+}
+
+function flip() {
+  [fromToken,toToken]=[toToken,fromToken];
+  document.getElementById('from-input').value=document.getElementById('to-input').value||'';
+  updateTokenUI(); onAmountChange();
+}
+function setPct(pct) {
+  document.getElementById('from-input').value=((10000*pct)/100).toFixed(2);
+  onAmountChange();
+}
+function selectPair(from,to) {
+  fromToken=TOKENS.find(t=>t.symbol===from)||fromToken;
+  toToken=TOKENS.find(t=>t.symbol===to)||toToken;
+  updateTokenUI(); onAmountChange();
+}
+function doSwap() {
+  const val=parseFloat(document.getElementById('from-input').value);
+  if(!val||val<=0) return;
+  const cta=document.getElementById('swap-cta');
+  cta.textContent='Confirming…'; cta.className='swap-btn swap-btn-disabled';
+  setTimeout(()=>{ cta.textContent='✓ Submitted'; setTimeout(()=>{ document.getElementById('from-input').value=''; onAmountChange(); },1800); },1200);
+}
+function selectRoute(el,idx) {
+  document.querySelectorAll('.route-option').forEach(r=>{ r.classList.remove('best'); r.style.opacity='0.7'; });
+  el.classList.add('best'); el.style.opacity='1';
+}
+
+function toggleSlippage() { const p=document.getElementById('slip-panel'); p.style.display=p.style.display==='none'?'block':'none'; }
+function setSlip(val,btn) {
+  slippage=parseFloat(val);
+  document.getElementById('slip-display').textContent=val+'%';
+  document.querySelectorAll('.slip-opt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); onAmountChange();
+}
+function setSlipCustom(val) {
+  if(!val) return;
+  slippage=parseFloat(val);
+  document.getElementById('slip-display').textContent=val+'%';
+  document.querySelectorAll('.slip-opt').forEach(b=>b.classList.remove('active'));
+  onAmountChange();
+}
+
+function openModal(target) {
+  modalTarget=target; filterTokens('');
+  document.getElementById('token-search').value='';
+  document.getElementById('token-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('token-search').focus(),50);
+}
+function closeModal() { document.getElementById('token-modal').classList.remove('open'); }
+function filterTokens(q) {
+  const list=document.getElementById('token-list');
+  const f=TOKENS.filter(t=>t.symbol.toLowerCase().includes(q.toLowerCase())||t.name.toLowerCase().includes(q.toLowerCase()));
+  list.innerHTML=f.map(t=>`<div class="token-list-item" onclick="selectToken('${t.symbol}')"><div class="token-icon" style="width:36px;height:36px;font-size:13px;background:${t.bg};color:${t.fg};">${t.letter}</div><div><div class="tl-name">${t.symbol}</div><div class="tl-full">${t.name}</div></div></div>`).join('');
+}
+function selectToken(sym) {
+  const t=TOKENS.find(x=>x.symbol===sym); if(!t) return;
+  if(modalTarget==='from'){if(t.symbol===toToken.symbol)toToken=fromToken;fromToken=t;}
+  else{if(t.symbol===fromToken.symbol)fromToken=toToken;toToken=t;}
+  closeModal(); updateTokenUI(); onAmountChange();
+}
+
+function toggleDrawer() {
+  const d=document.getElementById('recent-drawer'), b=document.getElementById('recent-btn');
+  const open=d.classList.toggle('open'); b.classList.toggle('drawer-open',open);
+}
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('expanded'); }
+
+function toggleDropdown() { document.getElementById('community-dropdown').classList.toggle('open'); }
+document.addEventListener('click',e=>{
+  const d=document.querySelector('.dropdown');
+  if(d&&!d.contains(e.target)) document.getElementById('community-dropdown').classList.remove('open');
+  const w=document.querySelector('.wallet-dropdown');
+  if(w&&!w.contains(e.target)) document.getElementById('wallet-menu')?.classList.remove('open');
+});
+
+function simulateConnect() {
+  document.getElementById('wallet-disconnected').style.display='none';
+  document.getElementById('wallet-connected').style.display='inline-block';
+}
+function simulateDisconnect() {
+  document.getElementById('wallet-connected').style.display='none';
+  document.getElementById('wallet-disconnected').style.display='inline-block';
+  document.getElementById('wallet-menu').classList.remove('open');
+}
+function toggleWalletMenu() { document.getElementById('wallet-menu').classList.toggle('open'); }
+function setTheme(t,btn) { document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
+function toggleAutoClaimUI() { document.getElementById('autoclaim-toggle').classList.toggle('on'); }
+
+updateTokenUI(); filterTokens('');
+</script>
+</body></html>
