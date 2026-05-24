@@ -102,7 +102,7 @@
   .vs-item .vs-val { font-size:30px; font-weight:700; color:#fff; line-height:1; }
   .vs-item .vs-val.green { color:#4ade80; }
 
-  /* Wallet button — owned by wallet.js syncUI() */
+  /* Wallet button */
   #wallet-btn {
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.1);
@@ -240,11 +240,9 @@
       </div>
     </div>
     <div class="flex items-center gap-3">
-      <!-- Question mark → /Legal -->
       <a href="/Legal" class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
       </a>
-      <!-- Grid icon with community dropdown -->
       <div class="dropdown">
         <button onclick="toggleDropdown()" class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
@@ -258,8 +256,6 @@
         </div>
       </div>
       <div class="h-8 w-px bg-white/10 mx-1"></div>
-      <!-- Wallet button — controlled by wallet.js; inline onclick is a safety-net
-           so a click always opens the modal even before wallet.js finishes booting -->
       <div style="position:relative;">
         <button id="wallet-btn" onclick="if(window.connectWallet){window.connectWallet();}">Connect Wallet</button>
         <div id="wallet-dropdown" class="hidden"></div>
@@ -338,7 +334,7 @@
 
     <!-- Featured Cards -->
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
-      <div class="featured-card">
+      <a class="featured-card" id="pool-card-0" href="https://www.byreal.io/en/create-position?id=HGxMfonx2vMRGVpHNvj6JbVM5JUjN8xYFS1UGXMYeaAo" target="_blank" rel="noopener" style="text-decoration:none; color:inherit; display:block;">
         <div class="vault-header">
           <div class="vault-icon" style="background:#222;">
             <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDaXSd9q5FkYGspNsuTsCI9XJgEbMNYjbgEwtfpGnHjyssY_FgU-3GKbl1GRVAYPdvFF-nGuL2P1mkcfhsOvHKpK-IWc9Gh7cDc2y3lXan3aS2DEZ9vKnx03KcoRfTFPCoJKJx2OG31OR5aYJtYpgZHc-KdjkhyR31DwZZb77YOkixPIR0niu9sD6Deh-wt6wDQcz2ERthdBG2cu4EaF0OrpZpq5D77lsQ03Ibtg0Xlm85NLXq8-4OjevN8IBFXAwTxYts6Ea9MY39" alt="BlackOpal" />
@@ -350,15 +346,13 @@
         </div>
         <div class="vault-desc">Investment grade short-duration payment receivables. Designed for consistent, risk-adjusted income.</div>
         <div class="vault-stats">
-          <div class="vs-item"><label>Vault APY</label><div class="vs-val green">12.23%</div></div>
-          <div class="vs-item"><label>TVL</label><div class="vs-val">$12M</div></div>
-          <div class="vs-item">
-            <label>Available networks</label>
-            <div class="nets"><div class="nd nd-pu">S</div></div>
-          </div>
+          <div class="vs-item"><label>Fee tier</label><div class="vs-val green" id="pool-0-fee">—</div></div>
+          <div class="vs-item"><label>TVL</label><div class="vs-val" id="pool-0-tvl">—</div></div>
+          <div class="vs-item"><label>Volume 24h</label><div class="vs-val" id="pool-0-vol" style="font-size:18px;">—</div></div>
         </div>
-      </div>
-      <div class="featured-card">
+        <div id="pool-0-meta" style="font-size:10px;color:#3a3a3a;margin-top:14px;letter-spacing:0.04em;">Loading live data…</div>
+      </a>
+      <a class="featured-card" id="pool-card-1" href="https://www.byreal.io/en/create-position?id=6FQQyf7UcyU86TZC1cmAcfC4a18SJyDggEKtQfTJWmfs" target="_blank" rel="noopener" style="text-decoration:none; color:inherit; display:block;">
         <div class="vault-header">
           <div class="vault-icon" style="background:#1a3060;">
             <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBM9VBHvdyiPBNuNhHY8t5Q9cv_wv3f1LwMGm-CnCnZbzH0-HiWtFy5_FHaS4-Swq2l5XQ3bYEub0_0xxG023kPxUZq05K255o3CLhaTaHS7mU75lGqLCIZPTVZXHZEA-lPcl5qzmszmupag2RuRkuUifehr6-9n9H9-221nQlmgPCJEKE0L3lfPuSlYpjnBk582kaPq3equrmV1VgVHeOoElfkGvy_KKih1jKeQtTmkDL8y0IAaXEN1qTOrte3fAaginlVLxb-bCUk" alt="Alpha" />
@@ -370,14 +364,12 @@
         </div>
         <div class="vault-desc">Nest's flagship real-world yield vault, providing passive exposure to a diversified portfolio of Nest's top yield-generating assets</div>
         <div class="vault-stats">
-          <div class="vs-item"><label>Vault APY</label><div class="vs-val green">10.37%</div></div>
-          <div class="vs-item"><label>TVL</label><div class="vs-val">$6.9M</div></div>
-          <div class="vs-item">
-            <label>Available networks</label>
-            <div class="nets"><div class="nd nd-pu">S</div></div>
-          </div>
+          <div class="vs-item"><label>Fee tier</label><div class="vs-val green" id="pool-1-fee">—</div></div>
+          <div class="vs-item"><label>TVL</label><div class="vs-val" id="pool-1-tvl">—</div></div>
+          <div class="vs-item"><label>Volume 24h</label><div class="vs-val" id="pool-1-vol" style="font-size:18px;">—</div></div>
         </div>
-      </div>
+        <div id="pool-1-meta" style="font-size:10px;color:#3a3a3a;margin-top:14px;letter-spacing:0.04em;">Loading live data…</div>
+      </a>
     </div>
 
     <!-- Vault Table -->
@@ -498,21 +490,103 @@
   function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('collapsed');
   }
-
   function toggleDropdown() {
     document.getElementById('community-dropdown').classList.toggle('open');
   }
-
-  // Close community dropdown on outside click
   document.addEventListener('click', function(e) {
-    const dropdown = document.querySelector('.dropdown');
-    if (!dropdown.contains(e.target)) {
+    var dropdown = document.querySelector('.dropdown');
+    if (dropdown && !dropdown.contains(e.target)) {
       document.getElementById('community-dropdown').classList.remove('open');
     }
   });
 </script>
 
-<!-- Global wallet manager — loads last, runs on every page -->
+<!--
+  ── Pool data from Cloudflare Worker ──────────────────────────────────────
+  The worker fetches each pool via the confirmed-working per-pool detail
+  endpoint (/byreal/api/dex/v2/pools/details?poolAddress=...) and returns:
+    { pools: [ { id, ok, tvl, volume24h, feeTier, tokenASymbol, tokenBSymbol }, ... ] }
+  No direct Byreal calls are made from the browser.
+-->
+<script>
+(function () {
+  var POOLS_PROXY = 'https://infofetchworker.doffecul.workers.dev';
+
+  var POOL_IDS = [
+    'HGxMfonx2vMRGVpHNvj6JbVM5JUjN8xYFS1UGXMYeaAo',
+    '6FQQyf7UcyU86TZC1cmAcfC4a18SJyDggEKtQfTJWmfs'
+  ];
+
+  function num(v) {
+    if (v == null) return null;
+    var n = typeof v === 'string' ? parseFloat(v.replace(/[^0-9.\-]/g, '')) : Number(v);
+    return isNaN(n) ? null : n;
+  }
+
+  function fmtUSD(v) {
+    var n = num(v);
+    if (n == null) return null;
+    if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
+    return '$' + n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  }
+
+  function setText(id, val) {
+    var el = document.getElementById(id);
+    if (el && val != null) el.textContent = val;
+  }
+
+  function applyPool(i, pool) {
+    if (!pool || pool.ok === false) {
+      console.warn('[CainPools] pool ' + i + ' returned ok=false', pool);
+      setText('pool-' + i + '-meta', 'Live data unavailable · check console');
+      return;
+    }
+    if (pool.feeTier)   setText('pool-' + i + '-fee', pool.feeTier);
+    var tvl = fmtUSD(pool.tvl);
+    var vol = fmtUSD(pool.volume24h);
+    if (tvl) setText('pool-' + i + '-tvl', tvl);
+    if (vol) setText('pool-' + i + '-vol', vol); else setText('pool-' + i + '-vol', '—');
+    var pair = (pool.tokenASymbol && pool.tokenBSymbol)
+      ? pool.tokenASymbol + ' / ' + pool.tokenBSymbol : null;
+    setText('pool-' + i + '-meta',
+      (pair ? pair + ' · ' : '') + 'Live data via Byreal · click to open pool');
+  }
+
+  function load() {
+    var url = POOLS_PROXY + '/pools?ids=' + POOL_IDS.join(',');
+    console.log('[CainPools] fetching', url);
+
+    fetch(url)
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (data) {
+        console.log('[CainPools] response', data);
+        var pools = (data && data.pools) || [];
+        POOL_IDS.forEach(function (id, i) {
+          // Match by id first; fall back to positional for robustness
+          var p = pools.find(function (x) { return x && x.id === id; }) || pools[i];
+          applyPool(i, p);
+        });
+      })
+      .catch(function (err) {
+        console.error('[CainPools] fetch failed:', err);
+        setText('pool-0-meta', 'Live data unavailable · ' + err.message);
+        setText('pool-1-meta', 'Live data unavailable · ' + err.message);
+      });
+  }
+
+  // Fire immediately — no DOMContentLoaded guard needed since this script is
+  // at the bottom of the body and the target elements are already in the DOM.
+  load();
+  setInterval(load, 60000);
+})();
+</script>
+
+<!-- Global wallet manager -->
 <script src="/js/wallet.js" defer></script>
 
 </body></html>
