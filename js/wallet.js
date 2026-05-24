@@ -4,9 +4,15 @@
 
 const WC_PROJECT_ID = '7b29dd4fac8b976e50bac0af4e31310a';
 
-// ─── Guard against double-init ─────────────────────────────────────────────
-if (window.__CAIN_WALLET_INIT__) throw new Error('wallet.js already loaded');
-window.__CAIN_WALLET_INIT__ = true;
+// ─── Guard against double-init (graceful, no throw) ────────────────────────
+if (window.__CAIN_WALLET_INIT__) {
+  console.warn('[CainWallet] wallet.js already loaded — skipping re-init');
+} else {
+  window.__CAIN_WALLET_INIT__ = true;
+  bootCainWallet();
+}
+
+function bootCainWallet() {
 
 // ─── Global state ──────────────────────────────────────────────────────────
 window.cainWallet = {
@@ -20,17 +26,45 @@ window.cainWallet = {
 };
 
 let wcProvider = null;
-let connecting = false; // guard against duplicate onConnect calls
+let wcInitFailed = false; // track WC availability for graceful UX
+let connecting = false;   // guard against duplicate onConnect calls
+let activeSolanaProvider = null; // Phantom OR wrapped Wallet-Standard (MetaMask)
 
 // ─── Init ──────────────────────────────────────────────────────────────────
 async function initWallet() {
-  // Render cached address instantly before providers load
+  // ALWAYS wire the button first — guarantees clicking opens the modal even
+  // on a fresh visit (no cache) and before any provider/CDN has loaded.
+  // (This was the root cause of the "nothing happens on click" bug.)
   const cached = localStorage.getItem('cain_address');
-  if (cached) syncUI(cached);
+  const cachedChain = localStorage.getItem('cain_chain');
+  syncUI(cached || null, cachedChain);
 
+  // Wire up injected (MetaMask) + Solana (Phantom) listeners immediately —
+  // these do NOT depend on WalletConnect, so they work even if WC init fails.
+  attachInjectedListeners();
+
+  // Discover Wallet Standard wallets (e.g. MetaMask's Solana account) early.
+  initWalletStandardRegistry();
+
+  // Try to bring up WalletConnect, but never let its failure block the rest.
+  await initWalletConnect();
+
+  // Attempt silent reconnect (covers injected, Solana, and WC sessions).
+  if (localStorage.getItem('walletConnected') === 'true') {
+    await attemptSilentReconnect();
+  }
+}
+
+// ─── WalletConnect init (isolated + retry) ─────────────────────────────────
+async function initWalletConnect(retries = 6) {
   // Retry if WalletConnect CDN hasn't attached yet
   if (!window.EthereumProvider) {
-    setTimeout(initWallet, 500);
+    if (retries > 0) {
+      setTimeout(() => initWalletConnect(retries - 1), 500);
+    } else {
+      console.warn('[CainWallet] WalletConnect CDN never loaded — WC disabled');
+      wcInitFailed = true;
+    }
     return;
   }
 
@@ -38,7 +72,7 @@ async function initWallet() {
     wcProvider = await window.EthereumProvider.init({
       projectId: WC_PROJECT_ID,
       chains: [1],
-      showQrModal: false,
+      showQrModal: true, // let WC render its own QR modal (simplest, reliable)
       metadata: {
         name: 'Cain Finance',
         description: 'Earn on your assets — by Plume',
@@ -46,11 +80,6 @@ async function initWallet() {
         icons: ['https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png'],
       },
     });
-
-    // Silent reconnect on page load
-    if (localStorage.getItem('walletConnected') === 'true') {
-      await attemptSilentReconnect();
-    }
 
     // WalletConnect events
     wcProvider.on('connect', () => onConnect('wc'));
@@ -60,27 +89,32 @@ async function initWallet() {
     });
     wcProvider.on('disconnect', onDisconnect);
 
-    // EVM injected (MetaMask) events
-    if (window.ethereum) {
-      window.ethereum.on('accountsChanged', (accounts) => {
-        if (accounts.length) onConnect('injected');
-        else onDisconnect();
-      });
-      window.ethereum.on('chainChanged', () => onConnect('injected'));
-    }
-
-    // Solana injected (Phantom) events
-    const solana = getSolanaProvider();
-    if (solana) {
-      solana.on('accountChanged', (pubkey) => {
-        if (pubkey) onConnect('solana');
-        else onDisconnect();
-      });
-      solana.on('disconnect', onDisconnect);
-    }
-
   } catch (err) {
-    console.error('[CainWallet] Init error:', err);
+    console.error('[CainWallet] WalletConnect init failed:', err);
+    wcInitFailed = true;
+    wcProvider = null;
+  }
+}
+
+// ─── Injected + Solana listeners (WC-independent) ──────────────────────────
+function attachInjectedListeners() {
+  // EVM injected (MetaMask) events
+  if (window.ethereum) {
+    window.ethereum.on('accountsChanged', (accounts) => {
+      if (accounts.length) onConnect('injected');
+      else onDisconnect();
+    });
+    window.ethereum.on('chainChanged', () => onConnect('injected'));
+  }
+
+  // Solana injected (Phantom) events
+  const solana = getSolanaProvider();
+  if (solana) {
+    solana.on('accountChanged', (pubkey) => {
+      if (pubkey) onConnect('solana');
+      else onDisconnect();
+    });
+    solana.on('disconnect', onDisconnect);
   }
 }
 
@@ -91,16 +125,138 @@ function getSolanaProvider() {
   return null;
 }
 
+// ─── Wallet Standard registry (for MetaMask-on-Solana et al.) ───────────────
+// MetaMask connects to Solana via the Wallet Standard, NOT via window.ethereum.
+// Wallets register themselves into a registry we can read by dispatching the
+// `wallet-standard:app-ready` event; each wallet replies with `register`.
+const __cainWalletStandard = { wallets: [], ready: false };
+
+function initWalletStandardRegistry() {
+  if (__cainWalletStandard.ready) return;
+  __cainWalletStandard.ready = true;
+
+  // Wallets call back with { register: (...wallets) => void }
+  const api = {
+    register: (...wallets) => {
+      for (const w of wallets) {
+        if (w && !__cainWalletStandard.wallets.includes(w)) {
+          __cainWalletStandard.wallets.push(w);
+        }
+      }
+      return () => {};
+    },
+  };
+
+  // 1) Wallets that registered before us push onto window.navigator.wallets
+  //    via the event below. 2) We announce readiness so late wallets register.
+  try {
+    window.addEventListener('wallet-standard:register-wallet', (e) => {
+      try { e.detail?.(api); } catch (_) {}
+    });
+    window.dispatchEvent(
+      new CustomEvent('wallet-standard:app-ready', { detail: api })
+    );
+  } catch (err) {
+    console.warn('[CainWallet] Wallet Standard init failed:', err);
+  }
+}
+
+// Find a registered Wallet Standard wallet by (case-insensitive) name substring
+// that actually exposes Solana features.
+function findWalletStandard(nameSubstr) {
+  const needle = nameSubstr.toLowerCase();
+  return __cainWalletStandard.wallets.find((w) => {
+    const named = (w?.name || '').toLowerCase().includes(needle);
+    const chains = w?.chains || [];
+    const hasSolana =
+      chains.some((c) => String(c).startsWith('solana:')) ||
+      !!w?.features?.['solana:signAndSendTransaction'] ||
+      !!w?.features?.['standard:connect'];
+    return named && hasSolana;
+  });
+}
+
+function getMetaMaskSolanaWallet() {
+  return findWalletStandard('metamask');
+}
+
+// Wrap a Wallet Standard wallet so it looks like the Phantom-style provider
+// our onConnect('solana') / event code already understands.
+function wrapWalletStandardAsSolana(wsWallet) {
+  let publicKey = null;
+
+  const getAddr = () => {
+    const acct = wsWallet.accounts?.[0];
+    return acct?.address || null;
+  };
+
+  return {
+    isWalletStandard: true,
+    wsWallet,
+    get publicKey() {
+      const addr = getAddr();
+      return addr ? { toString: () => addr } : publicKey;
+    },
+    async connect() {
+      const connectFeature = wsWallet.features?.['standard:connect'];
+      if (connectFeature?.connect) {
+        const res = await connectFeature.connect();
+        const acct = res?.accounts?.[0] || wsWallet.accounts?.[0];
+        if (acct?.address) {
+          publicKey = { toString: () => acct.address };
+          return { publicKey };
+        }
+      }
+      throw new Error('Wallet Standard connect unavailable');
+    },
+    async disconnect() {
+      const d = wsWallet.features?.['standard:disconnect'];
+      if (d?.disconnect) { try { await d.disconnect(); } catch (_) {} }
+      publicKey = null;
+    },
+    on(event, handler) {
+      const evt = wsWallet.features?.['standard:events'];
+      if (evt?.on) {
+        try {
+          evt.on('change', (props) => {
+            if (event === 'accountChanged') {
+              const a = props?.accounts?.[0];
+              handler(a ? { toString: () => a.address } : null);
+            } else if (event === 'disconnect' && (!props?.accounts || props.accounts.length === 0)) {
+              handler();
+            }
+          });
+        } catch (_) {}
+      }
+    },
+  };
+}
+
 // ─── Silent reconnect ──────────────────────────────────────────────────────
 async function attemptSilentReconnect() {
   try {
     const chain = localStorage.getItem('cain_chain');
 
     if (chain === 'solana') {
+      // Phantom path (onlyIfTrusted avoids a prompt)
       const solana = getSolanaProvider();
       if (solana) {
-        const resp = await solana.connect({ onlyIfTrusted: true });
-        if (resp?.publicKey) { await onConnect('solana'); return; }
+        try {
+          const resp = await solana.connect({ onlyIfTrusted: true });
+          if (resp?.publicKey) { activeSolanaProvider = solana; await onConnect('solana'); return; }
+        } catch (_) { /* fall through to MetaMask */ }
+      }
+
+      // MetaMask-via-Wallet-Standard path: if it already has an account, reuse it.
+      initWalletStandardRegistry();
+      const mm = getMetaMaskSolanaWallet();
+      if (mm?.accounts?.length) {
+        const wrapped = wrapWalletStandardAsSolana(mm);
+        activeSolanaProvider = wrapped;
+        wrapped.on('accountChanged', (pk) => { if (pk) onConnect('solana'); else onDisconnect(); });
+        wrapped.on('disconnect', onDisconnect);
+        await onConnect('solana');
+        return;
       }
     }
 
@@ -124,9 +280,51 @@ async function attemptSilentReconnect() {
 }
 
 // ─── Connect flows ─────────────────────────────────────────────────────────
+// MetaMask on a Solana-only site: connect via the Wallet Standard (Solana),
+// NOT via window.ethereum (which is EVM-only). Routes into onConnect('solana').
+async function connectMetaMaskSolana() {
+  closeCainModal();
+
+  // Ensure the registry has been polled for late-registering wallets.
+  initWalletStandardRegistry();
+
+  let mm = getMetaMaskSolanaWallet();
+
+  // MetaMask may register a tick after app-ready fires — retry briefly.
+  if (!mm) {
+    await new Promise((r) => setTimeout(r, 250));
+    mm = getMetaMaskSolanaWallet();
+  }
+
+  if (!mm) {
+    // No MetaMask with Solana support detected — send to install/update.
+    window.open('https://metamask.io/download/', '_blank');
+    return;
+  }
+
+  try {
+    const wrapped = wrapWalletStandardAsSolana(mm);
+    const resp = await wrapped.connect();
+    if (resp?.publicKey) {
+      activeSolanaProvider = wrapped;
+      // Wire account/disconnect change events from the wrapped provider.
+      wrapped.on('accountChanged', (pk) => { if (pk) onConnect('solana'); else onDisconnect(); });
+      wrapped.on('disconnect', onDisconnect);
+      await onConnect('solana');
+    }
+  } catch (e) {
+    console.warn('[CainWallet] MetaMask (Solana) rejected:', e);
+  }
+}
+
+// Kept for backward-compat / EVM use; no longer wired to the MetaMask button.
 async function connectInjected() {
   closeCainModal();
-  if (!window.ethereum) { openCainModal(); return; }
+  if (!window.ethereum) {
+    // No injected provider — bounce user to install MetaMask
+    window.open('https://metamask.io/download/', '_blank');
+    return;
+  }
   try {
     await window.ethereum.request({ method: 'eth_requestAccounts' });
     await onConnect('injected');
@@ -137,6 +335,11 @@ async function connectInjected() {
 
 async function connectWalletConnect() {
   closeCainModal();
+  if (!wcProvider) {
+    console.warn('[CainWallet] WalletConnect unavailable');
+    alert('WalletConnect is currently unavailable. Please try MetaMask or Phantom, or refresh the page.');
+    return;
+  }
   try {
     await wcProvider.connect({ chains: [1] });
     await onConnect('wc');
@@ -154,7 +357,10 @@ async function connectPhantom() {
   }
   try {
     const resp = await solana.connect();
-    if (resp?.publicKey) await onConnect('solana');
+    if (resp?.publicKey) {
+      activeSolanaProvider = solana;
+      await onConnect('solana');
+    }
   } catch (e) {
     console.warn('[CainWallet] Phantom rejected:', e);
   }
@@ -167,7 +373,9 @@ async function onConnect(type) {
 
   try {
     if (type === 'solana') {
-      const solana = getSolanaProvider();
+      // Use whichever Solana provider just connected (Phantom or MetaMask via
+      // Wallet Standard); fall back to Phantom detection for safety.
+      const solana = activeSolanaProvider || getSolanaProvider();
       if (!solana?.publicKey) return;
 
       const address = solana.publicKey.toString();
@@ -181,6 +389,8 @@ async function onConnect(type) {
         balance: null,
         ready: true,
       };
+
+      activeSolanaProvider = solana;
 
       localStorage.setItem('walletConnected', 'true');
       localStorage.setItem('cain_address', address);
@@ -356,8 +566,11 @@ function syncUI(address, chain) {
 function openCainModal() {
   if (document.getElementById('cain-wallet-modal')) return;
 
+  // Make sure Wallet Standard wallets (MetaMask Solana) are discovered.
+  initWalletStandardRegistry();
+
   const solana = getSolanaProvider();
-  const hasMetaMask = !!window.ethereum;
+  const hasMetaMask = !!getMetaMaskSolanaWallet(); // MetaMask w/ Solana support
   const hasPhantom = !!solana;
 
   const overlay = document.createElement('div');
@@ -410,7 +623,7 @@ function openCainModal() {
           </svg>
         </div>
         MetaMask
-        ${!hasMetaMask ? '<span class="cain-opt-tag">Not installed</span>' : '<span class="cain-opt-tag">Ethereum</span>'}
+        ${!hasMetaMask ? '<span class="cain-opt-tag">Not installed</span>' : '<span class="cain-opt-tag">Solana</span>'}
       </button>
 
       <button class="cain-wallet-opt" id="cain-opt-phantom">
@@ -432,7 +645,7 @@ function openCainModal() {
           </svg>
         </div>
         WalletConnect
-        <span class="cain-opt-tag">QR / Mobile</span>
+        <span class="cain-opt-tag">${wcInitFailed ? 'Unavailable' : 'QR / Mobile'}</span>
       </button>
     </div>
   `;
@@ -441,7 +654,7 @@ function openCainModal() {
 
   overlay.querySelector('#cain-modal-close-btn').onclick = closeCainModal;
   overlay.addEventListener('click', (e) => { if (e.target === overlay) closeCainModal(); });
-  overlay.querySelector('#cain-opt-metamask').onclick = connectInjected;
+  overlay.querySelector('#cain-opt-metamask').onclick = connectMetaMaskSolana;
   overlay.querySelector('#cain-opt-phantom').onclick = connectPhantom;
   overlay.querySelector('#cain-opt-wc').onclick = connectWalletConnect;
 }
@@ -458,9 +671,10 @@ window.disconnectWallet = async () => {
     if (wcProvider?.session) await wcProvider.disconnect();
   } catch (e) {}
   try {
-    const solana = getSolanaProvider();
+    const solana = activeSolanaProvider || getSolanaProvider();
     if (solana && window.cainWallet.chain === 'solana') await solana.disconnect();
   } catch (e) {}
+  activeSolanaProvider = null;
   onDisconnect();
 };
 
@@ -472,8 +686,21 @@ document.addEventListener('click', (e) => {
 });
 
 // ─── Boot ──────────────────────────────────────────────────────────────────
+// Wire the button immediately (synchronously) so a click ALWAYS opens the
+// modal, even before initWallet's async work runs or the CDNs load.
+function wireButtonNow() {
+  const btn = document.getElementById('wallet-btn');
+  if (btn && !btn.onclick && !window.cainWallet.address) {
+    btn.onclick = openCainModal;
+  }
+}
+wireButtonNow();
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initWallet);
+  document.addEventListener('DOMContentLoaded', () => { wireButtonNow(); initWallet(); });
 } else {
+  wireButtonNow();
   initWallet();
 }
+
+} // end bootCainWallet
