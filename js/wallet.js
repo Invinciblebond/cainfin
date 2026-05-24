@@ -412,16 +412,60 @@ async function connectInjected() {
 
 async function connectWalletConnect() {
   closeCainModal();
+
   if (!wcProvider) {
     console.warn('[CainWallet] WalletConnect unavailable');
-    alert('WalletConnect is currently unavailable. Please try MetaMask or Phantom, or refresh the page.');
-    return;
+
+    // Retry once if CDN attached late
+    try {
+      await initWalletConnect(0);
+    } catch (_) {}
+
+    if (!wcProvider) {
+      alert('WalletConnect failed to load. Refresh the page and try again.');
+      return;
+    }
   }
+
   try {
-    await wcProvider.connect({ optionalChains: [1] });
+    // Ensure stale sessions do not block QR rendering
+    if (wcProvider.session) {
+      try {
+        await wcProvider.disconnect();
+      } catch (_) {}
+    }
+
+    // WalletConnect v2 QR/mobile flow
+    await wcProvider.connect({
+      optionalChains: [1],
+    });
+
+    // Wait until accounts exist before continuing
+    let attempts = 0;
+
+    while (
+      (!wcProvider.accounts || !wcProvider.accounts.length) &&
+      attempts < 40
+    ) {
+      await new Promise((r) => setTimeout(r, 250));
+      attempts++;
+    }
+
+    if (!wcProvider.accounts || !wcProvider.accounts.length) {
+      throw new Error('WalletConnect session established but no accounts returned');
+    }
+
     await onConnect('wc');
+
   } catch (e) {
-    console.warn('[CainWallet] WC rejected:', e);
+    console.error('[CainWallet] WalletConnect connect failed:', e);
+
+    // Clean broken session
+    try {
+      await wcProvider.disconnect();
+    } catch (_) {}
+
+    alert('Wallet connection failed. Please try again.');
   }
 }
 
