@@ -258,9 +258,10 @@
         </div>
       </div>
       <div class="h-8 w-px bg-white/10 mx-1"></div>
-      <!-- Wallet button — controlled entirely by wallet.js -->
+      <!-- Wallet button — controlled by wallet.js; inline onclick is a safety-net
+           so a click always opens the modal even before wallet.js finishes booting -->
       <div style="position:relative;">
-        <button id="wallet-btn">Connect Wallet</button>
+        <button id="wallet-btn" onclick="if(window.connectWallet){window.connectWallet();}">Connect Wallet</button>
         <div id="wallet-dropdown" class="hidden"></div>
       </div>
     </div>
