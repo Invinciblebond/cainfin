@@ -413,14 +413,21 @@ async function connectInjected() {
 async function connectWalletConnect() {
   closeCainModal();
 
+  // If provider not ready, wait for boot init or force a fresh init with retries
   if (!wcProvider) {
-    console.warn('[CainWallet] WalletConnect unavailable');
+    // If boot-time init is still running, give it a moment
+    let waitAttempts = 0;
+    while (!wcProvider && waitAttempts < 20) {
+      await new Promise((r) => setTimeout(r, 250));
+      waitAttempts++;
+    }
 
-    // Retry once if CDN attached late
-    try {
-      await initWalletConnect(0);
-    } catch (_) {}
+    // Still no provider — try a fresh init with retries
+    if (!wcProvider) {
+      await initWalletConnect(6);
+    }
 
+    // Final check
     if (!wcProvider) {
       alert('WalletConnect failed to load. Refresh the page and try again.');
       return;
