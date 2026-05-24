@@ -69,23 +69,28 @@ function normalizePool(raw, id) {
 
   const symbolOf = (t) => t?.mintInfo?.symbol || t?.symbol || null;
 
-  const tvl       = d.tvl       ?? null;
-  const volume24h = d.volumeUsd24h ?? d.volume24h ?? null;
-  const fee24h    = d.feeUsd24h ?? d.fee24h ?? null;
+  const tvl       = d.tvl            ?? null;
+  const volume24h = d.volumeUsd24h   ?? null;
+  const fee24h    = d.feeUsd24h      ?? null;  // absolute USD fees last 24h
+  const fee7d     = d.feeUsd7d       ?? null;
 
-  // feeTier: fixFeeRate is in basis-point-like units where 1000 = 0.1%, 10000 = 1%
+  // feeApr24h is Byreal's own annualised fee APR — the value shown as
+  // "Est. APR" in their UI (confirmed in PoolInfoDetail swagger schema).
+  // It is already a decimal ratio, e.g. 0.1202 = 12.02%. Multiply × 100
+  // to get a display percentage string.
+  let apr = null;
+  const rawApr = d.feeApr24h ?? null;
+  if (rawApr != null) {
+    const n = Number(rawApr);
+    if (!isNaN(n)) apr = (n * 100).toFixed(2); // e.g. "12.02"
+  }
+
+  // feeTier: fixFeeRate units — 1000 = 0.1%, 10000 = 1%
   let feeTier = null;
   const fr = d.feeRate?.fixFeeRate;
   if (fr != null) {
     const pct = Number(fr) / 10000;
     if (!isNaN(pct)) feeTier = pct.toFixed(2).replace(/\.?0+$/, '') + '%';
-  }
-
-  // Rough annualised fee APR: fee24h / tvl * 365 * 100
-  let apr = null;
-  const tvlN = Number(tvl), feeN = Number(fee24h);
-  if (!isNaN(tvlN) && tvlN > 0 && !isNaN(feeN)) {
-    apr = ((feeN / tvlN) * 365 * 100).toFixed(2);
   }
 
   return {
@@ -94,9 +99,10 @@ function normalizePool(raw, id) {
     tvl,
     volume24h,
     fee24h,
+    fee7d,
     feeTier,
-    apr,
-    aprIsComputed: true,
+    apr,               // Byreal's feeApr24h × 100, matches their "Est. APR" column
+    aprIsComputed: false,
     tokenASymbol:  symbolOf(d.mintA || d.baseMint),
     tokenBSymbol:  symbolOf(d.mintB || d.quoteMint),
   };
