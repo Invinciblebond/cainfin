@@ -4,6 +4,12 @@
 
 const WC_PROJECT_ID = '7b29dd4fac8b976e50bac0af4e31310a';
 
+// Bug E (handoff doc): the public mainnet RPC is heavily rate-limited and will
+// intermittently 429 in production. Point this at your own RPC — e.g. a
+// /balance route on the Jupiter Cloudflare Worker, or an Infura Solana
+// endpoint. Defaults to the public endpoint so nothing breaks out of the box.
+const SOLANA_RPC_URL = window.CAIN_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
+
 // ─── Guard against double-init (graceful, no throw) ────────────────────────
 if (window.__CAIN_WALLET_INIT__) {
   console.warn('[CainWallet] wallet.js already loaded — skipping re-init');
@@ -71,8 +77,10 @@ async function initWalletConnect(retries = 6) {
   try {
     wcProvider = await window.EthereumProvider.init({
       projectId: WC_PROJECT_ID,
-      chains: [1],
-      showQrModal: true, // let WC render its own QR modal (simplest, reliable)
+      // Bug A fix: `chains: [1]` is deprecated and triggers a documented
+      // account-doubling bug (WC monorepo #2641). Use optionalChains.
+      optionalChains: [1],
+      showQrModal: true, // QR / mobile: WC renders its own modal (label = "QR / Mobile")
       metadata: {
         name: 'Cain Finance',
         description: 'Earn on your assets — by Plume',
@@ -82,9 +90,14 @@ async function initWalletConnect(retries = 6) {
     });
 
     // WalletConnect events
-    wcProvider.on('connect', () => onConnect('wc'));
+    // Bug C fix: the bare `connect` event can fire a tick before `accounts`
+    // populate, so building the signer there can throw. Only act on `connect`
+    // if accounts are already readable; otherwise let `accountsChanged` drive it.
+    wcProvider.on('connect', () => {
+      if (wcProvider.accounts && wcProvider.accounts.length) onConnect('wc');
+    });
     wcProvider.on('accountsChanged', (accounts) => {
-      if (accounts.length) onConnect('wc');
+      if (accounts && accounts.length) onConnect('wc');
       else onDisconnect();
     });
     wcProvider.on('disconnect', onDisconnect);
@@ -111,6 +124,9 @@ function attachInjectedListeners() {
   const solana = getSolanaProvider();
   if (solana) {
     solana.on('accountChanged', (pubkey) => {
+      // Only react to account switches if the user already connected via Cain;
+      // otherwise an extension account change could trigger a silent connect.
+      if (!window.cainWallet.ready) return;
       if (pubkey) onConnect('solana');
       else onDisconnect();
     });
@@ -129,35 +145,47 @@ function getSolanaProvider() {
 // MetaMask connects to Solana via the Wallet Standard, NOT via window.ethereum.
 // Wallets register themselves into a registry we can read by dispatching the
 // `wallet-standard:app-ready` event; each wallet replies with `register`.
-const __cainWalletStandard = { wallets: [], ready: false };
+const __cainWalletStandard = { wallets: [] };
+
+// Bug B fix: the `register` callback object is hoisted to module scope and the
+// `register-wallet` listener is attached exactly once, but `app-ready` is
+// re-dispatched on EVERY call to initWalletStandardRegistry(). A wallet
+// extension injected AFTER the first call (common with MetaMask) only registers
+// if it hears a fresh `app-ready`. The old once-only guard is what caused the
+// flaky "MetaMask shows Not installed" and necessitated the 250ms retry hack.
+let __wsApi = null;
 
 function initWalletStandardRegistry() {
-  if (__cainWalletStandard.ready) return;
-  __cainWalletStandard.ready = true;
-
-  // Wallets call back with { register: (...wallets) => void }
-  const api = {
-    register: (...wallets) => {
-      for (const w of wallets) {
-        if (w && !__cainWalletStandard.wallets.includes(w)) {
-          __cainWalletStandard.wallets.push(w);
+  if (!__wsApi) {
+    // Wallets call back with { register: (...wallets) => void }
+    __wsApi = {
+      register: (...wallets) => {
+        for (const w of wallets) {
+          if (w && !__cainWalletStandard.wallets.includes(w)) {
+            __cainWalletStandard.wallets.push(w);
+          }
         }
-      }
-      return () => {};
-    },
-  };
+        return () => {};
+      },
+    };
 
-  // 1) Wallets that registered before us push onto window.navigator.wallets
-  //    via the event below. 2) We announce readiness so late wallets register.
+    // Attach the register-wallet listener once.
+    try {
+      window.addEventListener('wallet-standard:register-wallet', (e) => {
+        try { e.detail?.(__wsApi); } catch (_) {}
+      });
+    } catch (err) {
+      console.warn('[CainWallet] Wallet Standard listener failed:', err);
+    }
+  }
+
+  // Re-announce readiness EVERY call so late-injected wallets register.
   try {
-    window.addEventListener('wallet-standard:register-wallet', (e) => {
-      try { e.detail?.(api); } catch (_) {}
-    });
     window.dispatchEvent(
-      new CustomEvent('wallet-standard:app-ready', { detail: api })
+      new CustomEvent('wallet-standard:app-ready', { detail: __wsApi })
     );
   } catch (err) {
-    console.warn('[CainWallet] Wallet Standard init failed:', err);
+    console.warn('[CainWallet] WS app-ready failed:', err);
   }
 }
 
@@ -213,6 +241,55 @@ function wrapWalletStandardAsSolana(wsWallet) {
       const d = wsWallet.features?.['standard:disconnect'];
       if (d?.disconnect) { try { await d.disconnect(); } catch (_) {} }
       publicKey = null;
+    },
+    // Swap-engine seam (handoff doc Section 6): swap.js calls
+    // `window.cainWallet.provider.signTransaction(tx)` Phantom-style. The raw
+    // Wallet Standard wallet exposes signing as `solana:signTransaction`
+    // instead, so we shim it here and return the signed transaction object so
+    // swap.js is untouched.
+    async signTransaction(tx) {
+      const acct = wsWallet.accounts?.[0];
+      if (!acct) throw new Error('No connected account to sign with');
+
+      const signFeature = wsWallet.features?.['solana:signTransaction'];
+      if (!signFeature?.signTransaction) {
+        throw new Error('Wallet does not support solana:signTransaction');
+      }
+
+      // Wallet Standard expects the serialized wire bytes. ethers/web3
+      // transaction objects expose .serialize(); pass through if already bytes.
+      const serialized = typeof tx?.serialize === 'function'
+        ? tx.serialize()
+        : tx;
+
+      const [out] = await signFeature.signTransaction({
+        account: acct,
+        transaction: serialized,
+        // chain hint helps multi-chain wallets pick the right signer
+        chain: (wsWallet.chains || []).find((c) => String(c).startsWith('solana:')) || 'solana:mainnet',
+      });
+
+      // Return the signed transaction in the shape swap.js consumes. Most
+      // callers re-deserialize; expose the signed bytes under .signedTransaction
+      // and also return them directly for flexibility.
+      return out?.signedTransaction ?? out;
+    },
+    // Available on Wallet Standard wallets; harmless passthrough for callers
+    // that prefer the wallet to broadcast.
+    async signAndSendTransaction(tx) {
+      const acct = wsWallet.accounts?.[0];
+      if (!acct) throw new Error('No connected account to sign with');
+      const f = wsWallet.features?.['solana:signAndSendTransaction'];
+      if (!f?.signAndSendTransaction) {
+        throw new Error('Wallet does not support solana:signAndSendTransaction');
+      }
+      const serialized = typeof tx?.serialize === 'function' ? tx.serialize() : tx;
+      const [out] = await f.signAndSendTransaction({
+        account: acct,
+        transaction: serialized,
+        chain: (wsWallet.chains || []).find((c) => String(c).startsWith('solana:')) || 'solana:mainnet',
+      });
+      return out?.signature ?? out;
     },
     on(event, handler) {
       const evt = wsWallet.features?.['standard:events'];
@@ -341,7 +418,7 @@ async function connectWalletConnect() {
     return;
   }
   try {
-    await wcProvider.connect({ chains: [1] });
+    await wcProvider.connect({ optionalChains: [1] });
     await onConnect('wc');
   } catch (e) {
     console.warn('[CainWallet] WC rejected:', e);
@@ -471,8 +548,7 @@ async function fetchEvmBalance(address, provider) {
 async function fetchSolanaBalance(address) {
   if (!address) return;
   try {
-    // Use Solana mainnet public RPC — no API key needed
-    const res = await fetch('https://api.mainnet-beta.solana.com', {
+    const res = await fetch(SOLANA_RPC_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
