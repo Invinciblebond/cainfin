@@ -6,6 +6,11 @@
 <title>Cain Finance Dashboard</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Wallet: ethers + WalletConnect EthereumProvider. No AppKit. -->
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.17.0/dist/index.umd.js"></script>
+
 <script>
     tailwind.config = {
       theme: {
@@ -97,7 +102,49 @@
   .vs-item .vs-val { font-size:30px; font-weight:700; color:#fff; line-height:1; }
   .vs-item .vs-val.green { color:#4ade80; }
 
-  /* Dropdown */
+  /* Wallet button — owned by wallet.js syncUI() */
+  #wallet-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  #wallet-btn:hover { background: rgba(255,255,255,0.14); }
+
+  /* Connected address dropdown */
+  #wallet-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    min-width: 190px;
+    z-index: 200;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+  }
+  #wallet-dropdown.hidden { display: none; }
+  #wallet-dropdown a {
+    display: block;
+    padding: 11px 16px;
+    font-size: 13px;
+    color: #aaa;
+    text-decoration: none;
+    transition: background 0.12s, color 0.12s;
+  }
+  #wallet-dropdown a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+
+  /* Community dropdown */
   .dropdown { position:relative; display:inline-block; }
   .dropdown-menu {
     display: none;
@@ -125,23 +172,6 @@
 </style>
 </head>
 <body class="h-full font-sans overflow-hidden">
-  <!-- Default Statcounter code for cainfin
-https://cain.finance -->
-<script type="text/javascript">
-var sc_project=13247747; 
-var sc_invisible=1; 
-var sc_security="a9baf927"; 
-</script>
-<script type="text/javascript"
-src="https://www.statcounter.com/counter/counter.js"
-async></script>
-<noscript><div class="statcounter"><a title="hit counter"
-href="https://statcounter.com/" target="_blank"><img
-class="statcounter"
-src="https://c.statcounter.com/13247747/0/a9baf927/1/"
-alt="hit counter"
-referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
-<!-- End of Statcounter Code -->
 <div class="flex h-full">
 
 <!-- Sidebar -->
@@ -214,7 +244,7 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
       <a href="/Legal" class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
       </a>
-      <!-- Grid icon with dropdown -->
+      <!-- Grid icon with community dropdown -->
       <div class="dropdown">
         <button onclick="toggleDropdown()" class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
@@ -228,20 +258,11 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
         </div>
       </div>
       <div class="h-8 w-px bg-white/10 mx-1"></div>
-      <!-- Connect Metamask -->
-      <button class="bg-white/10 border border-white/10 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-white/20 transition-colors flex items-center gap-2">
-        <svg width="14" height="14" viewBox="0 0 35 33" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M32.958 1L19.174 11.03l2.52-5.958L32.958 1z" fill="#E17726" stroke="#E17726" stroke-width=".25" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M2.042 1l13.67 10.118-2.396-6.046L2.042 1z" fill="#E27625" stroke="#E27625" stroke-width=".25" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M28.147 23.533l-3.673 5.628 7.858 2.162 2.254-7.668-6.44-.122z" fill="#E27625" stroke="#E27625" stroke-width=".25" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M.42 23.655l2.24 7.668 7.845-2.162-3.66-5.628-6.425.122z" fill="#E27625" stroke="#E27625" stroke-width=".25" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M10.12 14.452l-2.19 3.313 7.806.354-.268-8.396-5.348 4.729z" fill="#E27625" stroke="#E27625" stroke-width=".25" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M24.88 14.452l-5.415-4.816-.178 8.483 7.793-.354-2.2-3.313z" fill="#E27625" stroke="#E27625" stroke-width=".25" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M10.505 29.161l4.694-2.285-4.048-3.154-.646 5.44z" fill="#E27625" stroke="#E27625" stroke-width=".25" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M19.8 26.876l4.707 2.285-.659-5.44-4.048 3.155z" fill="#E27625" stroke="#E27625" stroke-width=".25" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Connect MetaMask
-      </button>
+      <!-- Wallet button — controlled entirely by wallet.js -->
+      <div style="position:relative;">
+        <button id="wallet-btn">Connect Wallet</button>
+        <div id="wallet-dropdown" class="hidden"></div>
+      </div>
     </div>
   </header>
 
@@ -252,7 +273,7 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
         Your balance
         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
       </div>
-      <h2 style="font-size:56px; font-weight:700; letter-spacing:-1.5px; line-height:1; margin-bottom:8px;">$0.00</h2>
+      <h2 id="hero-balance" style="font-size:56px; font-weight:700; letter-spacing:-1.5px; line-height:1; margin-bottom:8px;">$0.00</h2>
       <p class="text-cain-green text-sm font-medium">+$0.00 (0.00%) in the Last 1M</p>
     </div>
     <div class="grid grid-cols-4 gap-8 mb-10 border-t border-white/5 pt-8">
@@ -270,7 +291,7 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
       </div>
       <div class="space-y-2">
         <p style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:0.07em; border-bottom:1px dashed rgba(255,255,255,0.12); padding-bottom:4px; width:fit-content;">Available to invest</p>
-        <p class="text-2xl font-semibold">$0.00</p>
+        <p id="available-balance" class="text-2xl font-semibold">$0.00</p>
       </div>
     </div>
     <div class="flex items-center gap-3">
@@ -481,7 +502,7 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
     document.getElementById('community-dropdown').classList.toggle('open');
   }
 
-  // Close dropdown when clicking outside
+  // Close community dropdown on outside click
   document.addEventListener('click', function(e) {
     const dropdown = document.querySelector('.dropdown');
     if (!dropdown.contains(e.target)) {
@@ -489,4 +510,8 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
     }
   });
 </script>
+
+<!-- Global wallet manager — loads last, runs on every page -->
+<script src="/js/wallet.js" defer></script>
+
 </body></html>

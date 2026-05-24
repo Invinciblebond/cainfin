@@ -7,6 +7,18 @@
 <title>Cain — Swap</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- ══ Wallet + Swap deps (Step 5a) ══ -->
+<!-- ethers + WalletConnect provider (used by wallet.js for EVM) -->
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.17.0/dist/index.umd.js"></script>
+<!-- @solana/web3.js — only for VersionedTransaction deserialize (no RPC) -->
+<script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
+<script>window.solanaWeb3 = solanaWeb3;</script>
+<!-- Global wallet manager + swap engine -->
+<script src="/js/wallet.js" defer></script>
+<script src="/js/swap.js" defer></script>
+
 <script>
   tailwind.config = {
     theme: {
@@ -228,7 +240,7 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
 
     <!-- Nav -->
     <nav style="display:flex; flex-direction:column; gap:4px;">
-      <a href="#" style="display:flex; align-items:center; gap:12px; padding:8px; border-radius:10px; color:#555; text-decoration:none; transition:color 0.15s, background 0.15s; white-space:nowrap;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.color='#555'; this.style.background='transparent'">
+      <a href="/" style="display:flex; align-items:center; gap:12px; padding:8px; border-radius:10px; color:#555; text-decoration:none; transition:color 0.15s, background 0.15s; white-space:nowrap;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.color='#555'; this.style.background='transparent'">
         <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
         <span class="sidebar-label">Earn</span>
       </a>
@@ -290,9 +302,9 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
       </div>
       <div style="width:1px; height:32px; background:rgba(255,255,255,0.1);"></div>
 
-      <!-- Disconnected -->
+      <!-- Disconnected — now opens the real Cain wallet modal (Step 5d) -->
       <div id="wallet-disconnected">
-        <button onclick="simulateConnect()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.1); padding:7px 14px; border-radius:12px; font-size:12px; font-weight:600; color:#ccc; cursor:pointer; display:flex; align-items:center; gap:8px; transition:background 0.15s; font-family:'Inter',sans-serif;" onmouseover="this.style.background='rgba(255,255,255,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+        <button onclick="window.connectWallet()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.1); padding:7px 14px; border-radius:12px; font-size:12px; font-weight:600; color:#ccc; cursor:pointer; display:flex; align-items:center; gap:8px; transition:background 0.15s; font-family:'Inter',sans-serif;" onmouseover="this.style.background='rgba(255,255,255,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
           <svg width="14" height="14" viewBox="0 0 35 33" fill="none">
             <path d="M32.958 1L19.174 11.03l2.52-5.958L32.958 1z" fill="#E17726" stroke="#E17726" stroke-width=".25"/>
             <path d="M2.042 1l13.67 10.118-2.396-6.046L2.042 1z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
@@ -303,25 +315,25 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
             <path d="M10.505 29.161l4.694-2.285-4.048-3.154-.646 5.44z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
             <path d="M19.8 26.876l4.707 2.285-.659-5.44-4.048 3.155z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
           </svg>
-          Connect MetaMask
+          Connect Wallet
         </button>
       </div>
 
-      <!-- Connected -->
+      <!-- Connected — populated live by swap-page-integration.js -->
       <div id="wallet-connected" style="display:none;" class="wallet-dropdown">
         <button class="connected-btn" onclick="toggleWalletMenu()">
           <div class="wallet-dot"></div>
           <span class="eth-badge">ETH</span>
-          <span style="font-family:monospace; font-size:12px;">0xA4...5D4f</span>
+          <span style="font-family:monospace; font-size:12px;">0x0000...0000</span>
           <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#555" stroke-width="2"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>
         </button>
         <div id="wallet-menu" class="wallet-menu">
           <div class="wallet-menu-body">
-            <div class="wallet-addr">0xA4...5D4f</div>
-            <div class="wallet-bal">$0.00</div>
-            <div class="wallet-change">+$0.00 (+0.00%) in the last 1M</div>
+            <div class="wallet-addr">0x0000...0000</div>
+            <div class="wallet-bal">—</div>
+            <div class="wallet-change">Live balance from your wallet</div>
             <div class="wallet-actions">
-              <div class="wallet-action-btn">Earn</div>
+              <div class="wallet-action-btn" onclick="window.location.href='/'">Earn</div>
               <div class="wallet-action-btn">Get USDC</div>
             </div>
           </div>
@@ -339,7 +351,7 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
             <div class="toggle-switch" id="autoclaim-toggle"><div class="toggle-knob"></div></div>
           </div>
           <div class="wallet-divider"></div>
-          <button class="wallet-logout" onclick="simulateDisconnect()">Logout</button>
+          <button class="wallet-logout" onclick="window.disconnectWallet()">Logout</button>
         </div>
       </div>
     </div>
@@ -427,9 +439,9 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
           <!-- Details -->
           <div id="detail-block" style="display:none; margin-top:14px; padding:14px 16px; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06); border-radius:14px;">
             <div class="detail-row"><span>Rate</span><span class="val" id="d-rate">—</span></div>
-            <div class="detail-row"><span>Price impact</span><span class="val" id="d-impact" style="color:#4ade80;">—</span></div>
+            <div class="detail-row"><span>Fee</span><span class="val" id="d-impact" style="color:#4ade80;">—</span></div>
             <div class="detail-row"><span>Min. received</span><span class="val" id="d-min">—</span></div>
-            <div class="detail-row"><span>Network fee</span><span class="val">~$0.04</span></div>
+            <div class="detail-row"><span>Network fee</span><span class="val">Handled by Jupiter</span></div>
           </div>
 
           <button id="swap-cta" class="swap-btn swap-btn-disabled" onclick="doSwap()">Enter an amount</button>
@@ -471,7 +483,7 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
         <!-- Info note -->
         <div class="info-note">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-          <p style="font-size:11px; color:#444; line-height:1.7; margin:0;">Swaps on Cain settle directly on <span style="color:#777; font-weight:500;">Plume Network</span>. All vault tokens are backed 1:1 by their underlying real-world assets. Redemption periods may apply — check each vault's terms before swapping.</p>
+          <p style="font-size:11px; color:#444; line-height:1.7; margin:0;">Swaps route through <span style="color:#777; font-weight:500;">Jupiter</span> across all Solana DEXes for best execution. All vault tokens are backed 1:1 by their underlying real-world assets. Redemption periods may apply — check each vault's terms before swapping.</p>
         </div>
       </div>
 
@@ -481,7 +493,7 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
         <div id="route-loading" class="route-card" style="text-align:center; padding:28px 20px;">
           <div class="loading-dots" style="margin-bottom:14px;"><span></span><span></span><span></span></div>
           <p style="font-size:13px; font-weight:500; color:#777; margin:0 0 6px;">Finding best swap</p>
-          <p style="font-size:11px; color:#444; line-height:1.6; margin:0;">Scanning networks to find<br>the best deal…</p>
+          <p style="font-size:11px; color:#444; line-height:1.6; margin:0;">Scanning Solana DEXes to find<br>the best deal…</p>
         </div>
         <div id="route-results" style="display:none; flex-direction:column; gap:8px;">
           <div class="route-option best" onclick="selectRoute(this,0)">
@@ -493,7 +505,7 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
               <span id="route-0-from" style="background:rgba(37,99,235,0.2); color:#60a5fa; border-radius:5px; padding:2px 8px;">USDC</span>
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#444" stroke-width="1.5"><path d="M2 5h6M6 3l2 2-2 2"/></svg>
               <span id="route-0-to" style="background:rgba(19,32,64,0.5); color:#5b9bd5; border-radius:5px; padding:2px 8px;">nALPHA</span>
-              <span style="margin-left:auto; color:#555;">Direct · 0.05%</span>
+              <span style="margin-left:auto; color:#555;">Best price</span>
             </div>
           </div>
           <div class="route-option" onclick="selectRoute(this,1)" style="opacity:0.7;">
@@ -504,10 +516,10 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
             <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:#555;">
               <span id="route-1-from" style="background:rgba(37,99,235,0.2); color:#60a5fa; border-radius:5px; padding:2px 8px;">USDC</span>
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#444" stroke-width="1.5"><path d="M2 5h6M6 3l2 2-2 2"/></svg>
-              <span style="background:rgba(255,255,255,0.05); color:#888; border-radius:5px; padding:2px 8px;">ETH</span>
+              <span style="background:rgba(255,255,255,0.05); color:#888; border-radius:5px; padding:2px 8px;">SOL</span>
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#444" stroke-width="1.5"><path d="M2 5h6M6 3l2 2-2 2"/></svg>
               <span id="route-1-to" style="background:rgba(19,32,64,0.5); color:#5b9bd5; border-radius:5px; padding:2px 8px;">nALPHA</span>
-              <span style="margin-left:auto; color:#555;">0.10%</span>
+              <span style="margin-left:auto; color:#555;">Alt</span>
             </div>
           </div>
         </div>
@@ -528,12 +540,7 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
     <button onclick="toggleDrawer()" style="color:#555; background:none; border:none; cursor:pointer; font-size:18px; line-height:1;">✕</button>
   </div>
   <div style="flex:1; overflow-y:auto;">
-    <div class="txn-row"><div><div style="font-size:13px;font-weight:500;color:#ccc;">USDC → nALPHA</div><div style="font-size:11px;color:#555;margin-top:2px;">50,000 USDC · 2m ago</div></div><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot" style="background:#4ade80;"></div><span style="font-size:11px;color:#4ade80;">Complete</span></div></div>
-    <div class="txn-row"><div><div style="font-size:13px;font-weight:500;color:#ccc;">USDC → nOPAL</div><div style="font-size:11px;color:#555;margin-top:2px;">12,500 USDC · 7m ago</div></div><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot" style="background:#4ade80;"></div><span style="font-size:11px;color:#4ade80;">Complete</span></div></div>
-    <div class="txn-row"><div><div style="font-size:13px;font-weight:500;color:#ccc;">nALPHA → USDC</div><div style="font-size:11px;color:#555;margin-top:2px;">8,200 nALPHA · 14m ago</div></div><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot" style="background:#4ade80;"></div><span style="font-size:11px;color:#4ade80;">Complete</span></div></div>
-    <div class="txn-row"><div><div style="font-size:13px;font-weight:500;color:#ccc;">USDC → nBASIS</div><div style="font-size:11px;color:#555;margin-top:2px;">100,000 USDC · 21m ago</div></div><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot" style="background:#fbbf24;"></div><span style="font-size:11px;color:#fbbf24;">Pending</span></div></div>
-    <div class="txn-row"><div><div style="font-size:13px;font-weight:500;color:#ccc;">USDC → nWISDOM</div><div style="font-size:11px;color:#555;margin-top:2px;">25,000 USDC · 38m ago</div></div><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot" style="background:#4ade80;"></div><span style="font-size:11px;color:#4ade80;">Complete</span></div></div>
-    <div class="txn-row"><div><div style="font-size:13px;font-weight:500;color:#ccc;">nTBILL → USDC</div><div style="font-size:11px;color:#555;margin-top:2px;">5,000 nTBILL · 1h ago</div></div><div style="display:flex;align-items:center;gap:6px;"><div class="status-dot" style="background:#4ade80;"></div><span style="font-size:11px;color:#4ade80;">Complete</span></div></div>
+    <div class="txn-row"><div><div style="font-size:13px;font-weight:500;color:#666;">No swaps yet</div><div style="font-size:11px;color:#444;margin-top:2px;">Your completed swaps will appear here</div></div></div>
   </div>
 </div>
 
@@ -552,6 +559,7 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
 <script>
 const TOKENS = [
   { symbol:'USDC',    name:'USD Coin',                         bg:'#2563eb', fg:'#fff',    letter:'U' },
+  { symbol:'SOL',     name:'Solana',                           bg:'#9945ff', fg:'#fff',    letter:'◎' },
   { symbol:'nALPHA',  name:'Alpha — Diversified Index',        bg:'#132040', fg:'#5b9bd5', letter:'α' },
   { symbol:'nOPAL',   name:'BlackOpal LiquidStone II',         bg:'#252525', fg:'#999',    letter:'◈' },
   { symbol:'nBASIS',  name:'Basis — Crypto Basis',             bg:'#16184a', fg:'#818cf8', letter:'B' },
@@ -562,19 +570,11 @@ const TOKENS = [
   { symbol:'nACRDX',  name:'ACRDX — Private Credit',           bg:'#122212', fg:'#4ade80', letter:'A' },
 ];
 
-let fromToken = TOKENS[0], toToken = TOKENS[1], modalTarget = 'from', slippage = 0.5, routeTimer = null;
+// State (Step 5b: mirrored onto window so swap-page-integration.js can read it)
+let fromToken = TOKENS[0], toToken = TOKENS[2], modalTarget = 'from', slippage = 0.5;
+window.fromToken = fromToken; window.toToken = toToken; window.slippage = slippage;
+function syncState() { window.fromToken = fromToken; window.toToken = toToken; window.slippage = slippage; }
 
-const RATES = {
-  'USDC->nALPHA':0.9979,'USDC->nOPAL':0.9977,'USDC->nBASIS':0.9981,
-  'USDC->nTBILL':0.9985,'USDC->nWISDOM':0.9982,'USDC->nCREDIT':0.9975,
-  'USDC->nFALCON':0.9978,'USDC->nACRDX':0.9984,
-};
-function getRate(a,b) {
-  const k=`${a.symbol}->${b.symbol}`, r=`${b.symbol}->${a.symbol}`;
-  if(RATES[k]) return RATES[k];
-  if(RATES[r]) return 1/RATES[r];
-  return 1;
-}
 function fmt(n) { return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:4}); }
 function fmtUSD(n) { return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
@@ -593,64 +593,25 @@ function updateTokenUI() {
     const el=document.getElementById(id);
     el.style.background=toToken.bg+'55'; el.style.color=toToken.fg; el.textContent=toToken.symbol;
   });
+  syncState();
 }
 
-function onAmountChange() {
-  const val=parseFloat(document.getElementById('from-input').value);
-  const cta=document.getElementById('swap-cta');
-  const det=document.getElementById('detail-block');
-  const rp=document.getElementById('route-panel');
-  if(!val||val<=0) {
-    document.getElementById('to-input').value='';
-    document.getElementById('from-usd').textContent='$0.00';
-    document.getElementById('to-usd').textContent='$0.00';
-    cta.textContent='Enter an amount'; cta.className='swap-btn swap-btn-disabled';
-    det.style.display='none'; rp.classList.remove('visible');
-    clearTimeout(routeTimer); return;
-  }
-  const rate=getRate(fromToken,toToken), output=val*rate;
-  const impact=val>100000?0.12:val>10000?0.04:'<0.01';
-  const minOut=output*(1-slippage/100);
-  document.getElementById('to-input').value=output.toFixed(4);
-  document.getElementById('from-usd').textContent=fmtUSD(val);
-  document.getElementById('to-usd').textContent=fmtUSD(output);
-  document.getElementById('d-rate').textContent=`1 ${fromToken.symbol} = ${rate.toFixed(4)} ${toToken.symbol}`;
-  document.getElementById('d-impact').textContent=`< ${impact}%`;
-  document.getElementById('d-min').textContent=`${minOut.toFixed(4)} ${toToken.symbol}`;
-  document.getElementById('route-0-out').textContent=fmt(output);
-  document.getElementById('route-1-out').textContent=fmt(output*0.9985);
-  det.style.display='block';
-  cta.textContent=`Swap ${fromToken.symbol} → ${toToken.symbol}`; cta.className='swap-btn swap-btn-active';
-  rp.classList.add('visible');
-  document.getElementById('route-loading').style.display='block';
-  document.getElementById('route-results').style.display='none';
-  clearTimeout(routeTimer);
-  routeTimer=setTimeout(()=>{
-    document.getElementById('route-loading').style.display='none';
-    document.getElementById('route-results').style.display='flex';
-  },1600);
-}
+// NOTE: onAmountChange + doSwap are provided by /js/swap-page-integration.js.
+// Demo RATES/getRate/routeTimer logic has been removed (Step 5c).
 
 function flip() {
   [fromToken,toToken]=[toToken,fromToken];
   document.getElementById('from-input').value=document.getElementById('to-input').value||'';
-  updateTokenUI(); onAmountChange();
+  updateTokenUI(); window.onAmountChange && window.onAmountChange();
 }
 function setPct(pct) {
   document.getElementById('from-input').value=((10000*pct)/100).toFixed(2);
-  onAmountChange();
+  window.onAmountChange && window.onAmountChange();
 }
 function selectPair(from,to) {
   fromToken=TOKENS.find(t=>t.symbol===from)||fromToken;
   toToken=TOKENS.find(t=>t.symbol===to)||toToken;
-  updateTokenUI(); onAmountChange();
-}
-function doSwap() {
-  const val=parseFloat(document.getElementById('from-input').value);
-  if(!val||val<=0) return;
-  const cta=document.getElementById('swap-cta');
-  cta.textContent='Confirming…'; cta.className='swap-btn swap-btn-disabled';
-  setTimeout(()=>{ cta.textContent='✓ Submitted'; setTimeout(()=>{ document.getElementById('from-input').value=''; onAmountChange(); },1800); },1200);
+  updateTokenUI(); window.onAmountChange && window.onAmountChange();
 }
 function selectRoute(el,idx) {
   document.querySelectorAll('.route-option').forEach(r=>{ r.classList.remove('best'); r.style.opacity='0.7'; });
@@ -662,14 +623,14 @@ function setSlip(val,btn) {
   slippage=parseFloat(val);
   document.getElementById('slip-display').textContent=val+'%';
   document.querySelectorAll('.slip-opt').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active'); onAmountChange();
+  btn.classList.add('active'); syncState(); window.onAmountChange && window.onAmountChange();
 }
 function setSlipCustom(val) {
   if(!val) return;
   slippage=parseFloat(val);
   document.getElementById('slip-display').textContent=val+'%';
   document.querySelectorAll('.slip-opt').forEach(b=>b.classList.remove('active'));
-  onAmountChange();
+  syncState(); window.onAmountChange && window.onAmountChange();
 }
 
 function openModal(target) {
@@ -688,7 +649,7 @@ function selectToken(sym) {
   const t=TOKENS.find(x=>x.symbol===sym); if(!t) return;
   if(modalTarget==='from'){if(t.symbol===toToken.symbol)toToken=fromToken;fromToken=t;}
   else{if(t.symbol===fromToken.symbol)fromToken=toToken;toToken=t;}
-  closeModal(); updateTokenUI(); onAmountChange();
+  closeModal(); updateTokenUI(); window.onAmountChange && window.onAmountChange();
 }
 
 function toggleDrawer() {
@@ -706,19 +667,14 @@ document.addEventListener('click',e=>{
   if(w&&!w.contains(e.target)) document.getElementById('wallet-menu')?.classList.remove('open');
 });
 
-function simulateConnect() {
-  document.getElementById('wallet-disconnected').style.display='none';
-  document.getElementById('wallet-connected').style.display='inline-block';
-}
-function simulateDisconnect() {
-  document.getElementById('wallet-connected').style.display='none';
-  document.getElementById('wallet-disconnected').style.display='inline-block';
-  document.getElementById('wallet-menu').classList.remove('open');
-}
 function toggleWalletMenu() { document.getElementById('wallet-menu').classList.toggle('open'); }
 function setTheme(t,btn) { document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
 function toggleAutoClaimUI() { document.getElementById('autoclaim-toggle').classList.toggle('on'); }
 
 updateTokenUI(); filterTokens('');
 </script>
-</body></html>
+
+<!-- Swap integration layer — overrides onAmountChange + doSwap with real Jupiter calls (Step 5a) -->
+<script src="/js/swap-page-integration.js" defer></script>
+
+</body></html>.
