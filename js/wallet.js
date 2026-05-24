@@ -114,10 +114,14 @@ function attachInjectedListeners() {
   // EVM injected (MetaMask) events
   if (window.ethereum) {
     window.ethereum.on('accountsChanged', (accounts) => {
+      if (window.cainWallet.chain === 'solana') return;
       if (accounts.length) onConnect('injected');
       else onDisconnect();
     });
-    window.ethereum.on('chainChanged', () => onConnect('injected'));
+    window.ethereum.on('chainChanged', () => {
+      if (window.cainWallet.chain === 'solana') return;
+      onConnect('injected');
+    });
   }
 
   // Solana injected (Phantom) events
@@ -338,7 +342,7 @@ async function attemptSilentReconnect() {
     }
 
     // EVM: try injected first (no prompt if already approved)
-    if (window.ethereum) {
+    if (window.ethereum && chain !== 'solana') {
       const accounts = await window.ethereum.request({ method: 'eth_accounts' });
       if (accounts.length) { await onConnect('injected'); return; }
     }
