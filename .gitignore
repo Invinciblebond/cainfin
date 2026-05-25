@@ -1,7 +1,57 @@
-# wrangler files
-.wrangler
-.dev.vars*
-!.dev.vars.example
+# ─── Dependencies ───────────────────────────────────────────────
+node_modules/
+.npm
+.pnp
+.pnp.js
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# ─── Vite / build output ────────────────────────────────────────
+dist/
+dist-ssr/
+.vite/
+*.local
+# Keep the built widget OUT of git — it's a compiled artifact.
+# (If you'd rather commit the bundle so the site can deploy without a build
+#  step, delete the next two lines.)
+cain-wallet-widget.iife.js
+cain-wallet-widget.css
+
+# ─── Logs ───────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ─── Env / secrets ──────────────────────────────────────────────
 .env*
 !.env.example
+.dev.vars*
+!.dev.vars.example
+
+# ─── Wrangler / Cloudflare ──────────────────────────────────────
+.wrangler/
 worker.js
+
+# ─── Editor / OS ────────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+Thumbs.db
+
+# ─── Test / coverage ────────────────────────────────────────────
+coverage/
+*.lcov
+.nyc_output/

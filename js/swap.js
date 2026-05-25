@@ -1,18 +1,18 @@
 // Cain Finance — Solana Swap Engine
 // Jupiter Swap API v2 Meta-Aggregator (/order + /execute) via Cloudflare Worker.
-// Depends on: wallet.js (window.cainWallet with Phantom provider).
+// Depends on: wallet.js (window.cainWallet with Phantom OR Wallet-Standard provider).
 //
 // Flow:
 //   1. GET  /order   → quote + assembled base64 transaction (taker = wallet)
-//   2. Phantom signs the transaction
+//   2. Wallet signs the transaction
 //   3. POST /execute → Jupiter lands it (priority fees, slippage, confirmation)
 //
 // No RPC, no @solana/web3.js Connection needed — Jupiter handles landing.
-// We only need base64 <-> Uint8Array + Phantom's signTransaction.
+// We only need base64 <-> Uint8Array + the wallet's signTransaction.
 
 // ─── Config ──────────────────────────────────────────────────────────────
-// Set this to your deployed Worker URL (worker source: /cain-jupiter-proxy.js on root).
-const CAIN_PROXY = 'https://cain-jupiter-proxy.YOUR-SUBDOMAIN.workers.dev'; // ← set after deploying Worker
+// Deployed Jupiter proxy Worker.
+const CAIN_PROXY = 'https://cain-jupiter-proxy.doffecul.workers.dev';
 const QUOTE_TTL_MS = 30_000; // refuse to execute an order older than this
 
 // ─── Token registry (Solana mints) ─────────────────────────────────────────
@@ -74,6 +74,27 @@ function bytesToB64(bytes) {
   let bin = '';
   for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
   return btoa(bin);
+}
+
+// Normalize whatever a wallet's signTransaction returns into raw wire bytes.
+// Different providers return different shapes:
+//   - Phantom: a VersionedTransaction object exposing .serialize()
+//   - Wallet-Standard shim (MetaMask/Solana): already-serialized bytes
+//     (Uint8Array) or a { signedTransaction } wrapper
+//   - Some wallets: a base64 string
+function toWireBytes(signed) {
+  if (!signed) throw new Error('Signing returned nothing');
+  // Phantom-style: a transaction object exposing .serialize()
+  if (typeof signed.serialize === 'function') return signed.serialize();
+  // Wallet-Standard shim may wrap bytes under .signedTransaction
+  const candidate = signed.signedTransaction ?? signed;
+  if (candidate instanceof Uint8Array) return candidate;
+  if (Array.isArray(candidate)) return Uint8Array.from(candidate);
+  if (candidate instanceof ArrayBuffer) return new Uint8Array(candidate);
+  // Some wallets hand back a base64 string directly — pass through.
+  if (typeof candidate === 'string') return b64ToBytes(candidate);
+  if (typeof candidate.serialize === 'function') return candidate.serialize();
+  throw new Error('Unrecognized signed-transaction shape from wallet');
 }
 
 // ─── Get order (quote + transaction) — called on amount change ──────────────
@@ -155,16 +176,19 @@ async function executeJupiterSwap() {
     throw new Error('Quote expired — please refresh and try again');
   }
 
-  const solana = wallet.provider; // Phantom
+  const solana = wallet.provider; // Phantom OR Wallet-Standard wrapper
 
   // 1. Deserialize Jupiter's assembled v0 transaction
   const { VersionedTransaction } = window.solanaWeb3;
   const tx = VersionedTransaction.deserialize(b64ToBytes(currentOrder.transaction));
 
-  // 2. Sign with Phantom (partial sign is fine — JupiterZ MM signature, if any,
-  //    is added by /execute on Jupiter's side).
+  // 2. Sign with the connected wallet. Different providers return different
+  //    shapes, so normalize to a base64 wire string regardless:
+  //      - Phantom: returns a VersionedTransaction (has .serialize())
+  //      - Wallet-Standard shim (MetaMask/Solana): returns already-serialized
+  //        bytes (Uint8Array) or a { signedTransaction } wrapper
   const signed = await solana.signTransaction(tx);
-  const signedB64 = bytesToB64(signed.serialize());
+  const signedB64 = bytesToB64(toWireBytes(signed));
 
   // 3. Hand to Jupiter to land (priority fees, slippage, confirmation handled)
   const res = await fetch(`${CAIN_PROXY}/execute`, {

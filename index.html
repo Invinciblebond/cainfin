@@ -7,9 +7,8 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- Wallet: ethers + WalletConnect EthereumProvider. No AppKit. -->
-<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.17.0/dist/index.umd.js"></script>
+<!-- Wallet Adapter widget styles (built by Vite from main.jsx; includes adapter modal CSS) -->
+<link rel="stylesheet" href="/css/cain-wallet-widget.css">
 
 <script>
     tailwind.config = {
@@ -102,7 +101,7 @@
   .vs-item .vs-val { font-size:30px; font-weight:700; color:#fff; line-height:1; }
   .vs-item .vs-val.green { color:#4ade80; }
 
-  /* Wallet button */
+  /* Wallet button — used by the React widget's custom trigger button */
   #wallet-btn {
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.1);
@@ -143,6 +142,29 @@
     transition: background 0.12s, color 0.12s;
   }
   #wallet-dropdown a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+
+  /* ── Wallet Adapter modal theming — match Cain dark/glass aesthetic ──
+     The adapter modal markup is fixed, but we restyle it to fit. */
+  .wallet-adapter-modal-wrapper {
+    background: #0f0f0f !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.7) !important;
+    font-family: 'Inter', sans-serif !important;
+  }
+  .wallet-adapter-modal-overlay { background: rgba(0,0,0,0.7) !important; backdrop-filter: blur(6px); }
+  .wallet-adapter-modal-title { color: #fff !important; font-size: 17px !important; }
+  .wallet-adapter-modal-list .wallet-adapter-button {
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    border-radius: 14px !important;
+    transition: background .15s, border-color .15s !important;
+  }
+  .wallet-adapter-modal-list .wallet-adapter-button:hover {
+    background: rgba(255,255,255,0.07) !important;
+    border-color: rgba(255,255,255,0.14) !important;
+  }
+  .wallet-adapter-modal-button-close { background: rgba(255,255,255,0.05) !important; }
 
   /* Community dropdown */
   .dropdown { position:relative; display:inline-block; }
@@ -256,9 +278,13 @@
         </div>
       </div>
       <div class="h-8 w-px bg-white/10 mx-1"></div>
+
+      <!-- ══ WALLET: React (Wallet Adapter) island mounts here ══
+           The built widget (cain-wallet-widget.iife.js) renders the connect
+           button + connected dropdown into #cain-wallet-root and writes state
+           into window.cainWallet for swap.js / balance fetch to consume. -->
       <div style="position:relative;">
-        <button id="wallet-btn" onclick="if(window.connectWallet){window.connectWallet();}">Connect Wallet</button>
-        <div id="wallet-dropdown" class="hidden"></div>
+        <div id="cain-wallet-root"></div>
       </div>
     </div>
   </header>
@@ -501,6 +527,46 @@
   });
 </script>
 
+<!-- ══ Solana balance fetch (extracted from old wallet.js, unchanged logic) ══
+     The React wallet widget calls window.fetchSolanaBalance(address) on connect.
+     Point window.CAIN_SOLANA_RPC_URL at your own RPC to avoid public 429s. -->
+<script>
+(function () {
+  var SOLANA_RPC_URL = window.CAIN_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
+
+  window.fetchSolanaBalance = async function (address) {
+    if (!address) return;
+    try {
+      var res = await fetch(SOLANA_RPC_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getBalance', params: [address] }),
+      });
+      var data = await res.json();
+      var lamports = (data && data.result && data.result.value) || 0;
+      var sol = (lamports / 1e9).toFixed(4);
+      if (window.cainWallet) window.cainWallet.balance = sol;
+      var heroEl = document.getElementById('hero-balance');
+      var availEl = document.getElementById('available-balance');
+      if (heroEl) heroEl.textContent = sol + ' SOL';
+      if (availEl) availEl.textContent = sol + ' SOL';
+    } catch (e) {
+      console.warn('[CainWallet] Solana balance fetch failed:', e);
+    }
+  };
+
+  window.resetCainBalanceUI = function () {
+    var heroEl = document.getElementById('hero-balance');
+    var availEl = document.getElementById('available-balance');
+    if (heroEl) heroEl.textContent = '$0.00';
+    if (availEl) availEl.textContent = '$0.00';
+  };
+
+  // Reset the balance UI when the widget reports a disconnect.
+  window.addEventListener('cain:disconnected', window.resetCainBalanceUI);
+})();
+</script>
+
 <!--
   ── Pool data from Cloudflare Worker ──────────────────────────────────────
   The worker fetches each pool via the confirmed-working per-pool detail
@@ -586,7 +652,9 @@
 })();
 </script>
 
-<!-- Global wallet manager -->
-<script src="/js/wallet.js" defer></script>
+<!-- ══ Global wallet manager — Solana Wallet Adapter + WalletConnect fallback ══
+     Built by Vite from src/main.jsx → dist/cain-wallet-widget.iife.js.
+     Replaces the old /js/wallet.js entirely on this page. -->
+<script src="/js/cain-wallet-widget.iife.js" defer></script>
 
 </body></html>
