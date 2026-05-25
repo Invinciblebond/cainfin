@@ -418,44 +418,19 @@ nav {
 /* Turnstile container */
 .cf-turnstile-container { margin-bottom: 18px; }
 
-/* Turnstile fallback */
-.turnstile-wrap {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.18);
+/* Turnstile reload prompt (shown only if the widget genuinely fails to load) */
+.turnstile-reload {
+  background: rgba(248,113,113,0.12);
+  border: 1px solid rgba(248,113,113,0.35);
   border-radius: 14px;
   padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   margin-bottom: 18px;
-  backdrop-filter: blur(8px);
+  font-size: 12px;
+  color: #fecaca;
+  line-height: 1.5;
 }
-.turnstile-left { display: flex; align-items: center; gap: 10px; }
-.turnstile-check {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  background: var(--green);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.turnstile-check svg { width: 14px; height: 14px; }
-.turnstile-text { font-size: 13px; font-weight: 500; color: #fff; }
-.turnstile-sub { font-size: 11px; color: rgba(255,255,255,0.45); }
-.turnstile-brand { text-align: right; flex-shrink: 0; }
-.turnstile-brand-name {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: rgba(255,255,255,0.7);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  justify-content: flex-end;
-}
-.cf-logo { width: 14px; height: 14px; color: #f6821f; }
-.turnstile-brand-links { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 2px; }
-.turnstile-brand-links a { color: rgba(255,255,255,0.35); text-decoration: none; }
-.turnstile-brand-links a:hover { color: rgba(255,255,255,0.6); }
+.turnstile-reload strong { color: #fff; }
+.turnstile-reload a { color: #fff; text-decoration: underline; cursor: pointer; }
 
 /* Send button */
 .faucet-btn {
@@ -931,33 +906,16 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
                  data-sitekey="0x4AAAAAADSm6Mwd6EeNXj7W"
                  data-theme="dark"
                  data-callback="onTurnstileSuccess"
-                 data-expired-callback="onTurnstileExpire">
+                 data-expired-callback="onTurnstileExpire"
+                 data-error-callback="onTurnstileError">
             </div>
           </div>
-          <div class="turnstile-wrap" id="turnstileFallback" style="display:none;">
-            <div class="turnstile-left">
-              <div class="turnstile-check">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
-                  <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <div>
-                <div class="turnstile-text">Verified</div>
-                <div class="turnstile-sub">Human check passed</div>
-              </div>
-            </div>
-            <div class="turnstile-brand">
-              <div class="turnstile-brand-name">
-                CLOUDFLARE
-                <svg class="cf-logo" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M10.8,11.3c0-1.2,0.9-2.1,2.1-2.1c0.7,0,1.3,0.3,1.7,0.9l1.6-1.1c-0.8-1-2.1-1.6-3.4-1.6c-2.4,0-4.3,1.9-4.3,4.3c0,2.4,1.9,4.3,4.3,4.3c1.3,0,2.6-0.6,3.4-1.6l-1.6-1.1c-0.4,0.6-1,0.9-1.7,0.9C11.7,14.3,10.8,13.4,10.8,12.3L10.8,11.3z"/>
-                  <path d="M19.1,10.2c-0.1,0-0.2,0-0.4,0c0-2.8-2.3-5.1-5.1-5.1c-2,0-3.8,1.2-4.6,3c-0.5-0.1-1-0.2-1.5-0.2c-2.7,0-4.9,2.2-4.9,4.9c0,0.2,0,0.4,0,0.6C1.1,14.1,0,15.6,0,17.4c0,2.4,1.9,4.3,4.3,4.3h14.8c2.7,0,4.9-2.2,4.9-4.9C24,14.1,21.8,11.9,19.1,11.9L19.1,10.2z"/>
-                </svg>
-              </div>
-              <div class="turnstile-brand-links">
-                <a href="#">Privacy</a> · <a href="#">Terms</a>
-              </div>
-            </div>
+          <!-- Shown ONLY if the Turnstile widget genuinely fails to load.
+               No bypass: the user must reload to get a real token. -->
+          <div class="turnstile-reload" id="turnstileReload" style="display:none;">
+            <strong>Verification couldn't load.</strong>
+            Please <a onclick="location.reload()">reload the page</a> and try again.
+            If it keeps failing, disable any ad/script blockers for this site.
           </div>
         </div>
 
@@ -1164,8 +1122,7 @@ const processingMessages = {
 };
 
 let selected = 'algo';
-let turnstileVerified = false;
-let turnstileToken = null;
+let turnstileToken = null;   // the only source of truth — no "fallback"
 
 function toggleDropdown() {
   const btn  = document.getElementById('chainBtn');
@@ -1207,24 +1164,30 @@ document.addEventListener('click', e => {
   }
 });
 
+// --- Turnstile callbacks ---
 function onTurnstileSuccess(token) {
-  turnstileVerified = true;
   turnstileToken = token;
+  document.getElementById('turnstileReload').style.display = 'none';
 }
 function onTurnstileExpire() {
-  turnstileVerified = false;
+  // Token expired — must be re-solved. No bypass.
   turnstileToken = null;
 }
+function onTurnstileError() {
+  // Widget hit an error. Clear any token and prompt a reload.
+  turnstileToken = null;
+  document.getElementById('turnstileReload').style.display = 'block';
+}
 
+// If the widget never renders an iframe (blocked, network), prompt a reload.
+// Critically: this does NOT grant a token — the user genuinely can't claim
+// without solving a real challenge.
 setTimeout(() => {
   const widget = document.querySelector('.cf-turnstile iframe');
   if (!widget) {
-    document.querySelector('.cf-turnstile-container').style.display = 'none';
-    document.getElementById('turnstileFallback').style.display = 'flex';
-    turnstileVerified = true;
-    turnstileToken = 'fallback';
+    document.getElementById('turnstileReload').style.display = 'block';
   }
-}, 2000);
+}, 3000);
 
 async function requestTokens() {
   const addr = document.getElementById('walletAddr').value.trim();
@@ -1237,8 +1200,14 @@ async function requestTokens() {
     setTimeout(() => document.getElementById('walletAddr').style.borderColor = '', 1500);
     return;
   }
-  if (!turnstileVerified || !turnstileToken) {
-    alert('Please complete the human verification first.');
+  // Require a real, current Turnstile token. No fallback path.
+  if (!turnstileToken) {
+    txt.textContent = 'Complete verification first';
+    btn.style.background = 'rgba(248,113,113,0.3)';
+    setTimeout(() => {
+      btn.style.background = '';
+      txt.textContent = 'Send ' + c.token;
+    }, 2500);
     return;
   }
 
@@ -1246,8 +1215,9 @@ async function requestTokens() {
   btn.style.opacity = '0.6';
   txt.textContent = 'Sending…';
 
+  let res;
   try {
-    const res = await fetch(WORKER_URL, {
+    res = await fetch(WORKER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1258,40 +1228,55 @@ async function requestTokens() {
         amount: c.token,
       }),
     });
-
-    const data = await res.json();
-
-    if (data.success) {
-      txt.textContent = 'Claimed! It may take up to 2 hours to process your claim of ' + c.token;
-      btn.style.background = '#4ade80';
-      btn.style.color = '#0a0a0a';
-      setTimeout(() => {
-        btn.disabled = false;
-        btn.style.opacity = '';
-        btn.style.background = '';
-        btn.style.color = '';
-        txt.textContent = 'Send ' + c.token;
-      }, 4000);
-    } else {
-      txt.textContent = data.error || 'Failed — try again';
-      btn.style.background = 'rgba(248,113,113,0.3)';
-      setTimeout(() => {
-        btn.disabled = false;
-        btn.style.opacity = '';
-        btn.style.background = '';
-        txt.textContent = 'Send ' + c.token;
-      }, 3000);
-    }
   } catch (e) {
-    txt.textContent = 'Network error — try again';
-    btn.style.background = 'rgba(248,113,113,0.3)';
+    // Genuine transport-level failure (no response at all).
+    return showError(btn, txt, c, 'Network error — try again');
+  }
+
+  // We have an HTTP response. Parse it; distinguish a real server message
+  // from a transport problem so the user sees accurate feedback.
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    return showError(btn, txt, c,
+      res.status >= 500 ? 'Server error — try again' : 'Unexpected response — try again');
+  }
+
+  if (res.ok && data.success) {
+    txt.textContent = 'Claimed! It may take up to 2 hours to process your claim of ' + c.token;
+    btn.style.background = '#4ade80';
+    btn.style.color = '#0a0a0a';
+    // A token is single-use; force a fresh challenge for any further request.
+    turnstileToken = null;
+    if (window.turnstile) { try { window.turnstile.reset(); } catch (e) {} }
     setTimeout(() => {
       btn.disabled = false;
       btn.style.opacity = '';
       btn.style.background = '';
+      btn.style.color = '';
       txt.textContent = 'Send ' + c.token;
-    }, 3000);
+    }, 5000);
+    return;
   }
+
+  // Server returned an error (e.g. 429 rate limited, 403 verification, 400 bad input).
+  const msg = data.error || (data.rateLimited ? 'Already claimed today' : 'Failed — try again');
+  // A used/failed token can't be reused — reset the widget so the user can retry cleanly.
+  turnstileToken = null;
+  if (window.turnstile) { try { window.turnstile.reset(); } catch (e) {} }
+  showError(btn, txt, c, msg, data.rateLimited ? 5000 : 3500);
+}
+
+function showError(btn, txt, c, message, holdMs = 3000) {
+  txt.textContent = message;
+  btn.style.background = 'rgba(248,113,113,0.3)';
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.style.opacity = '';
+    btn.style.background = '';
+    txt.textContent = 'Send ' + c.token;
+  }, holdMs);
 }
 
 async function connectWallet() {
@@ -1300,7 +1285,6 @@ async function connectWallet() {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       const addr = accounts[0];
       document.getElementById('walletAddr').value = addr;
-      // Swap button for wallet display
       document.getElementById('connectBtn').style.display = 'none';
       document.getElementById('walletShort').textContent = addr.slice(0,6) + '...' + addr.slice(-4);
       document.getElementById('walletDisplay').style.display = 'flex';
@@ -1310,7 +1294,7 @@ async function connectWallet() {
   }
 }
 
-// If wallet already connected on page load (e.g. persistent connection), reflect it
+// If wallet already connected on page load, reflect it
 window.addEventListener('load', async () => {
   if (typeof window.ethereum !== 'undefined') {
     try {
