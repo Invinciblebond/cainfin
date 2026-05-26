@@ -12,18 +12,28 @@
 //   GET /pool?id=ADDR            → single-pool detail
 
 // ─── Config ────────────────────────────────────────────────────────────────
-const PROD_BASE       = 'https://api2.byreal.io';
+const PROD_BASE        = 'https://api2.byreal.io';
 const POOL_DETAIL_PATH = '/byreal/api/dex/v2/pools/details';
 
 const POOL_IDS = [
+  // ── Original two ──
   'HGxMfonx2vMRGVpHNvj6JbVM5JUjN8xYFS1UGXMYeaAo',
   '6FQQyf7UcyU86TZC1cmAcfC4a18SJyDggEKtQfTJWmfs',
+  // ── Eight new pools ──
+  'DmHek82VP6HtBmSz56wDrfr4nJysmtGQhpY7D5HVkGnX',
+  'Hv44BZaqT5URrrAtGk6jvfbWKL2PytWA4ur2r1QnvtQa',
+  'EUAa7W7omZMN6mzLFidmULMYwJBFxfUzE3kD8ywX9Qq9',
+  '5pobXosbeGSCRG3HdaRiw2TaihDDQMXkHFVbUTF24weM',
+  'HrWp3QR3hNeVy6tEZtcpsjwEiGgKJuL1NDP84EaaU2Nh',
+  '5bWgqeKbHpxVGxdxSEJ9FGjU8AyNhCMuGGhHFBoakQvj',
+  'DyzGYEhdgSn5EEUt4XXviavZ7v7SV2YGrYV8HX3Aw5XT',
+  '81sG64oGK7Z1nhwGRnTNCgJq2zHZL2J14uH29cokUUtn',
 ];
 
 const CACHE_TTL_MS = 30 * 60_000; // 30 minutes
 
 // Simple in-memory per-IP rate limit (resets on Worker recycle).
-const RATE = new Map();
+const RATE        = new Map();
 const RATE_LIMIT  = 60;
 const RATE_WINDOW = 10_000;
 
@@ -93,8 +103,13 @@ function normalizePool(raw, id) {
     if (!isNaN(pct)) feeTier = pct.toFixed(2).replace(/\.?0+$/, '') + '%';
   }
 
+  // Resolve pool address — use the address Byreal returned, fall back to the
+  // request ID so the caller can always match by the key they sent.
+  const resolvedId = d.poolAddress || id;
+
   return {
-    id:            d.poolAddress || id,
+    id:            resolvedId,
+    requestId:     id,        // always the address the caller asked for
     ok:            true,
     tvl,
     volume24h,
@@ -114,11 +129,11 @@ async function fetchOne(id) {
     const r = await fetch(
       `${PROD_BASE}${POOL_DETAIL_PATH}?poolAddress=${encodeURIComponent(id)}`
     );
-    if (!r.ok) return { id, ok: false, httpStatus: r.status };
+    if (!r.ok) return { id, requestId: id, ok: false, httpStatus: r.status };
     const data = await r.json();
     return normalizePool(data, id);
   } catch (e) {
-    return { id, ok: false, error: String(e) };
+    return { id, requestId: id, ok: false, error: String(e) };
   }
 }
 
@@ -163,6 +178,9 @@ export default {
         if (hit) return json({ pools: hit, cached: true });
 
         const pools = await fetchAll(ids);
+
+        // Re-index by requestId so callers can reliably match by address they sent.
+        // The returned array preserves input order.
         store(key, pools);
         return json({ pools, cached: false });
       }
