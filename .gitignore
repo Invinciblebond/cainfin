@@ -10,15 +10,9 @@ node_modules/
 !.yarn/versions
 
 # ─── Vite / build output ────────────────────────────────────────
-dist/
 dist-ssr/
 .vite/
 *.local
-# Keep the built widget OUT of git — it's a compiled artifact.
-# (If you'd rather commit the bundle so the site can deploy without a build
-#  step, delete the next two lines.)
-cain-wallet-widget.iife.js
-cain-wallet-widget.css
 
 # ─── Logs ───────────────────────────────────────────────────────
 logs/
