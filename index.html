@@ -699,7 +699,7 @@
   // Fire immediately — no DOMContentLoaded guard needed since this script is
   // at the bottom of the body and the target elements are already in the DOM.
   load();
-  setInterval(load, 60000);
+  setInterval(load, 30 * 60 * 1000);
 })();
 </script>
 
