@@ -398,7 +398,7 @@
       </a>
     </div>
 
-    <!-- Vault Table -->
+    <!-- Vault Table — 8 rows wired to live Byreal pool data -->
     <div class="table-wrap">
       <table>
         <thead>
@@ -408,74 +408,74 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td><div class="row-flex"><div class="row-logo c-alpha">α</div><div><div class="rv-name">Alpha</div><div class="rv-cat">Diversified Index</div></div></div></td>
-            <td><span class="token-badge">nALPHA</span></td>
-            <td><span class="apy-plain">10.37%</span></td>
-            <td class="tvl-val">$6,939,915.92</td>
+          <tr data-pool-index="2">
+            <td><div class="row-flex"><div class="row-logo c-alpha">α</div><div><div class="rv-name" id="row-2-name">Alpha</div><div class="rv-cat">Diversified Index</div></div></div></td>
+            <td><span class="token-badge" id="row-2-token">nALPHA</span></td>
+            <td><span class="apy-plain" id="row-2-apy">—</span></td>
+            <td class="tvl-val" id="row-2-tvl">—</td>
             <td><div class="asset-dots"><div class="ad" style="background:#3b82f6;color:#fff;">A</div><div class="ad" style="background:#7c3aed;color:#fff;">X</div><div class="ad" style="background:#0d9488;color:#fff;">U</div><div class="ad" style="background:#16a34a;color:#fff;">B</div><span class="count-pill">+1</span></div></td>
             <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
             <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
           </tr>
-          <tr>
-            <td><div class="row-flex"><div class="row-logo c-opal">◈</div><div><div class="rv-name">BlackOpal LiquidStone II</div><div class="rv-cat">Payment financing</div></div></div></td>
-            <td><span class="token-badge">nOPAL</span></td>
-            <td><span class="apy-plain">12.23%</span></td>
-            <td class="tvl-val">$12,028,891.86</td>
+          <tr data-pool-index="3">
+            <td><div class="row-flex"><div class="row-logo c-opal">◈</div><div><div class="rv-name" id="row-3-name">BlackOpal LiquidStone II</div><div class="rv-cat">Payment financing</div></div></div></td>
+            <td><span class="token-badge" id="row-3-token">nOPAL</span></td>
+            <td><span class="apy-plain" id="row-3-apy">—</span></td>
+            <td class="tvl-val" id="row-3-tvl">—</td>
             <td><div class="asset-dots"><div class="ad" style="background:#3b82f6;color:#fff;">B</div><div class="ad" style="background:#eab308;color:#000;">T</div></div></td>
             <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
             <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
           </tr>
-          <tr>
-            <td><div class="row-flex"><div class="row-logo c-basis">B</div><div><div class="rv-name">Basis</div><div class="rv-cat">Crypto Basis</div></div></div></td>
-            <td><span class="token-badge">nBASIS</span></td>
-            <td><span class="apy-plain">4.27%</span></td>
-            <td class="tvl-val">$25,597,521.25</td>
+          <tr data-pool-index="4">
+            <td><div class="row-flex"><div class="row-logo c-basis">B</div><div><div class="rv-name" id="row-4-name">Basis</div><div class="rv-cat">Crypto Basis</div></div></div></td>
+            <td><span class="token-badge" id="row-4-token">nBASIS</span></td>
+            <td><span class="apy-plain" id="row-4-apy">—</span></td>
+            <td class="tvl-val" id="row-4-tvl">—</td>
             <td><div class="asset-dots"><div class="ad" style="background:#f97316;color:#fff;">B</div><div class="ad" style="background:#0d9488;color:#fff;">E</div></div></td>
             <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
             <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
           </tr>
-          <tr>
-            <td><div class="row-flex"><div class="row-logo c-treasury">T</div><div><div class="rv-name">Treasury</div><div class="rv-cat">US Treasuries</div></div></div></td>
-            <td><span class="token-badge">nTBILL</span></td>
-            <td><span class="apy-plain">2.88%</span></td>
-            <td class="tvl-val">$865,377.71</td>
+          <tr data-pool-index="5">
+            <td><div class="row-flex"><div class="row-logo c-treasury">T</div><div><div class="rv-name" id="row-5-name">Treasury</div><div class="rv-cat">US Treasuries</div></div></div></td>
+            <td><span class="token-badge" id="row-5-token">nTBILL</span></td>
+            <td><span class="apy-plain" id="row-5-apy">—</span></td>
+            <td class="tvl-val" id="row-5-tvl">—</td>
             <td><div class="asset-dots"><div class="ad" style="background:#3b82f6;color:#fff;">M</div><div class="ad" style="background:#16a34a;color:#fff;">O</div></div></td>
             <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
             <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
           </tr>
-          <tr>
-            <td><div class="row-flex"><div class="row-logo c-wisdom">W</div><div><div class="rv-name">WisdomTree CRDYX</div><div class="rv-cat">Private Credit</div></div></div></td>
-            <td><span class="token-badge">nWISDOM</span></td>
-            <td><span class="apy-info"><span class="apy-link">6.00%</span><svg class="info-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span></td>
-            <td class="tvl-val">$2,805,502.85</td>
+          <tr data-pool-index="6">
+            <td><div class="row-flex"><div class="row-logo c-wisdom">W</div><div><div class="rv-name" id="row-6-name">WisdomTree CRDYX</div><div class="rv-cat">Private Credit</div></div></div></td>
+            <td><span class="token-badge" id="row-6-token">nWISDOM</span></td>
+            <td><span class="apy-plain" id="row-6-apy">—</span></td>
+            <td class="tvl-val" id="row-6-tvl">—</td>
             <td><div class="asset-dots"><div class="ad" style="background:#38bdf8;color:#0c2233;">W</div><div class="ad" style="background:#eab308;color:#000;">T</div></div></td>
             <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
             <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
           </tr>
-          <tr>
-            <td><div class="row-flex"><div class="row-logo c-credit">C</div><div><div class="rv-name">Credit</div><div class="rv-cat">Private Credit</div></div></div></td>
-            <td><span class="token-badge">nCREDIT</span></td>
-            <td><span class="apy-info"><span class="apy-link">8.00%</span><svg class="info-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span></td>
-            <td class="tvl-val">$39,771.18</td>
+          <tr data-pool-index="7">
+            <td><div class="row-flex"><div class="row-logo c-credit">C</div><div><div class="rv-name" id="row-7-name">Credit</div><div class="rv-cat">Private Credit</div></div></div></td>
+            <td><span class="token-badge" id="row-7-token">nCREDIT</span></td>
+            <td><span class="apy-plain" id="row-7-apy">—</span></td>
+            <td class="tvl-val" id="row-7-tvl">—</td>
             <td><div class="asset-dots"><div class="ad" style="background:#f87171;color:#2a1212;">C</div><div class="ad" style="background:#f97316;color:#fff;">R</div></div></td>
             <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
             <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
           </tr>
-          <tr>
-            <td><div class="row-flex"><div class="row-logo c-falcon">X</div><div><div class="rv-name">FalconX Overcollateralized Loans</div><div class="rv-cat">Prime Brokerage Lending</div></div></div></td>
-            <td><span class="token-badge">nFALCON</span></td>
-            <td><span class="apy-plain">7.68%</span></td>
-            <td class="tvl-val">$4,141,720.20</td>
+          <tr data-pool-index="8">
+            <td><div class="row-flex"><div class="row-logo c-falcon">X</div><div><div class="rv-name" id="row-8-name">FalconX Overcollateralized Loans</div><div class="rv-cat">Prime Brokerage Lending</div></div></div></td>
+            <td><span class="token-badge" id="row-8-token">nFALCON</span></td>
+            <td><span class="apy-plain" id="row-8-apy">—</span></td>
+            <td class="tvl-val" id="row-8-tvl">—</td>
             <td><div class="asset-dots"><div class="ad" style="background:#1d4ed8;color:#fff;">F</div></div></td>
             <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
             <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
           </tr>
-          <tr>
-            <td><div class="row-flex"><div class="row-logo c-acrdx">A</div><div><div class="rv-name">ACRDX</div><div class="rv-cat">Private Credit</div></div></div></td>
-            <td><span class="token-badge">nACRDX</span></td>
-            <td><span class="apy-info"><span class="apy-link">2.00%</span><svg class="info-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span></td>
-            <td class="tvl-val">$99,845.09</td>
+          <tr data-pool-index="9">
+            <td><div class="row-flex"><div class="row-logo c-acrdx">A</div><div><div class="rv-name" id="row-9-name">ACRDX</div><div class="rv-cat">Private Credit</div></div></div></td>
+            <td><span class="token-badge" id="row-9-token">nACRDX</span></td>
+            <td><span class="apy-plain" id="row-9-apy">—</span></td>
+            <td class="tvl-val" id="row-9-tvl">—</td>
             <td><div class="asset-dots"><div class="ad" style="background:#4ade80;color:#122212;">A</div></div></td>
             <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
             <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
@@ -569,18 +569,27 @@
 
 <!--
   ── Pool data from Cloudflare Worker ──────────────────────────────────────
-  The worker fetches each pool via the confirmed-working per-pool detail
-  endpoint (/byreal/api/dex/v2/pools/details?poolAddress=...) and returns:
-    { pools: [ { id, ok, tvl, volume24h, feeTier, tokenASymbol, tokenBSymbol }, ... ] }
-  No direct Byreal calls are made from the browser.
+  Worker returns: { pools: [ { id, ok, tvl, volume24h, feeTier, apr,
+                               tokenASymbol, tokenBSymbol }, ... ] }
+  Index 0–1  → the two featured cards (unchanged behaviour).
+  Index 2–9  → the eight vault-table rows (now live).
 -->
 <script>
 (function () {
   var POOLS_PROXY = 'https://infofetchworker.doffecul.workers.dev';
 
+  // Order matters: [0],[1] = featured cards; [2]..[9] = table rows top→bottom.
   var POOL_IDS = [
-    'HGxMfonx2vMRGVpHNvj6JbVM5JUjN8xYFS1UGXMYeaAo',
-    '6FQQyf7UcyU86TZC1cmAcfC4a18SJyDggEKtQfTJWmfs'
+    'HGxMfonx2vMRGVpHNvj6JbVM5JUjN8xYFS1UGXMYeaAo', // card 0
+    '6FQQyf7UcyU86TZC1cmAcfC4a18SJyDggEKtQfTJWmfs', // card 1
+    'DmHek82VP6HtBmSz56wDrfr4nJysmtGQhpY7D5HVkGnX', // row 2
+    'Hv44BZaqT5URrrAtGk6jvfbWKL2PytWA4ur2r1QnvtQa', // row 3
+    '2AsusAS7VM9L1PV8QEJJk74eM667HH7NPq4rNr1Fde8y', // row 4
+    '5pobXosbeGSCRG3HdaRiw2TaihDDQMXkHFVbUTF24weM', // row 5
+    'GjLusGo2z3mnXPmebhhNt9ocMDJgfdxrDFctVF8Ev3Kg', // row 6
+    '5bWgqeKbHpxVGxdxSEJ9FGjU8AyNhCMuGGhHFBoakQvj', // row 7
+    'DyzGYEhdgSn5EEUt4XXviavZ7v7SV2YGrYV8HX3Aw5XT', // row 8
+    '81sG64oGK7Z1nhwGRnTNCgJq2zHZL2J14uH29cokUUtn'  // row 9
   ];
 
   function num(v) {
@@ -598,26 +607,62 @@
     return '$' + n.toLocaleString('en-US', { maximumFractionDigits: 2 });
   }
 
+  function pairOf(pool) {
+    return (pool.tokenASymbol && pool.tokenBSymbol)
+      ? pool.tokenASymbol + ' / ' + pool.tokenBSymbol : null;
+  }
+
   function setText(id, val) {
     var el = document.getElementById(id);
     if (el && val != null) el.textContent = val;
   }
 
-  function applyPool(i, pool) {
+  // ── Featured cards (index 0–1) ──
+  function applyCard(i, pool) {
     if (!pool || pool.ok === false) {
-      console.warn('[CainPools] pool ' + i + ' returned ok=false', pool);
+      console.warn('[CainPools] card ' + i + ' ok=false', pool);
       setText('pool-' + i + '-meta', 'Live data unavailable · check console');
       return;
     }
-    if (pool.feeTier)   setText('pool-' + i + '-fee', pool.feeTier);
+    if (pool.feeTier) setText('pool-' + i + '-fee', pool.feeTier);
     var tvl = fmtUSD(pool.tvl);
     var vol = fmtUSD(pool.volume24h);
     if (tvl) setText('pool-' + i + '-tvl', tvl);
-    if (vol) setText('pool-' + i + '-vol', vol); else setText('pool-' + i + '-vol', '—');
-    var pair = (pool.tokenASymbol && pool.tokenBSymbol)
-      ? pool.tokenASymbol + ' / ' + pool.tokenBSymbol : null;
+    setText('pool-' + i + '-vol', vol || '—');
+    var pair = pairOf(pool);
     setText('pool-' + i + '-meta',
       (pair ? pair + ' · ' : '') + 'Live data via Byreal · click to open pool');
+  }
+
+  // ── Vault-table rows (index 2–9) ──
+  function applyRow(i, pool) {
+    if (!pool || pool.ok === false) {
+      console.warn('[CainPools] row ' + i + ' ok=false', pool);
+      setText('row-' + i + '-apy', 'N/A');
+      setText('row-' + i + '-tvl', 'N/A');
+      return;
+    }
+    // Name → live token pair; Token badge → live pair too.
+    var pair = pairOf(pool);
+    if (pair) {
+      setText('row-' + i + '-name', pair);
+      setText('row-' + i + '-token', pair);
+    }
+    // APY → worker's `apr` (Byreal feeApr24h × 100). Fall back to feeTier.
+    if (pool.apr != null) {
+      setText('row-' + i + '-apy', Number(pool.apr).toFixed(2) + '%');
+    } else if (pool.feeTier) {
+      setText('row-' + i + '-apy', pool.feeTier);
+    } else {
+      setText('row-' + i + '-apy', '—');
+    }
+    var tvl = fmtUSD(pool.tvl);
+    setText('row-' + i + '-tvl', tvl || '—');
+  }
+
+  function apply(i, pool) {
+    if (i <= 1) applyCard(i, pool);
+    else        applyRow(i, pool);
   }
 
   function load() {
@@ -633,15 +678,21 @@
         console.log('[CainPools] response', data);
         var pools = (data && data.pools) || [];
         POOL_IDS.forEach(function (id, i) {
-          // Match by id first; fall back to positional for robustness
-          var p = pools.find(function (x) { return x && x.id === id; }) || pools[i];
-          applyPool(i, p);
+          // Match by id first; fall back to positional for robustness.
+          var p = pools.find(function (x) {
+            return x && (x.id === id || x.requestId === id);
+          }) || pools[i];
+          apply(i, p);
         });
       })
       .catch(function (err) {
         console.error('[CainPools] fetch failed:', err);
         setText('pool-0-meta', 'Live data unavailable · ' + err.message);
         setText('pool-1-meta', 'Live data unavailable · ' + err.message);
+        for (var i = 2; i <= 9; i++) {
+          setText('row-' + i + '-apy', 'N/A');
+          setText('row-' + i + '-tvl', 'N/A');
+        }
       });
   }
 
