@@ -1184,10 +1184,16 @@ function onTurnstileError() {
 // without solving a real challenge.
 setTimeout(() => {
   const widget = document.querySelector('.cf-turnstile iframe');
-  if (!widget) {
+  if (!widget && !turnstileToken) {
     document.getElementById('turnstileReload').style.display = 'block';
+    // Re-check in case it loaded late
+    setTimeout(() => {
+      if (document.querySelector('.cf-turnstile iframe') || turnstileToken) {
+        document.getElementById('turnstileReload').style.display = 'none';
+      }
+    }, 3000);
   }
-}, 3000);
+}, 5000);
 
 async function requestTokens() {
   const addr = document.getElementById('walletAddr').value.trim();
