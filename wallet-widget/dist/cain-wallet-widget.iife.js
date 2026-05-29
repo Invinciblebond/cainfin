@@ -565,7 +565,7 @@ Minimum version required to store current data is: `+c+`.
     font-size: 1.25em;
     font-weight: 400;
     text-align: left;
-} 
+}
 /* When checkbox is checked, show content */
 .mobile-wallet-adapter-embedded-modal-details-collapsible-header:has(> input:checked) ~ .mobile-wallet-adapter-embedded-modal-details-collapsible-content {
   	max-height: 300px;
