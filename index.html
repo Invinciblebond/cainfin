@@ -144,27 +144,102 @@
   #wallet-dropdown a:hover { background: rgba(255,255,255,0.05); color: #fff; }
 
   /* ── Wallet Adapter modal theming — match Cain dark/glass aesthetic ──
-     The adapter modal markup is fixed, but we restyle it to fit. */
+     The adapter modal markup is fixed (rendered by the bundle), but every
+     visual aspect below is controlled from here. Refined for spacing,
+     alignment, and breathing room against the popup border. */
+  .wallet-adapter-modal-overlay {
+    background: rgba(0,0,0,0.7) !important;
+    backdrop-filter: blur(6px);
+  }
   .wallet-adapter-modal-wrapper {
     background: #0f0f0f !important;
     border: 1px solid rgba(255,255,255,0.08) !important;
     border-radius: 24px !important;
     box-shadow: 0 24px 64px rgba(0,0,0,0.7) !important;
     font-family: 'Inter', sans-serif !important;
+    /* breathing room between content and the popup border */
+    padding: 28px 24px 24px !important;
+    max-width: 400px !important;
+    width: calc(100% - 32px) !important;
+    box-sizing: border-box !important;
   }
-  .wallet-adapter-modal-overlay { background: rgba(0,0,0,0.7) !important; backdrop-filter: blur(6px); }
-  .wallet-adapter-modal-title { color: #fff !important; font-size: 17px !important; }
+  .wallet-adapter-modal-title {
+    color: #fff !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+    /* leave room for the close button, keep title centered */
+    padding: 0 36px !important;
+    margin: 2px 0 22px !important;
+  }
+  /* The wallet list — even vertical spacing, full-width items, centered */
+  .wallet-adapter-modal-list {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+  .wallet-adapter-modal-list li { margin: 0 !important; padding: 0 !important; }
   .wallet-adapter-modal-list .wallet-adapter-button {
+    width: 100% !important;
+    height: 52px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    padding: 0 18px !important;
+    margin: 0 !important;
     background: rgba(255,255,255,0.03) !important;
     border: 1px solid rgba(255,255,255,0.07) !important;
     border-radius: 14px !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #f5f5f5 !important;
     transition: background .15s, border-color .15s !important;
   }
   .wallet-adapter-modal-list .wallet-adapter-button:hover {
     background: rgba(255,255,255,0.07) !important;
     border-color: rgba(255,255,255,0.14) !important;
   }
-  .wallet-adapter-modal-button-close { background: rgba(255,255,255,0.05) !important; }
+  /* Keep the wallet icons a consistent size and aligned with the label */
+  .wallet-adapter-modal-list .wallet-adapter-button-start-icon,
+  .wallet-adapter-modal-list .wallet-adapter-button-start-icon img,
+  .wallet-adapter-modal-list .wallet-adapter-button-start-icon svg {
+    width: 26px !important;
+    height: 26px !important;
+    margin: 0 !important;
+  }
+  /* "Detected" / status text pushed to the right edge */
+  .wallet-adapter-modal-list .wallet-adapter-button-end-icon,
+  .wallet-adapter-modal-list .wallet-adapter-button span:last-child:not(:first-child) {
+    margin-left: auto !important;
+  }
+  /* "More options" toggle — centered with a little space above */
+  .wallet-adapter-modal-list-more {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    margin: 16px auto 0 !important;
+    color: #888 !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+  }
+  .wallet-adapter-modal-list-more svg { fill: #888 !important; }
+  /* Close button — squared, inset from the corner */
+  .wallet-adapter-modal-button-close {
+    background: rgba(255,255,255,0.05) !important;
+    top: 18px !important;
+    right: 18px !important;
+    padding: 8px !important;
+    border-radius: 10px !important;
+    transition: background .15s !important;
+  }
+  .wallet-adapter-modal-button-close:hover { background: rgba(255,255,255,0.1) !important; }
 
   /* Community dropdown */
   .dropdown { position:relative; display:inline-block; }
@@ -230,6 +305,11 @@
         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
         <span class="sidebar-label">Portfolio</span>
       </a>
+      <!-- Faucet link → /faucet -->
+      <a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="/faucet">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        <span class="sidebar-label">Faucet</span>
+      </a>
       <button class="w-full flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors">
         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
         <span class="sidebar-label">More</span>
@@ -246,6 +326,44 @@
 
 <!-- Main Content -->
 <main class="flex-1 flex flex-col h-full overflow-y-auto dot-grid">
+
+  <!-- New-user faucet banner. Shown by default; hidden when the visitor was
+       redirected here from /faucet (via ?from=faucet or document.referrer). -->
+  <div id="faucet-promo" class="px-8 pt-5">
+    <div class="glass rounded-2xl flex items-center justify-between gap-4 pl-5 pr-3 py-3.5">
+      <a href="/faucet" class="flex items-center gap-3 flex-1 min-w-0" style="text-decoration:none;color:inherit;">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(0,255,163,0.1);border:1px solid rgba(0,255,163,0.2);">
+          <svg class="w-4 h-4" style="color:#00ffa3;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-semibold text-white leading-tight">New to Cain? Check out our faucet.</p>
+          <p class="text-xs text-cain-gray-text mt-0.5 truncate">Claim free tokens to try the platform.</p>
+        </div>
+      </a>
+      <button onclick="document.getElementById('faucet-promo').remove();" aria-label="Dismiss" class="p-1.5 rounded-lg text-cain-gray-text hover:text-white hover:bg-white/5 flex-shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+      </button>
+    </div>
+  </div>
+  <script>
+    // Hide the faucet banner if the user arrived from the faucet page.
+    (function () {
+      try {
+        var fromFaucet = false;
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('from') === 'faucet') fromFaucet = true;
+        if (!fromFaucet && document.referrer) {
+          try {
+            if (new URL(document.referrer).pathname.indexOf('/faucet') === 0) fromFaucet = true;
+          } catch (e) { /* malformed referrer — ignore */ }
+        }
+        if (fromFaucet) {
+          var el = document.getElementById('faucet-promo');
+          if (el) el.remove();
+        }
+      } catch (e) { /* never let this block render */ }
+    })();
+  </script>
 
   <!-- Topbar -->
   <header class="h-16 px-8 flex items-center justify-between shrink-0">

@@ -10,6 +10,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<!-- Wallet Adapter widget styles (same bundle index.html uses) -->
+<link rel="stylesheet" href="/wallet-widget/dist/wallet-widget.css">
+
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -97,39 +101,9 @@ nav {
 }
 .nav-link:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
 .nav-link.active { color: var(--accent); }
-.nav-btn {
-  background: var(--text-primary);
-  color: #0a0a0a;
-  border: none;
-  border-radius: 7px;
-  padding: 7px 16px;
-  font-size: 13px;
-  font-weight: 500;
-  font-family: var(--font);
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-.nav-btn:hover { opacity: 0.85; }
 
-/* Connected wallet display in nav */
-.nav-wallet-display {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid var(--border-bright);
-  border-radius: 7px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-family: var(--mono);
-  color: var(--text-secondary);
-}
-.nav-wallet-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--green);
-  flex-shrink: 0;
-}
+/* Wallet mount sits in the nav; the React widget renders its own button here */
+#cain-wallet-root { display: flex; align-items: center; }
 
 /* ── HERO SECTION ── */
 .hero {
@@ -330,7 +304,6 @@ nav {
 .chain-name { font-size: 14px; font-weight: 500; color: #fff; }
 .chain-amount { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 1px; font-family: var(--mono); }
 
-/* Processing speed badge in dropdown */
 .chain-speed {
   font-size: 10px;
   padding: 2px 7px;
@@ -418,7 +391,6 @@ nav {
 /* Turnstile container */
 .cf-turnstile-container { margin-bottom: 18px; }
 
-/* Turnstile reload prompt (shown only if the widget genuinely fails to load) */
 .turnstile-reload {
   background: rgba(248,113,113,0.12);
   border: 1px solid rgba(248,113,113,0.35);
@@ -545,11 +517,19 @@ nav {
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: opacity 0.15s, transform 0.1s;
+  transition: opacity 0.15s, transform 0.1s, background 0.2s;
 }
 .cta-btn:hover { opacity: 0.88; }
 .cta-btn:active { transform: scale(0.98); }
+.cta-btn.connected {
+  background: rgba(74,222,128,0.15);
+  border: 1px solid rgba(74,222,128,0.4);
+  color: var(--green);
+  cursor: default;
+}
+.cta-btn.connected:hover { opacity: 1; }
 .metamask-icon { font-size: 18px; }
+.cta-btn.connected .metamask-icon { display: none; }
 
 /* ── POOLS SECTION ── */
 .pools-section {
@@ -692,6 +672,83 @@ nav {
 .pool-action-text { font-size: 12px; color: var(--text-muted); }
 .pool-action-arrow { color: var(--accent); font-size: 14px; }
 
+/* ── FUND-TYPE / STRATEGY SECTION ── */
+.funds-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px 80px;
+}
+.funds-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.fund-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  text-decoration: none;
+  display: block;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.fund-card:hover { border-color: var(--border-bright); transform: translateY(-2px); }
+.fund-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  margin-bottom: 16px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(200,182,138,0.25);
+  color: var(--accent);
+}
+.fund-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 5px;
+  letter-spacing: -0.01em;
+}
+.fund-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-bottom: 16px;
+  min-height: 54px;
+}
+.fund-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.fund-metric { display: flex; flex-direction: column; gap: 2px; }
+.fund-metric-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.fund-metric-value {
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--mono);
+  color: var(--text-primary);
+}
+.fund-metric-value.green { color: var(--green); }
+.fund-tag {
+  font-size: 10px;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid rgba(200,182,138,0.2);
+  border-radius: 100px;
+  padding: 3px 9px;
+}
+
 /* ── FOOTER ── */
 footer {
   border-top: 1px solid var(--border);
@@ -722,37 +779,34 @@ footer a:hover { color: var(--text-secondary); }
 .pool-card:nth-child(4) { animation-delay: 0.28s; }
 .pool-card:nth-child(5) { animation-delay: 0.34s; }
 .pool-card:nth-child(6) { animation-delay: 0.40s; }
+.fund-card { animation: fadeUp 0.4s ease both; }
+.fund-card:nth-child(1) { animation-delay: 0.08s; }
+.fund-card:nth-child(2) { animation-delay: 0.14s; }
+.fund-card:nth-child(3) { animation-delay: 0.20s; }
+.fund-card:nth-child(4) { animation-delay: 0.26s; }
 
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; padding: 40px 20px 48px; }
   .faucet-card { animation-delay: 0s; }
   .pools-grid { grid-template-columns: 1fr; }
+  .funds-grid { grid-template-columns: 1fr 1fr; }
   .cta-inner { flex-direction: column; align-items: flex-start; padding: 28px; }
   .hero-title { font-size: 36px; }
   nav { padding: 0 20px; }
-  .pools-section, .cta-section { padding-left: 20px; padding-right: 20px; }
+  .pools-section, .cta-section, .funds-section { padding-left: 20px; padding-right: 20px; }
   footer { flex-direction: column; gap: 12px; text-align: center; }
 }
 </style>
 </head>
 <body>
-  <!-- Default Statcounter code for cainfin
-https://cain.finance -->
+  <!-- Statcounter -->
 <script type="text/javascript">
-var sc_project=13247747; 
-var sc_invisible=1; 
-var sc_security="a9baf927"; 
+var sc_project=13247747;
+var sc_invisible=1;
+var sc_security="a9baf927";
 </script>
-<script type="text/javascript"
-src="https://www.statcounter.com/counter/counter.js"
-async></script>
-<noscript><div class="statcounter"><a title="hit counter"
-href="https://statcounter.com/" target="_blank"><img
-class="statcounter"
-src="https://c.statcounter.com/13247747/0/a9baf927/1/"
-alt="hit counter"
-referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
-<!-- End of Statcounter Code -->
+<script type="text/javascript" src="https://www.statcounter.com/counter/counter.js" async></script>
+<noscript><div class="statcounter"><a title="hit counter" href="https://statcounter.com/" target="_blank"><img class="statcounter" src="https://c.statcounter.com/13247747/0/a9baf927/1/" alt="hit counter" referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
 
 <!-- NAV -->
 <nav>
@@ -769,12 +823,10 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
     <a href="#" class="nav-link">Vaults</a>
     <a href="#" class="nav-link active">Faucet</a>
     <a href="#" class="nav-link">Docs</a>
-    <!-- Connect button shown when not connected; wallet display shown when connected -->
-    <button class="nav-btn" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
-    <div class="nav-wallet-display" id="walletDisplay" style="display:none;">
-      <span class="nav-wallet-dot"></span>
-      <span id="walletShort"></span>
-    </div>
+    <!-- Wallet Adapter island mounts here (same bundle as index.html).
+         The widget renders its own connect button / connected dropdown
+         and writes state into window.cainWallet. -->
+    <div id="cain-wallet-root"></div>
   </div>
 </nav>
 
@@ -783,7 +835,6 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
   <div class="hero">
     <div class="hero-glow"></div>
 
-    <!-- LEFT -->
     <div class="hero-left">
       <div class="hero-eyebrow">
         <span class="eyebrow-dot"></span>
@@ -817,7 +868,6 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
         <div class="faucet-card-title">Request Tokens</div>
         <div class="faucet-card-sub">One request per wallet, per day. Pick a network.</div>
 
-        <!-- Network Selector -->
         <div class="field-group">
           <label class="field-label">Select Network</label>
           <div class="chain-selector" id="chainSelector">
@@ -837,50 +887,35 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
               <div class="chain-option selected" onclick="selectChain('algo','Algorand','$0.01 / day','A','ic-algo','$0.01 in ALGO','fast',this)">
                 <div class="chain-select-left">
                   <div class="chain-icon ic-algo">A</div>
-                  <div>
-                    <div class="chain-name">Algorand</div>
-                    <div class="chain-amount">$0.01 / day</div>
-                  </div>
+                  <div><div class="chain-name">Algorand</div><div class="chain-amount">$0.01 / day</div></div>
                 </div>
                 <span class="chain-speed fast">⚡ Fast</span>
               </div>
               <div class="chain-option" onclick="selectChain('eth','Ethereum','$0.01 / day','Ξ','ic-eth','$0.01 in ETH','eod',this)">
                 <div class="chain-select-left">
                   <div class="chain-icon ic-eth">Ξ</div>
-                  <div>
-                    <div class="chain-name">Ethereum</div>
-                    <div class="chain-amount">$0.01 / day</div>
-                  </div>
+                  <div><div class="chain-name">Ethereum</div><div class="chain-amount">$0.01 / day</div></div>
                 </div>
                 <span class="chain-speed eod">End of day</span>
               </div>
               <div class="chain-option" onclick="selectChain('sol','Solana','$0.01 / day','◎','ic-sol','$0.01 in SOL','eod',this)">
                 <div class="chain-select-left">
                   <div class="chain-icon ic-sol">◎</div>
-                  <div>
-                    <div class="chain-name">Solana</div>
-                    <div class="chain-amount">$0.01 / day</div>
-                  </div>
+                  <div><div class="chain-name">Solana</div><div class="chain-amount">$0.01 / day</div></div>
                 </div>
                 <span class="chain-speed eod">End of day</span>
               </div>
               <div class="chain-option" onclick="selectChain('matic','Polygon','$0.01 / day','⬡','ic-matic','$0.01 in POL','fast',this)">
                 <div class="chain-select-left">
                   <div class="chain-icon ic-matic">⬡</div>
-                  <div>
-                    <div class="chain-name">Polygon</div>
-                    <div class="chain-amount">$0.01 / day</div>
-                  </div>
+                  <div><div class="chain-name">Polygon</div><div class="chain-amount">$0.01 / day</div></div>
                 </div>
                 <span class="chain-speed fast">⚡ Fast</span>
               </div>
               <div class="chain-option" onclick="selectChain('avax','Avalanche','$0.01 / day','▲','ic-avax','$0.01 in AVAX','eod',this)">
                 <div class="chain-select-left">
                   <div class="chain-icon ic-avax">▲</div>
-                  <div>
-                    <div class="chain-name">Avalanche</div>
-                    <div class="chain-amount">$0.01 / day</div>
-                  </div>
+                  <div><div class="chain-name">Avalanche</div><div class="chain-amount">$0.01 / day</div></div>
                 </div>
                 <span class="chain-speed eod">End of day</span>
               </div>
@@ -888,7 +923,6 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
           </div>
         </div>
 
-        <!-- Wallet Address -->
         <div class="field-group">
           <label class="field-label">Wallet Address</label>
           <input class="wallet-input" type="text" id="walletAddr" placeholder="Connect your wallet or enter your chain address" autocomplete="off" />
@@ -898,7 +932,6 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
           </p>
         </div>
 
-        <!-- Cloudflare Turnstile -->
         <div class="field-group">
           <label class="field-label">Verification</label>
           <div class="cf-turnstile-container">
@@ -910,8 +943,6 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
                  data-error-callback="onTurnstileError">
             </div>
           </div>
-          <!-- Shown ONLY if the Turnstile widget genuinely fails to load.
-               No bypass: the user must reload to get a real token. -->
           <div class="turnstile-reload" id="turnstileReload" style="display:none;">
             <strong>Verification couldn't load.</strong>
             Please <a onclick="location.reload()">reload the page</a> and try again.
@@ -919,7 +950,6 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
           </div>
         </div>
 
-        <!-- Submit -->
         <button class="faucet-btn" id="faucetBtn" onclick="requestTokens()">
           <span class="faucet-btn-icon">⬡</span>
           <span id="faucetBtnText">Send $0.01 in ALGO</span>
@@ -943,16 +973,16 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
     <div class="cta-left">
       <div class="cta-eyebrow">— Start Staking</div>
       <h2 class="cta-title">Connect your wallet to see<br/>what tokens you could stake</h2>
-      <p class="cta-desc">Earn upto 25%* APR - Link MetaMask or any EVM wallet to discover eligible pools based on your holdings. Earn real yield across Cain's private credit vaults with tokens you already own.</p>
+      <p class="cta-desc">Earn upto 25%* APR - Link your wallet to discover eligible pools based on your holdings. Earn real yield across Cain's private credit vaults with tokens you already own.</p>
     </div>
-    <button class="cta-btn" onclick="connectWallet()">
+    <button class="cta-btn" id="ctaConnectBtn" onclick="triggerConnect()">
       <span class="metamask-icon">🦊</span>
-      Connect MetaMask
+      <span id="ctaConnectLabel">Connect MetaMask</span>
     </button>
   </div>
 </div>
 
-<!-- POOLS SECTION -->
+<!-- POOLS SECTION (6 live slots wired to infofetchworker) -->
 <div class="pools-section">
   <div class="pools-header">
     <div>
@@ -964,7 +994,7 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
 
   <div class="pools-grid">
 
-    <a class="pool-card" href="#">
+    <a class="pool-card" id="faucet-pool-0" href="#">
       <div class="pool-top">
         <div class="pool-tokens">
           <div class="pool-token-icon ic-algo">A</div>
@@ -972,20 +1002,17 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
         </div>
         <span class="pool-badge active">● Live</span>
       </div>
-      <div class="pool-pair">ALGO / USDC</div>
+      <div class="pool-pair" id="fp-0-pair">ALGO / USDC</div>
       <div class="pool-vault-name">Cain Omega Liquid · I</div>
       <div class="pool-stats">
-        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value green">11.91%</span></div>
-        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value">$4.2M</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value green" id="fp-0-apy">11.91%</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value" id="fp-0-tvl">$4.2M</span></div>
         <div class="pool-stat"><span class="pool-stat-label">Duration</span><span class="pool-stat-value">90d</span></div>
       </div>
-      <div class="pool-action">
-        <span class="pool-action-text">Private Credit · Short Duration</span>
-        <span class="pool-action-arrow">↗</span>
-      </div>
+      <div class="pool-action"><span class="pool-action-text">Private Credit · Short Duration</span><span class="pool-action-arrow">↗</span></div>
     </a>
 
-    <a class="pool-card" href="#">
+    <a class="pool-card" id="faucet-pool-1" href="#">
       <div class="pool-top">
         <div class="pool-tokens">
           <div class="pool-token-icon ic-eth">Ξ</div>
@@ -993,20 +1020,17 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
         </div>
         <span class="pool-badge active">● Live</span>
       </div>
-      <div class="pool-pair">ETH / USDC</div>
+      <div class="pool-pair" id="fp-1-pair">ETH / USDC</div>
       <div class="pool-vault-name">Cain BlackIron LiquidVein · II</div>
       <div class="pool-stats">
-        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value green">9.44%</span></div>
-        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value">$6.8M</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value green" id="fp-1-apy">9.44%</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value" id="fp-1-tvl">$6.8M</span></div>
         <div class="pool-stat"><span class="pool-stat-label">Duration</span><span class="pool-stat-value">60d</span></div>
       </div>
-      <div class="pool-action">
-        <span class="pool-action-text">Investment Grade · Senior</span>
-        <span class="pool-action-arrow">↗</span>
-      </div>
+      <div class="pool-action"><span class="pool-action-text">Investment Grade · Senior</span><span class="pool-action-arrow">↗</span></div>
     </a>
 
-    <a class="pool-card" href="#">
+    <a class="pool-card" id="faucet-pool-2" href="#">
       <div class="pool-top">
         <div class="pool-tokens">
           <div class="pool-token-icon ic-sol">◎</div>
@@ -1014,20 +1038,17 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
         </div>
         <span class="pool-badge new">✦ New</span>
       </div>
-      <div class="pool-pair">SOL / USDC</div>
+      <div class="pool-pair" id="fp-2-pair">SOL / USDC</div>
       <div class="pool-vault-name">Cain VoidSpar LiquidEdge · I</div>
       <div class="pool-stats">
-        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value green">13.20%</span></div>
-        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value">$1.9M</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value green" id="fp-2-apy">13.20%</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value" id="fp-2-tvl">$1.9M</span></div>
         <div class="pool-stat"><span class="pool-stat-label">Duration</span><span class="pool-stat-value">45d</span></div>
       </div>
-      <div class="pool-action">
-        <span class="pool-action-text">Working Capital · SEA</span>
-        <span class="pool-action-arrow">↗</span>
-      </div>
+      <div class="pool-action"><span class="pool-action-text">Working Capital · SEA</span><span class="pool-action-arrow">↗</span></div>
     </a>
 
-    <a class="pool-card" href="#">
+    <a class="pool-card" id="faucet-pool-3" href="#">
       <div class="pool-top">
         <div class="pool-tokens">
           <div class="pool-token-icon ic-matic">⬡</div>
@@ -1035,20 +1056,17 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
         </div>
         <span class="pool-badge active">● Live</span>
       </div>
-      <div class="pool-pair">POL / USDC</div>
+      <div class="pool-pair" id="fp-3-pair">POL / USDC</div>
       <div class="pool-vault-name">Cain PaleOnyx ColdFlow · I</div>
       <div class="pool-stats">
-        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value green">10.75%</span></div>
-        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value">$3.1M</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value green" id="fp-3-apy">10.75%</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value" id="fp-3-tvl">$3.1M</span></div>
         <div class="pool-stat"><span class="pool-stat-label">Duration</span><span class="pool-stat-value">90d</span></div>
       </div>
-      <div class="pool-action">
-        <span class="pool-action-text">Payment Receivables · MENA</span>
-        <span class="pool-action-arrow">↗</span>
-      </div>
+      <div class="pool-action"><span class="pool-action-text">Payment Receivables · MENA</span><span class="pool-action-arrow">↗</span></div>
     </a>
 
-    <a class="pool-card" href="#">
+    <a class="pool-card" id="faucet-pool-4" href="#">
       <div class="pool-top">
         <div class="pool-tokens">
           <div class="pool-token-icon ic-avax">▲</div>
@@ -1056,40 +1074,89 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
         </div>
         <span class="pool-badge new">✦ New</span>
       </div>
-      <div class="pool-pair">AVAX / USDC</div>
+      <div class="pool-pair" id="fp-4-pair">AVAX / USDC</div>
       <div class="pool-vault-name">Cain GunOpal IronFlow · II</div>
       <div class="pool-stats">
-        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value green">14.08%</span></div>
-        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value">$890K</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value green" id="fp-4-apy">14.08%</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value" id="fp-4-tvl">$890K</span></div>
         <div class="pool-stat"><span class="pool-stat-label">Duration</span><span class="pool-stat-value">30d</span></div>
       </div>
-      <div class="pool-action">
-        <span class="pool-action-text">High Yield · LATAM</span>
-        <span class="pool-action-arrow">↗</span>
-      </div>
+      <div class="pool-action"><span class="pool-action-text">High Yield · LATAM</span><span class="pool-action-arrow">↗</span></div>
     </a>
 
-    <a class="pool-card" href="#" style="opacity:0.5;pointer-events:none;">
+    <a class="pool-card" id="faucet-pool-5" href="#">
       <div class="pool-top">
         <div class="pool-tokens">
-          <div class="pool-token-icon" style="background:var(--bg-pill);color:var(--text-muted);">?</div>
-          <div class="pool-token-icon" style="background:var(--bg-pill);border-color:var(--border);color:var(--text-muted);margin-left:-10px;">$</div>
+          <div class="pool-token-icon" style="background:var(--bg-pill);color:var(--accent);">◆</div>
+          <div class="pool-token-icon" style="background:var(--bg-pill);border-color:var(--border);color:var(--accent);margin-left:-10px;">$</div>
         </div>
-        <span class="pool-badge" style="background:rgba(255,255,255,0.04);border-color:var(--border);color:var(--text-muted);">🔒 Soon</span>
+        <span class="pool-badge active">● Live</span>
       </div>
-      <div class="pool-pair" style="color:var(--text-secondary);">??? / USDC</div>
+      <div class="pool-pair" id="fp-5-pair">CAIN / USDC</div>
       <div class="pool-vault-name">Cain BlackAgate VoidStream · I</div>
       <div class="pool-stats">
-        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value">—</span></div>
-        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value">—</span></div>
-        <div class="pool-stat"><span class="pool-stat-label">Duration</span><span class="pool-stat-value">—</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">APY</span><span class="pool-stat-value green" id="fp-5-apy">—</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">TVL</span><span class="pool-stat-value" id="fp-5-tvl">—</span></div>
+        <div class="pool-stat"><span class="pool-stat-label">Duration</span><span class="pool-stat-value">60d</span></div>
       </div>
-      <div class="pool-action">
-        <span class="pool-action-text">Coming soon</span>
-        <span class="pool-action-arrow" style="color:var(--text-muted);">↗</span>
+      <div class="pool-action"><span class="pool-action-text">Diversified · Global</span><span class="pool-action-arrow">↗</span></div>
+    </a>
+
+  </div>
+</div>
+
+<hr class="section-divider" style="max-width:1200px;margin:0 auto;" />
+
+<!-- FUND-TYPE / STRATEGY SECTION -->
+<div class="funds-section" style="padding-top:64px;">
+  <div class="pools-header">
+    <div>
+      <div class="pools-title">Product Suite</div>
+      <div class="pools-subtitle">Ways to Put Capital to Work</div>
+    </div>
+    <a href="#" class="pools-link">Explore strategies ↗</a>
+  </div>
+
+  <div class="funds-grid">
+    <a class="fund-card" href="#">
+      <div class="fund-icon">◈</div>
+      <div class="fund-name">Liquid Vault</div>
+      <div class="fund-desc">Deposit and redeem on demand. Diversified exposure to short-duration private credit with daily liquidity.</div>
+      <div class="fund-foot">
+        <div class="fund-metric"><span class="fund-metric-label">Target APY</span><span class="fund-metric-value green">9–14%</span></div>
+        <span class="fund-tag">Open</span>
       </div>
     </a>
 
+    <a class="fund-card" href="#">
+      <div class="fund-icon">⇄</div>
+      <div class="fund-name">Lending Vault</div>
+      <div class="fund-desc">Supply stablecoins to overcollateralized borrowers. Earn floating yield driven by on-chain utilization.</div>
+      <div class="fund-foot">
+        <div class="fund-metric"><span class="fund-metric-label">Supply APY</span><span class="fund-metric-value green">6–11%</span></div>
+        <span class="fund-tag">Open</span>
+      </div>
+    </a>
+
+    <a class="fund-card" href="#">
+      <div class="fund-icon">▤</div>
+      <div class="fund-name">Money Market</div>
+      <div class="fund-desc">Tokenized treasuries and cash-equivalent instruments. Capital preservation with predictable short-term return.</div>
+      <div class="fund-foot">
+        <div class="fund-metric"><span class="fund-metric-label">Yield</span><span class="fund-metric-value green">4–5%</span></div>
+        <span class="fund-tag">Open</span>
+      </div>
+    </a>
+
+    <a class="fund-card" href="#">
+      <div class="fund-icon">✦</div>
+      <div class="fund-name">Liquid Staking</div>
+      <div class="fund-desc">Stake native assets and receive a liquid receipt token usable across Cain vaults while it accrues rewards.</div>
+      <div class="fund-foot">
+        <div class="fund-metric"><span class="fund-metric-label">Staking APY</span><span class="fund-metric-value green">5–8%</span></div>
+        <span class="fund-tag">New</span>
+      </div>
+    </a>
   </div>
 </div>
 
@@ -1107,7 +1174,6 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
 <script>
 const WORKER_URL = 'https://cainfin-worker.doffecul.workers.dev';
 
-// fast = Algorand & Polygon (low gas); eod = processed end of day
 const chains = {
   algo:  { name:'Algorand',  amount:'$0.01 / day', icon:'A',  cls:'ic-algo',  token:'$0.01 in ALGO', speed:'fast' },
   eth:   { name:'Ethereum',  amount:'$0.01 / day', icon:'Ξ',  cls:'ic-eth',   token:'$0.01 in ETH',  speed:'eod'  },
@@ -1122,15 +1188,12 @@ const processingMessages = {
 };
 
 let selected = 'algo';
-let turnstileToken = null;   // the only source of truth — no "fallback"
+let turnstileToken = null;
 
 function toggleDropdown() {
-  const btn  = document.getElementById('chainBtn');
-  const dd   = document.getElementById('chainDropdown');
-  const chev = document.getElementById('chevron');
-  btn.classList.toggle('open');
-  dd.classList.toggle('open');
-  chev.classList.toggle('open');
+  document.getElementById('chainBtn').classList.toggle('open');
+  document.getElementById('chainDropdown').classList.toggle('open');
+  document.getElementById('chevron').classList.toggle('open');
 }
 
 function selectChain(id, name, amount, icon, cls, token, speed, el) {
@@ -1142,7 +1205,6 @@ function selectChain(id, name, amount, icon, cls, token, speed, el) {
   document.getElementById('hintToken').textContent      = token;
   document.getElementById('faucetBtnText').textContent  = 'Send ' + token;
 
-  // Update processing note
   const note = document.getElementById('processingNote');
   const msg  = processingMessages[speed];
   note.className = msg.cls;
@@ -1165,28 +1227,14 @@ document.addEventListener('click', e => {
 });
 
 // --- Turnstile callbacks ---
-function onTurnstileSuccess(token) {
-  turnstileToken = token;
-  document.getElementById('turnstileReload').style.display = 'none';
-}
-function onTurnstileExpire() {
-  // Token expired — must be re-solved. No bypass.
-  turnstileToken = null;
-}
-function onTurnstileError() {
-  // Widget hit an error. Clear any token and prompt a reload.
-  turnstileToken = null;
-  document.getElementById('turnstileReload').style.display = 'block';
-}
+function onTurnstileSuccess(token) { turnstileToken = token; document.getElementById('turnstileReload').style.display = 'none'; }
+function onTurnstileExpire() { turnstileToken = null; }
+function onTurnstileError() { turnstileToken = null; document.getElementById('turnstileReload').style.display = 'block'; }
 
-// If the widget never renders an iframe (blocked, network), prompt a reload.
-// Critically: this does NOT grant a token — the user genuinely can't claim
-// without solving a real challenge.
 setTimeout(() => {
   const widget = document.querySelector('.cf-turnstile iframe');
   if (!widget && !turnstileToken) {
     document.getElementById('turnstileReload').style.display = 'block';
-    // Re-check in case it loaded late
     setTimeout(() => {
       if (document.querySelector('.cf-turnstile iframe') || turnstileToken) {
         document.getElementById('turnstileReload').style.display = 'none';
@@ -1206,69 +1254,43 @@ async function requestTokens() {
     setTimeout(() => document.getElementById('walletAddr').style.borderColor = '', 1500);
     return;
   }
-  // Require a real, current Turnstile token. No fallback path.
   if (!turnstileToken) {
     txt.textContent = 'Complete verification first';
     btn.style.background = 'rgba(248,113,113,0.3)';
-    setTimeout(() => {
-      btn.style.background = '';
-      txt.textContent = 'Send ' + c.token;
-    }, 2500);
+    setTimeout(() => { btn.style.background = ''; txt.textContent = 'Send ' + c.token; }, 2500);
     return;
   }
 
-  btn.disabled = true;
-  btn.style.opacity = '0.6';
-  txt.textContent = 'Sending…';
+  btn.disabled = true; btn.style.opacity = '0.6'; txt.textContent = 'Sending…';
 
   let res;
   try {
     res = await fetch(WORKER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token: turnstileToken,
-        address: addr,
-        chain: selected,
-        chainName: c.name,
-        amount: c.token,
-      }),
+      body: JSON.stringify({ token: turnstileToken, address: addr, chain: selected, chainName: c.name, amount: c.token }),
     });
   } catch (e) {
-    // Genuine transport-level failure (no response at all).
     return showError(btn, txt, c, 'Network error — try again');
   }
 
-  // We have an HTTP response. Parse it; distinguish a real server message
-  // from a transport problem so the user sees accurate feedback.
   let data;
-  try {
-    data = await res.json();
-  } catch {
-    return showError(btn, txt, c,
-      res.status >= 500 ? 'Server error — try again' : 'Unexpected response — try again');
-  }
+  try { data = await res.json(); }
+  catch { return showError(btn, txt, c, res.status >= 500 ? 'Server error — try again' : 'Unexpected response — try again'); }
 
   if (res.ok && data.success) {
     txt.textContent = 'Claimed! It may take up to 2 hours to process your claim of ' + c.token;
-    btn.style.background = '#4ade80';
-    btn.style.color = '#0a0a0a';
-    // A token is single-use; force a fresh challenge for any further request.
+    btn.style.background = '#4ade80'; btn.style.color = '#0a0a0a';
     turnstileToken = null;
     if (window.turnstile) { try { window.turnstile.reset(); } catch (e) {} }
     setTimeout(() => {
-      btn.disabled = false;
-      btn.style.opacity = '';
-      btn.style.background = '';
-      btn.style.color = '';
+      btn.disabled = false; btn.style.opacity = ''; btn.style.background = ''; btn.style.color = '';
       txt.textContent = 'Send ' + c.token;
     }, 5000);
     return;
   }
 
-  // Server returned an error (e.g. 429 rate limited, 403 verification, 400 bad input).
   const msg = data.error || (data.rateLimited ? 'Already claimed today' : 'Failed — try again');
-  // A used/failed token can't be reused — reset the widget so the user can retry cleanly.
   turnstileToken = null;
   if (window.turnstile) { try { window.turnstile.reset(); } catch (e) {} }
   showError(btn, txt, c, msg, data.rateLimited ? 5000 : 3500);
@@ -1278,43 +1300,185 @@ function showError(btn, txt, c, message, holdMs = 3000) {
   txt.textContent = message;
   btn.style.background = 'rgba(248,113,113,0.3)';
   setTimeout(() => {
-    btn.disabled = false;
-    btn.style.opacity = '';
-    btn.style.background = '';
+    btn.disabled = false; btn.style.opacity = ''; btn.style.background = '';
     txt.textContent = 'Send ' + c.token;
   }, holdMs);
 }
 
-async function connectWallet() {
-  if (typeof window.ethereum !== 'undefined') {
-    try {
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const addr = accounts[0];
-      document.getElementById('walletAddr').value = addr;
-      document.getElementById('connectBtn').style.display = 'none';
-      document.getElementById('walletShort').textContent = addr.slice(0,6) + '...' + addr.slice(-4);
-      document.getElementById('walletDisplay').style.display = 'flex';
-    } catch(e) { console.log('Wallet rejected'); }
-  } else {
-    alert('MetaMask not detected. Install MetaMask to connect.');
+/* ══ Wallet UI sync — same contract as index.html ══
+   The React widget mounts into #cain-wallet-root and writes connection
+   state into window.cainWallet ({ address, balance, ... }). We read that
+   here to: (1) auto-fill the faucet address field, and (2) flip the middle
+   CTA button to "Connected". No window.ethereum path remains. */
+function getCainAddress() {
+  return (window.cainWallet && window.cainWallet.address) || null;
+}
+
+// Read-only balance infra — same RPC approach as index.html's fetchSolanaBalance.
+// Point window.CAIN_SOLANA_RPC_URL at your own RPC to avoid public-endpoint 429s.
+var SOLANA_RPC_URL = window.CAIN_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
+var _balAddr = null;   // address we last fetched for (avoids re-fetching every poll)
+var _solPrice = null;  // cached SOL/USD
+
+async function fetchSolBalance(address) {
+  try {
+    var res = await fetch(SOLANA_RPC_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getBalance', params: [address] }),
+    });
+    var data = await res.json();
+    var lamports = (data && data.result && data.result.value) || 0;
+    return lamports / 1e9;
+  } catch (e) {
+    console.warn('[CainWallet] SOL balance fetch failed:', e);
+    return null;
   }
 }
 
-// If wallet already connected on page load, reflect it
-window.addEventListener('load', async () => {
-  if (typeof window.ethereum !== 'undefined') {
-    try {
-      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-      if (accounts && accounts.length > 0) {
-        const addr = accounts[0];
-        document.getElementById('walletAddr').value = addr;
-        document.getElementById('connectBtn').style.display = 'none';
-        document.getElementById('walletShort').textContent = addr.slice(0,6) + '...' + addr.slice(-4);
-        document.getElementById('walletDisplay').style.display = 'flex';
-      }
-    } catch(e) {}
+// Optional USD conversion via a public price endpoint (no backend).
+async function fetchSolPrice() {
+  if (_solPrice != null) return _solPrice;
+  try {
+    var r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+    var d = await r.json();
+    _solPrice = (d && d.solana && d.solana.usd) || null;
+  } catch (e) { _solPrice = null; }
+  return _solPrice;
+}
+
+async function showBalanceOnCta(address) {
+  var ctaLabel = document.getElementById('ctaConnectLabel');
+  if (!ctaLabel) return;
+  ctaLabel.textContent = 'Loading balance…';
+
+  var sol = await fetchSolBalance(address);
+  if (sol == null) { ctaLabel.textContent = 'Connected'; return; }
+
+  var label = sol.toFixed(4) + ' SOL';
+  var price = await fetchSolPrice();
+  if (price != null) label += ' · $' + (sol * price).toLocaleString('en-US', { maximumFractionDigits: 2 });
+
+  // Only write if still connected to the same address.
+  if (getCainAddress() === address) ctaLabel.textContent = label;
+}
+
+function syncWalletUI() {
+  const addr     = getCainAddress();
+  const ctaBtn   = document.getElementById('ctaConnectBtn');
+  const ctaLabel = document.getElementById('ctaConnectLabel');
+  const input    = document.getElementById('walletAddr');
+
+  if (addr) {
+    if (ctaBtn) ctaBtn.classList.add('connected');
+    if (input && !input.value) input.value = addr;
+    // Fetch balance once per newly-connected address.
+    if (addr !== _balAddr) {
+      _balAddr = addr;
+      showBalanceOnCta(addr);
+    }
+  } else {
+    _balAddr = null;
+    if (ctaLabel) ctaLabel.textContent = 'Connect MetaMask';
+    if (ctaBtn)   ctaBtn.classList.remove('connected');
   }
-});
+}
+
+// Middle CTA: trigger the same wallet modal the nav widget uses.
+function triggerConnect() {
+  if (getCainAddress()) return; // already connected — nothing to do
+  const root = document.getElementById('cain-wallet-root');
+  const btn  = root && root.querySelector('button');
+  if (btn) { btn.click(); return; }
+  // Widget not mounted yet (bundle still loading)
+  console.warn('[CainWallet] widget not ready yet');
+}
+
+// React widget connection state isn't a DOM event we own, so poll + listen.
+window.addEventListener('load', syncWalletUI);
+window.addEventListener('cain:connected', syncWalletUI);
+window.addEventListener('cain:disconnected', syncWalletUI);
+setInterval(syncWalletUI, 800);
 </script>
+
+<!-- ══ Pool data from infofetchworker — 6 IDs (one per faucet slot) ══ -->
+<script>
+(function () {
+  var POOLS_PROXY = 'https://infofetchworker.doffecul.workers.dev';
+
+  // First 6 IDs from infofetchworker (cards 0–1 + rows 2–5), mapped to the
+  // six faucet pool slots top→bottom.
+  var POOL_IDS = [
+    'HGxMfonx2vMRGVpHNvj6JbVM5JUjN8xYFS1UGXMYeaAo',
+    '6FQQyf7UcyU86TZC1cmAcfC4a18SJyDggEKtQfTJWmfs',
+    'DmHek82VP6HtBmSz56wDrfr4nJysmtGQhpY7D5HVkGnX',
+    'Hv44BZaqT5URrrAtGk6jvfbWKL2PytWA4ur2r1QnvtQa',
+    '2AsusAS7VM9L1PV8QEJJk74eM667HH7NPq4rNr1Fde8y',
+    '5pobXosbeGSCRG3HdaRiw2TaihDDQMXkHFVbUTF24weM'
+  ];
+
+  function num(v) {
+    if (v == null) return null;
+    var n = typeof v === 'string' ? parseFloat(v.replace(/[^0-9.\-]/g, '')) : Number(v);
+    return isNaN(n) ? null : n;
+  }
+  function fmtUSD(v) {
+    var n = num(v);
+    if (n == null) return null;
+    if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
+    return '$' + n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  }
+  function pairOf(p) {
+    return (p.tokenASymbol && p.tokenBSymbol) ? p.tokenASymbol + ' / ' + p.tokenBSymbol : null;
+  }
+  function setText(id, val) {
+    var el = document.getElementById(id);
+    if (el && val != null) el.textContent = val;
+  }
+
+  function applyPool(i, pool) {
+    if (!pool || pool.ok === false) {
+      console.warn('[CainFaucetPools] slot ' + i + ' ok=false', pool);
+      return; // keep existing placeholder values
+    }
+    var pair = pairOf(pool);
+    if (pair) setText('fp-' + i + '-pair', pair);
+
+    if (pool.apr != null)        setText('fp-' + i + '-apy', Number(pool.apr).toFixed(2) + '%');
+    else if (pool.feeTier)       setText('fp-' + i + '-apy', pool.feeTier);
+
+    var tvl = fmtUSD(pool.tvl);
+    if (tvl) setText('fp-' + i + '-tvl', tvl);
+  }
+
+  function load() {
+    var url = POOLS_PROXY + '/pools?ids=' + POOL_IDS.join(',');
+    console.log('[CainFaucetPools] fetching', url);
+    fetch(url)
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (data) {
+        var pools = (data && data.pools) || [];
+        POOL_IDS.forEach(function (id, i) {
+          var p = pools.find(function (x) { return x && (x.id === id || x.requestId === id); }) || pools[i];
+          applyPool(i, p);
+        });
+      })
+      .catch(function (err) {
+        console.error('[CainFaucetPools] fetch failed:', err);
+      });
+  }
+
+  load();
+  setInterval(load, 30 * 60 * 1000); // refresh every 30 minutes
+})();
+</script>
+
+<!-- ══ Wallet widget — same Vite bundle as index.html ══
+     Serve cain-wallet-widget.iife.js + wallet-widget.css at these same paths
+     and the connect flow is identical to index.html. -->
+<script src="/wallet-widget/dist/cain-wallet-widget.iife.js" defer></script>
+
 </body>
 </html>
