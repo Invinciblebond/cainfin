@@ -8,7 +8,7 @@
 <title>Cain.finance - Free Faucet for ERC-20 Tokens </title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
 <!-- Wallet Adapter widget styles (same bundle index.html uses) -->
@@ -102,8 +102,153 @@ nav {
 .nav-link:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
 .nav-link.active { color: var(--accent); }
 
-/* Wallet mount sits in the nav; the React widget renders its own button here */
-#cain-wallet-root { display: flex; align-items: center; }
+/* ══════════════════════════════════════════════════════════════════════
+   WALLET WIDGET STYLING — copied 1:1 from index.html. This is a web-wide
+   feature and must stay byte-identical across pages. Do NOT edit here in
+   isolation; if it changes, it changes everywhere (see note in handoff).
+   ══════════════════════════════════════════════════════════════════════ */
+
+  /* Wallet button — used by the React widget's custom trigger button */
+  #wallet-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  #wallet-btn:hover { background: rgba(255,255,255,0.14); }
+
+  /* Connected address dropdown */
+  #wallet-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    min-width: 190px;
+    z-index: 200;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+  }
+  #wallet-dropdown.hidden { display: none; }
+  #wallet-dropdown a {
+    display: block;
+    padding: 11px 16px;
+    font-size: 13px;
+    color: #aaa;
+    text-decoration: none;
+    transition: background 0.12s, color 0.12s;
+  }
+  #wallet-dropdown a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+
+  /* ── Wallet Adapter modal theming — match Cain dark/glass aesthetic ──
+     The adapter modal markup is fixed (rendered by the bundle), but every
+     visual aspect below is controlled from here. Refined for spacing,
+     alignment, and breathing room against the popup border. */
+  .wallet-adapter-modal-overlay {
+    background: rgba(0,0,0,0.7) !important;
+    backdrop-filter: blur(6px);
+  }
+  .wallet-adapter-modal-wrapper {
+    background: #0f0f0f !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.7) !important;
+    font-family: 'Inter', sans-serif !important;
+    /* breathing room between content and the popup border */
+    padding: 28px 24px 24px !important;
+    max-width: 400px !important;
+    width: calc(100% - 32px) !important;
+    box-sizing: border-box !important;
+  }
+  .wallet-adapter-modal-title {
+    color: #fff !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+    /* leave room for the close button, keep title centered */
+    padding: 0 36px !important;
+    margin: 2px 0 22px !important;
+  }
+  /* The wallet list — even vertical spacing, full-width items, centered */
+  .wallet-adapter-modal-list {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+  .wallet-adapter-modal-list li { margin: 0 !important; padding: 0 !important; }
+  .wallet-adapter-modal-list .wallet-adapter-button {
+    width: 100% !important;
+    height: 52px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    padding: 0 18px !important;
+    margin: 0 !important;
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    border-radius: 14px !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #f5f5f5 !important;
+    transition: background .15s, border-color .15s !important;
+  }
+  .wallet-adapter-modal-list .wallet-adapter-button:hover {
+    background: rgba(255,255,255,0.07) !important;
+    border-color: rgba(255,255,255,0.14) !important;
+  }
+  /* Keep the wallet icons a consistent size and aligned with the label */
+  .wallet-adapter-modal-list .wallet-adapter-button-start-icon,
+  .wallet-adapter-modal-list .wallet-adapter-button-start-icon img,
+  .wallet-adapter-modal-list .wallet-adapter-button-start-icon svg {
+    width: 26px !important;
+    height: 26px !important;
+    margin: 0 !important;
+  }
+  /* "Detected" / status text pushed to the right edge */
+  .wallet-adapter-modal-list .wallet-adapter-button-end-icon,
+  .wallet-adapter-modal-list .wallet-adapter-button span:last-child:not(:first-child) {
+    margin-left: auto !important;
+  }
+  /* "More options" toggle — centered with a little space above */
+  .wallet-adapter-modal-list-more {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    margin: 16px auto 0 !important;
+    color: #888 !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+  }
+  .wallet-adapter-modal-list-more svg { fill: #888 !important; }
+  /* Close button — squared, inset from the corner */
+  .wallet-adapter-modal-button-close {
+    background: rgba(255,255,255,0.05) !important;
+    top: 18px !important;
+    right: 18px !important;
+    padding: 8px !important;
+    border-radius: 10px !important;
+    transition: background .15s !important;
+  }
+  .wallet-adapter-modal-button-close:hover { background: rgba(255,255,255,0.1) !important; }
+
+/* ════════════════════ END shared wallet widget styling ════════════════════ */
 
 /* ── HERO SECTION ── */
 .hero {
@@ -823,10 +968,13 @@ var sc_security="a9baf927";
     <a href="#" class="nav-link">Vaults</a>
     <a href="#" class="nav-link active">Faucet</a>
     <a href="#" class="nav-link">Docs</a>
-    <!-- Wallet Adapter island mounts here (same bundle as index.html).
-         The widget renders its own connect button / connected dropdown
-         and writes state into window.cainWallet. -->
-    <div id="cain-wallet-root"></div>
+    <!-- ══ WALLET: React (Wallet Adapter) island mounts here ══
+         Mount markup copied 1:1 from index.html — same bundle, same root id,
+         same wrapper. The widget renders its connect button + connected
+         dropdown into #cain-wallet-root and writes state into window.cainWallet. -->
+    <div style="position:relative;">
+      <div id="cain-wallet-root"></div>
+    </div>
   </div>
 </nav>
 
