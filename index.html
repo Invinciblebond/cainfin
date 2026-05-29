@@ -207,8 +207,72 @@
   .c-falcon   { background:#10103a; color:#a78bfa; }
   .c-acrdx    { background:#122212; color:#4ade80; }
   .c-axi      { background:#2a122a; color:#c084fc; }
-  .featured-card { background:rgba(16,16,16,0.8); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.07); border-radius:32px; padding:40px; transition: border-color 0.2s, background 0.2s; cursor:pointer; }
-  .featured-card:hover { border-color: rgba(255,255,255,0.14); background: rgba(20,20,20,0.9); }
+  /* ── Liquid-glass featured cards ──────────────────────────────────────
+     Recreation of the macOS "Liquid Glass" effect
+     (github.com/lucasromerodb/liquid-glass-effect-macos), adapted from a
+     light-background button to Cain's dark dashboard. Structure per card:
+       .liquidGlass-effect  → backdrop blur + SVG #glass-distortion refraction
+       .liquidGlass-tint    → faint translucent fill (keeps text legible)
+       .liquidGlass-shine   → inset rim highlights (the "edge of glass")
+       .liquidGlass-content → the real card content, on top of all layers
+     The card itself is now transparent so the page dot-grid refracts THROUGH
+     the glass via backdrop-filter + the displacement map.                    */
+  .featured-card {
+    position: relative;
+    isolation: isolate;
+    background: transparent;        /* let the glass layers do the work   */
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 32px;
+    padding: 40px;
+    overflow: hidden;               /* clip the refraction to the radius  */
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35), 0 0 24px rgba(0,0,0,0.18);
+    transition: border-color 0.3s ease, transform 0.4s cubic-bezier(0.175,0.885,0.32,1.4), box-shadow 0.3s ease;
+  }
+  .featured-card:hover {
+    border-color: rgba(255,255,255,0.20);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.45), 0 0 32px rgba(0,0,0,0.22);
+  }
+
+  /* Layer 0 — refraction: blurs + distorts whatever sits behind the card */
+  .featured-card .liquidGlass-effect {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    border-radius: inherit;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    filter: url(#glass-distortion);
+    overflow: hidden;
+    isolation: isolate;
+    pointer-events: none;
+  }
+  /* Layer 1 — tint: subtle wash so the content stays readable on dark bg.
+     A whisper of white at the top fading to a faint dark base.            */
+  .featured-card .liquidGlass-tint {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    border-radius: inherit;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 40%, rgba(10,10,12,0.18) 100%);
+    pointer-events: none;
+  }
+  /* Layer 2 — shine: the lit rim of the glass */
+  .featured-card .liquidGlass-shine {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    border-radius: inherit;
+    overflow: hidden;
+    pointer-events: none;
+    box-shadow:
+      inset 1.5px 1.5px 1px 0 rgba(255,255,255,0.35),
+      inset -1px -1px 1px 1px rgba(255,255,255,0.18);
+  }
+  /* Layer 3 — the actual card content sits above every glass layer */
+  .featured-card .liquidGlass-content { position: relative; z-index: 3; }
   .vault-header { display:flex; align-items:center; gap:18px; margin-bottom:24px; }
   .vault-icon { width:60px; height:60px; border-radius:16px; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
   .vault-icon img { width:100%; height:100%; object-fit:cover; }
@@ -441,6 +505,30 @@
 </style>
 </head>
 <body class="h-full font-sans overflow-hidden">
+
+<!-- ══ Liquid-glass SVG distortion filter ══
+     Drives the refraction on the featured cards' .liquidGlass-effect layer.
+     feTurbulence builds organic noise; the gamma transfer + blur shape it
+     into a smooth displacement map; feDisplacementMap warps the backdrop so
+     the dot-grid bends like it's seen through real glass.
+     (Source: github.com/lucasromerodb/liquid-glass-effect-macos) -->
+<svg xmlns="http://www.w3.org/2000/svg" role="presentation" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden;">
+  <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%" filterUnits="objectBoundingBox">
+    <feTurbulence type="fractalNoise" baseFrequency="0.008 0.008" numOctaves="2" seed="5" result="turbulence" />
+    <feComponentTransfer in="turbulence" result="mapped">
+      <feFuncR type="gamma" amplitude="1" exponent="10" offset="0.5" />
+      <feFuncG type="gamma" amplitude="0" exponent="1" offset="0" />
+      <feFuncB type="gamma" amplitude="0" exponent="1" offset="0.5" />
+    </feComponentTransfer>
+    <feGaussianBlur in="turbulence" stdDeviation="3" result="softMap" />
+    <feSpecularLighting in="softMap" surfaceScale="5" specularConstant="1" specularExponent="100" lighting-color="white" result="specLight">
+      <fePointLight x="-200" y="-200" z="300" />
+    </feSpecularLighting>
+    <feComposite in="specLight" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="litImage" />
+    <feDisplacementMap in="SourceGraphic" in2="softMap" scale="120" xChannelSelector="R" yChannelSelector="G" />
+  </filter>
+</svg>
+
 <div class="flex h-full">
 
 <!-- Sidebar -->
@@ -691,6 +779,10 @@
     <!-- Featured Cards -->
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
       <a class="featured-card" id="pool-card-0" href="https://www.byreal.io/en/create-position?id=HGxMfonx2vMRGVpHNvj6JbVM5JUjN8xYFS1UGXMYeaAo" target="_blank" rel="noopener" style="text-decoration:none; color:inherit; display:block;">
+        <div class="liquidGlass-effect"></div>
+        <div class="liquidGlass-tint"></div>
+        <div class="liquidGlass-shine"></div>
+        <div class="liquidGlass-content">
         <div class="vault-header">
           <div class="vault-icon" style="background:#222;">
             <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDaXSd9q5FkYGspNsuTsCI9XJgEbMNYjbgEwtfpGnHjyssY_FgU-3GKbl1GRVAYPdvFF-nGuL2P1mkcfhsOvHKpK-IWc9Gh7cDc2y3lXan3aS2DEZ9vKnx03KcoRfTFPCoJKJx2OG31OR5aYJtYpgZHc-KdjkhyR31DwZZb77YOkixPIR0niu9sD6Deh-wt6wDQcz2ERthdBG2cu4EaF0OrpZpq5D77lsQ03Ibtg0Xlm85NLXq8-4OjevN8IBFXAwTxYts6Ea9MY39" alt="BlackOpal" />
@@ -707,8 +799,13 @@
           <div class="vs-item"><label>Volume 24h</label><div class="vs-val" id="pool-0-vol" style="font-size:18px;">—</div></div>
         </div>
         <div id="pool-0-meta" style="font-size:10px;color:#3a3a3a;margin-top:14px;letter-spacing:0.04em;">Loading live data…</div>
+        </div>
       </a>
       <a class="featured-card" id="pool-card-1" href="https://www.byreal.io/en/create-position?id=6FQQyf7UcyU86TZC1cmAcfC4a18SJyDggEKtQfTJWmfs" target="_blank" rel="noopener" style="text-decoration:none; color:inherit; display:block;">
+        <div class="liquidGlass-effect"></div>
+        <div class="liquidGlass-tint"></div>
+        <div class="liquidGlass-shine"></div>
+        <div class="liquidGlass-content">
         <div class="vault-header">
           <div class="vault-icon" style="background:#1a3060;">
             <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBM9VBHvdyiPBNuNhHY8t5Q9cv_wv3f1LwMGm-CnCnZbzH0-HiWtFy5_FHaS4-Swq2l5XQ3bYEub0_0xxG023kPxUZq05K255o3CLhaTaHS7mU75lGqLCIZPTVZXHZEA-lPcl5qzmszmupag2RuRkuUifehr6-9n9H9-221nQlmgPCJEKE0L3lfPuSlYpjnBk582kaPq3equrmV1VgVHeOoElfkGvy_KKih1jKeQtTmkDL8y0IAaXEN1qTOrte3fAaginlVLxb-bCUk" alt="Alpha" />
@@ -725,6 +822,7 @@
           <div class="vs-item"><label>Volume 24h</label><div class="vs-val" id="pool-1-vol" style="font-size:18px;">—</div></div>
         </div>
         <div id="pool-1-meta" style="font-size:10px;color:#3a3a3a;margin-top:14px;letter-spacing:0.04em;">Loading live data…</div>
+        </div>
       </a>
     </div>
 
