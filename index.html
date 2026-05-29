@@ -39,31 +39,136 @@
     border: 1px solid rgba(255,255,255,0.08);
   }
 
-  /* Sidebar transition */
+  /* ── Sidebar ──────────────────────────────────────────────────────────
+     Fixed collapse glitch: the previous version animated `width` only and let
+     content reflow during the transition, which made labels/wordmark "phase"
+     into the icons mid-animation. Now:
+       - Labels/wordmark fade + clip via opacity & max-width (no abrupt display:none)
+       - white-space:nowrap on rows prevents text wrapping during the squeeze
+       - overflow:hidden on the aside clips cleanly, no horizontal jitter      */
   #sidebar {
     width: 220px;
-    transition: width 0.25s ease, padding 0.25s ease;
+    transition: width 0.25s ease;
     overflow: hidden;
   }
-  #sidebar.collapsed {
-    width: 56px;
-  }
-  #sidebar.collapsed .sidebar-label { display: none; }
-  #sidebar.collapsed .sidebar-wordmark { display: none; }
-  #sidebar.collapsed #toggle-icon { transform: rotate(180deg); }
+  #sidebar.collapsed { width: 56px; }
 
-  /* Vault table styles */
-  .table-wrap { background: rgba(18,18,18,0.7); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.06); border-radius:24px; overflow:hidden; }
-  .table-wrap table { width:100%; border-collapse:collapse; }
-  .table-wrap thead th { font-size:11px; color:#555; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; padding:16px 24px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.05); }
-  .table-wrap tbody td { padding:22px 24px; border-top:1px solid rgba(255,255,255,0.04); vertical-align:middle; font-size:13px; }
+  /* Keep every nav row on one line so nothing wraps while collapsing */
+  #sidebar nav a,
+  #sidebar nav button { white-space: nowrap; }
+
+  /* Labels: fade and clip rather than vanish instantly */
+  #sidebar .sidebar-label,
+  #sidebar .sidebar-wordmark {
+    transition: opacity 0.18s ease, max-width 0.25s ease;
+    opacity: 1;
+    max-width: 160px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  #sidebar.collapsed .sidebar-label,
+  #sidebar.collapsed .sidebar-wordmark {
+    opacity: 0;
+    max-width: 0;
+    pointer-events: none;
+  }
+
+  /* ── Collapsed layout: center the icons in the 56px rail ──────────────
+     At 56px wide the container padding + each row's px-3 + the icon/label
+     gap left no room, so icons were shoved against the left edge. When
+     collapsed we drop the inner padding, zero the row gap, and center each
+     row so every icon sits dead-center under the logo.                     */
+  #sidebar.collapsed .p-4 { padding-left: 0; padding-right: 0; }
+  #sidebar.collapsed nav a,
+  #sidebar.collapsed nav button,
+  #sidebar.collapsed #sidebar-toggle {
+    justify-content: center;
+    gap: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  /* Center the logo block too while collapsed */
+  #sidebar.collapsed .p-4 > .flex.items-center { justify-content: center; }
+
+  /* The bottom collapse control rotates its chevron to indicate state */
+  #collapse-icon { transition: transform 0.25s ease; }
+  #sidebar.collapsed #collapse-icon { transform: rotate(180deg); }
+
+  /* ── Glass table styles ───────────────────────────────────────────────
+     Requirement: tables sit at ~50% opacity with a slight blur, the page's
+     dot-grid must show THROUGH them, and edge/corner refractions where
+     possible. Because the dot grid lives on <main> (a sibling background,
+     not stacked behind the table for compositing), backdrop-filter alone
+     won't blur it — so the table body is a translucent fill that lets the
+     dots read through via alpha, plus its own dot layer for guaranteed
+     coverage. Opacity is carried on EVERY layer (fill, header, rows, hover)
+     so no single layer flips it back to solid.                              */
+  .table-wrap {
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 24px;
+    overflow: hidden;
+    isolation: isolate;
+    background: transparent;
+  }
+
+  /* Layer 1 — translucent glass fill (50% opacity) + slight blur of itself.
+     rgba alpha keeps it semi-transparent so the page dots read through.     */
+  .table-wrap::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background: rgba(14,14,16,0.50);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    border-radius: inherit;
+  }
+
+  /* Layer 2 — the dot grid, rendered ON the table so it's guaranteed to show
+     through regardless of compositing. Faint so it reads as "behind glass".  */
+  .table-wrap::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  /* Edge / corner refraction — a soft inner highlight ring + a top sheen,
+     like light catching the rim of a glass touchbar. Sits above the fill but
+     below the content; purely decorative.                                    */
+  .table-wrap > .refraction {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.10),
+      inset 0 0 0 1px rgba(255,255,255,0.04),
+      inset 0 -1px 24px rgba(255,255,255,0.02);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 22%),
+      radial-gradient(120% 60% at 50% -10%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 60%);
+  }
+
+  /* Table + cells sit above the glass layers. All cell backgrounds are
+     translucent so opacity carries through and never goes solid.            */
+  .table-wrap table { width:100%; border-collapse:collapse; position:relative; z-index:1; }
+  .table-wrap thead th { font-size:11px; color:#777; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; padding:16px 24px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.015); }
+  .table-wrap tbody td { padding:22px 24px; border-top:1px solid rgba(255,255,255,0.05); vertical-align:middle; font-size:13px; background: transparent; }
   .table-wrap tbody tr:first-child td { border-top: none; }
-  .table-wrap tbody tr:hover td { background:rgba(255,255,255,0.025); }
+  .table-wrap tbody tr:hover td { background:rgba(255,255,255,0.04); }
   .row-flex { display:flex; align-items:center; gap:14px; }
   .row-logo { width:44px; height:44px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; flex-shrink:0; }
   .rv-name { font-size:14px; font-weight:600; color:#e8e8e8; }
   .rv-cat { font-size:11px; color:#555; margin-top:3px; }
-  .token-badge { background:#1a1a1a; border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:4px 10px; font-size:11px; color:#777; display:inline-block; letter-spacing:0.07em; text-transform:uppercase; font-family: 'SF Mono', 'Fira Mono', monospace; }
+  .token-badge { background:rgba(26,26,26,0.6); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:4px 10px; font-size:11px; color:#888; display:inline-block; letter-spacing:0.07em; text-transform:uppercase; font-family: 'SF Mono', 'Fira Mono', monospace; }
   .tvl-val { font-family: 'SF Mono', 'Fira Mono', ui-monospace, monospace; font-size:13px; color:#ccc; }
   .apy-plain { color:#e2e2e2; font-weight:500; }
   .apy-info { display:inline-flex; align-items:center; gap:5px; }
@@ -266,6 +371,59 @@
     transition: background 0.12s, color 0.12s;
   }
   .dropdown-menu a:hover { background: #1e1e1e; color: #fff; }
+
+  /* ── "Get ready to start earning" expandable panel ── */
+  #earning-panel {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease, padding 0.3s ease;
+  }
+  #earning-panel.open {
+    max-height: 320px;
+    opacity: 1;
+  }
+  #earning-banner.open #earning-chevron { transform: rotate(180deg); }
+  #earning-chevron { transition: transform 0.25s ease; }
+  .earning-step {
+    display:flex; align-items:center; gap:14px;
+    padding:14px 16px;
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:14px;
+    background:rgba(255,255,255,0.02);
+  }
+  .earning-step .step-num {
+    width:28px; height:28px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; flex-shrink:0;
+    background:rgba(0,255,163,0.1); color:#00ffa3;
+    border:1px solid rgba(0,255,163,0.2);
+  }
+
+  /* ── Asset classes dropdown ── */
+  .asset-menu {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: calc(100% + 8px);
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    min-width: 180px;
+    z-index: 50;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+  .asset-menu.open { display: block; }
+  .asset-menu a {
+    display: block;
+    padding: 11px 16px;
+    font-size: 13px;
+    color: #bbb;
+    text-decoration: none;
+    transition: background 0.12s, color 0.12s;
+  }
+  .asset-menu a:hover { background: #1e1e1e; color: #fff; }
 </style>
 </head>
 <body class="h-full font-sans overflow-hidden">
@@ -274,8 +432,8 @@
 <!-- Sidebar -->
 <aside id="sidebar" class="bg-cain-sidebar border-r border-cain-border flex flex-col shrink-0">
   <div class="p-4">
-    <!-- Logo + toggle -->
-    <div class="flex items-center justify-between mb-10" style="min-height:32px;">
+    <!-- Logo (toggle moved to the bottom container) -->
+    <div class="flex items-center mb-10" style="min-height:32px;">
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
           <div class="w-4 h-4 bg-black rounded-sm"></div>
@@ -285,11 +443,6 @@
           <p class="text-[10px] text-cain-gray-text uppercase tracking-widest">by Cain</p>
         </div>
       </div>
-      <button id="sidebar-toggle" onclick="toggleSidebar()" class="ml-2 p-1 rounded-md text-cain-gray-text hover:text-white hover:bg-white/5 flex-shrink-0">
-        <svg id="toggle-icon" style="transition:transform 0.25s;" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M10 3L5 8l5 5"/>
-        </svg>
-      </button>
     </div>
 
     <nav class="space-y-1">
@@ -317,9 +470,14 @@
     </nav>
   </div>
 
+  <!-- Bottom container is now responsible for collapsing/expanding the sidebar -->
   <div class="mt-auto p-4 border-t border-cain-border">
-    <button class="text-cain-gray-text hover:text-white">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+    <button id="sidebar-toggle" onclick="toggleSidebar()" aria-label="Collapse sidebar"
+            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-cain-gray-text hover:text-white hover:bg-white/5 transition-colors">
+      <svg id="collapse-icon" class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 6l-6 6 6 6"/>
+      </svg>
+      <span class="sidebar-label">Collapse</span>
     </button>
   </div>
 </aside>
@@ -437,25 +595,57 @@
     </div>
     <div class="flex items-center gap-3">
       <button class="px-7 py-2.5 bg-white text-black font-semibold rounded-full text-sm hover:bg-gray-100 transition-colors">Start earning</button>
-      <button class="px-7 py-2.5 bg-white/8 border border-white/10 font-semibold rounded-full text-sm hover:bg-white/15 transition-colors" style="background:rgba(255,255,255,0.06);">Get USDC</button>
+      <!-- Get USDC → redirect to /swap.html -->
+      <button onclick="window.location.href='/swap.html'" class="px-7 py-2.5 bg-white/8 border border-white/10 font-semibold rounded-full text-sm hover:bg-white/15 transition-colors" style="background:rgba(255,255,255,0.06);">Get USDC</button>
     </div>
   </section>
 
   <!-- Promotion Banner -->
   <section class="px-8 mb-10">
-    <div class="glass rounded-3xl overflow-hidden relative cursor-pointer h-32 flex items-center">
-      <div class="flex-1 px-10">
-        <h3 class="text-xl font-bold mb-1">Get ready to start earning</h3>
-        <p class="text-orange-500 text-xs font-medium">0/3 completed</p>
-      </div>
-      <div class="absolute right-0 top-0 bottom-0 w-1/2 overflow-hidden pointer-events-none">
-        <div class="absolute right-[-100px] top-1/2 -translate-y-1/2 w-[600px] h-full flex items-center justify-end opacity-80">
-          <img alt="Coin Graphic" class="h-full w-full object-cover object-right" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGkwMuGdnb1d_yN3Sj9GofRIIymoWadf6qnK-LfIPAzlS2NbT0xoKRpxMj46i26Saz5jGW_9wKsMz_q9Yr_Y4pnJqDcFflXtbm08MZftcSicj1XhsEtXJPHxv4XVNVqdp-LQceUFYFAQN185q47h4QXDI3Z0KsFNk-M_ZghtNFB7IOk0uEdH7E2C-M9fg3VDs-kOaT_s4cJQZlFpO53jSIRaF8Zl0w2DL-9OMDEQfoo-xwF8XckuF1bcAHp1HM7aA02Jy7UOMS4nuA">
+    <div id="earning-banner" class="glass rounded-3xl overflow-hidden relative">
+      <div onclick="toggleEarning()" class="cursor-pointer h-32 flex items-center">
+        <div class="flex-1 px-10">
+          <h3 class="text-xl font-bold mb-1">Get ready to start earning</h3>
+          <p class="text-orange-500 text-xs font-medium">0/3 completed</p>
+        </div>
+        <div class="absolute right-0 top-0 bottom-0 w-1/2 overflow-hidden pointer-events-none">
+          <div class="absolute right-[-100px] top-1/2 -translate-y-1/2 w-[600px] h-full flex items-center justify-end opacity-80">
+            <img alt="Coin Graphic" class="h-full w-full object-cover object-right" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGkwMuGdnb1d_yN3Sj9GofRIIymoWadf6qnK-LfIPAzlS2NbT0xoKRpxMj46i26Saz5jGW_9wKsMz_q9Yr_Y4pnJqDcFflXtbm08MZftcSicj1XhsEtXJPHxv4XVNVqdp-LQceUFYFAQN185q47h4QXDI3Z0KsFNk-M_ZghtNFB7IOk0uEdH7E2C-M9fg3VDs-kOaT_s4cJQZlFpO53jSIRaF8Zl0w2DL-9OMDEQfoo-xwF8XckuF1bcAHp1HM7aA02Jy7UOMS4nuA">
+          </div>
+        </div>
+        <div class="pr-10 z-10">
+          <div class="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center border border-white/10">
+            <svg id="earning-chevron" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          </div>
         </div>
       </div>
-      <div class="pr-10 z-10">
-        <div class="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center border border-white/10">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+      <!-- Expandable filler content (default collapsed) -->
+      <div id="earning-panel">
+        <div class="px-10 pb-8 pt-2 border-t border-white/5">
+          <p class="text-xs text-cain-gray-text mb-4 mt-4">Complete these steps to unlock earning on Cain.</p>
+          <div class="space-y-3">
+            <div class="earning-step">
+              <div class="step-num">1</div>
+              <div>
+                <p class="text-sm font-semibold text-white">Connect your wallet</p>
+                <p class="text-xs text-cain-gray-text mt-0.5">Link a supported wallet to get started.</p>
+              </div>
+            </div>
+            <div class="earning-step">
+              <div class="step-num">2</div>
+              <div>
+                <p class="text-sm font-semibold text-white">Claim from the faucet</p>
+                <p class="text-xs text-cain-gray-text mt-0.5">Grab some free tokens to try things out.</p>
+              </div>
+            </div>
+            <div class="earning-step">
+              <div class="step-num">3</div>
+              <div>
+                <p class="text-sm font-semibold text-white">Deposit into a vault</p>
+                <p class="text-xs text-cain-gray-text mt-0.5">Pick a vault and start earning yield.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -466,10 +656,18 @@
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-4xl font-bold">Explore our vaults</h2>
       <div class="flex items-center gap-3">
-        <button class="flex items-center gap-2 px-4 py-2 border border-white/10 rounded-xl text-sm font-medium hover:bg-white/5 transition-colors">
-          Asset classes
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-        </button>
+        <div class="dropdown">
+          <button onclick="toggleAssetMenu()" class="flex items-center gap-2 px-4 py-2 border border-white/10 rounded-xl text-sm font-medium hover:bg-white/5 transition-colors">
+            Asset classes
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          </button>
+          <div id="asset-menu" class="asset-menu">
+            <a href="#">Stocks</a>
+            <a href="#">Funds</a>
+            <a href="#">Lending</a>
+            <a href="#">Cryptocurrency</a>
+          </div>
+        </div>
         <button class="p-2.5 border border-white/10 rounded-xl hover:bg-white/5">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
         </button>
@@ -506,7 +704,7 @@
             <div class="vault-cat">Diversified Index</div>
           </div>
         </div>
-        <div class="vault-desc">Nest's flagship real-world yield vault, providing passive exposure to a diversified portfolio of Nest's top yield-generating assets</div>
+        <div class="vault-desc">Cain's flagship real-world yield vault, providing passive exposure to a diversified portfolio of Cain's top yield-generating assets</div>
         <div class="vault-stats">
           <div class="vs-item"><label>Fee tier</label><div class="vs-val green" id="pool-1-fee">—</div></div>
           <div class="vs-item"><label>TVL</label><div class="vs-val" id="pool-1-tvl">—</div></div>
@@ -518,6 +716,7 @@
 
     <!-- Vault Table — 8 rows wired to live Byreal pool data -->
     <div class="table-wrap">
+      <div class="refraction"></div>
       <table>
         <thead>
           <tr>
@@ -606,10 +805,11 @@
     <div style="margin-top:56px; padding-top:48px; border-top:1px solid rgba(255,255,255,0.05);">
       <h2 class="text-3xl font-semibold mb-3" style="color:#e8e8e8;">Private vaults</h2>
       <p style="font-size:13px; color:#555; line-height:1.7; max-width:560px; margin-bottom:20px;">
-        Private investment strategies backed by large institutions and built on Nest.
+        Private investment strategies backed by large institutions and built on Cain.
         Reach out to us on <a href="https://discord.gg/FILL_IN" style="color:#aaa; text-decoration:underline; text-decoration-color:#333; transition:text-decoration-color 0.15s;" onmouseover="this.style.textDecorationColor='#aaa'" onmouseout="this.style.textDecorationColor='#333'">Discord</a> or <a href="https://twitter.com/FILL_IN" style="color:#aaa; text-decoration:underline; text-decoration-color:#333;" onmouseover="this.style.textDecorationColor='#aaa'" onmouseout="this.style.textDecorationColor='#333'">X</a> to work with us on creating a new vault.
       </p>
       <div class="table-wrap" style="margin-top:16px;">
+        <div class="refraction"></div>
         <table>
           <thead>
             <tr><th>Vault</th><th>Token</th><th>APY</th><th>TVL</th></tr>
@@ -637,10 +837,32 @@
   function toggleDropdown() {
     document.getElementById('community-dropdown').classList.toggle('open');
   }
+  function toggleAssetMenu() {
+    document.getElementById('asset-menu').classList.toggle('open');
+  }
+  function toggleEarning() {
+    var banner = document.getElementById('earning-banner');
+    var panel = document.getElementById('earning-panel');
+    banner.classList.toggle('open');
+    panel.classList.toggle('open');
+  }
   document.addEventListener('click', function(e) {
-    var dropdown = document.querySelector('.dropdown');
-    if (dropdown && !dropdown.contains(e.target)) {
-      document.getElementById('community-dropdown').classList.remove('open');
+    // Community dropdown
+    var dropdowns = document.querySelectorAll('.dropdown');
+    var insideCommunity = false, insideAsset = false;
+    dropdowns.forEach(function (d) {
+      if (d.contains(e.target)) {
+        if (d.querySelector('#community-dropdown')) insideCommunity = true;
+        if (d.querySelector('#asset-menu')) insideAsset = true;
+      }
+    });
+    if (!insideCommunity) {
+      var cd = document.getElementById('community-dropdown');
+      if (cd) cd.classList.remove('open');
+    }
+    if (!insideAsset) {
+      var am = document.getElementById('asset-menu');
+      if (am) am.classList.remove('open');
     }
   });
 </script>
@@ -691,6 +913,11 @@
                                tokenASymbol, tokenBSymbol }, ... ] }
   Index 0–1  → the two featured cards (unchanged behaviour).
   Index 2–9  → the eight vault-table rows (now live).
+
+  NOTE: This script only ever writes text into specific cell elements via
+  setText(); it never touches the .table-wrap container, its ::before/::after
+  glass layers, or the .refraction element. So the glass aesthetic survives
+  every refresh — the data load can't strip styling it never references.
 -->
 <script>
 (function () {
