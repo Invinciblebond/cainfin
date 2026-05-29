@@ -39,6 +39,20 @@
     border: 1px solid rgba(255,255,255,0.08);
   }
 
+  /* ── Centered content container ───────────────────────────────────────
+     The page used to stretch edge-to-edge at any zoom / viewport width,
+     which felt cramped against the corners. We now cap the inner content
+     of <main> to a comfortable max width and center it, giving generous
+     breathing room on both sides. The dot-grid background still lives on
+     <main> itself, so the grid keeps filling the full window while only
+     the CONTENT is centered — matching the desired look.                  */
+  .cain-content {
+    width: 100%;
+    max-width: 1180px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   /* ── Sidebar ──────────────────────────────────────────────────────────
      Fixed collapse glitch: the previous version animated `width` only and let
      content reflow during the transition, which made labels/wordmark "phase"
@@ -487,7 +501,7 @@
 
   <!-- New-user faucet banner. Shown by default; hidden when the visitor was
        redirected here from /faucet (via ?from=faucet or document.referrer). -->
-  <div id="faucet-promo" class="px-8 pt-5">
+  <div id="faucet-promo" class="cain-content px-8 pt-5">
     <div class="glass rounded-2xl flex items-center justify-between gap-4 pl-5 pr-3 py-3.5">
       <a href="/faucet" class="flex items-center gap-3 flex-1 min-w-0" style="text-decoration:none;color:inherit;">
         <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(0,255,163,0.1);border:1px solid rgba(0,255,163,0.2);">
@@ -524,7 +538,7 @@
   </script>
 
   <!-- Topbar -->
-  <header class="h-16 px-8 flex items-center justify-between shrink-0">
+  <header class="cain-content h-16 px-8 flex items-center justify-between shrink-0">
     <div class="flex-1 max-w-md">
       <div class="relative">
         <span class="absolute inset-y-0 left-3 flex items-center text-cain-gray-text">
@@ -566,7 +580,7 @@
   </header>
 
   <!-- Hero & Metrics -->
-  <section class="px-8 pt-10 pb-12">
+  <section class="cain-content px-8 pt-10 pb-12">
     <div class="mb-10">
       <div class="flex items-center gap-1 text-cain-gray-text text-sm mb-2 cursor-pointer select-none">
         Your balance
@@ -601,7 +615,7 @@
   </section>
 
   <!-- Promotion Banner -->
-  <section class="px-8 mb-10">
+  <section class="cain-content px-8 mb-10">
     <div id="earning-banner" class="glass rounded-3xl overflow-hidden relative">
       <div onclick="toggleEarning()" class="cursor-pointer h-32 flex items-center">
         <div class="flex-1 px-10">
@@ -652,7 +666,7 @@
   </section>
 
   <!-- Explore Vaults -->
-  <section class="px-8 pb-20">
+  <section class="cain-content px-8 pb-20">
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-4xl font-bold">Explore our vaults</h2>
       <div class="flex items-center gap-3">
