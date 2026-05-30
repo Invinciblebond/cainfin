@@ -234,6 +234,20 @@
     border: 1px solid rgba(255,255,255,0.1);
   }
 
+  /* ── INCOME SIMULATOR ── */
+  .sim-amt-btn {
+    padding: 7px 14px;
+    font-size: 12px; font-weight: 500;
+    color: #52525b;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px; cursor: pointer;
+    transition: all 0.12s;
+    font-family: 'Inter', sans-serif;
+  }
+  .sim-amt-btn:hover { color: #a1a1aa; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+  .sim-amt-btn.active { color: #fff; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.28); font-weight: 600; }
+
   /* ── ACCORDION ── */
   details summary::-webkit-details-marker { display:none; }
   details[open] summary svg { transform: rotate(180deg); }
@@ -747,12 +761,12 @@
             <div class="grid grid-cols-3 gap-8">
               <div>
                 <p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3 underline decoration-dotted underline-offset-4">Vault APY</p>
-                <p class="text-5xl font-medium text-white tracking-tight">14.0%</p>
+                <p class="text-5xl font-medium text-white tracking-tight" id="overview-apy">—</p>
                 <p class="text-xs text-zinc-600 mt-2">Trailing 30d</p>
               </div>
               <div>
                 <p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3 underline decoration-dotted underline-offset-4">TVL</p>
-                <p class="text-5xl font-medium text-white tracking-tight">$2.41M</p>
+                <p class="text-5xl font-medium text-white tracking-tight" id="overview-tvl">—</p>
                 <p class="text-xs text-zinc-600 mt-2">Total value locked</p>
               </div>
               <div>
@@ -862,45 +876,160 @@
           <!-- ══ PANEL: PERFORMANCE ══ -->
           <div id="panel-performance" class="panel space-y-10">
 
-            <!-- YTD Chart -->
-            <div>
-              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">YTD Performance</h3>
-              <div class="glass-card rounded-2xl p-6">
-                <div class="flex justify-between items-start mb-6">
-                  <div>
-                    <div class="text-xs text-zinc-500 uppercase tracking-widest mb-1">aCain Token Price</div>
-                    <div class="flex gap-2 mt-2">
-                      <button class="tf-btn active px-2.5 py-1 rounded text-[11px] border border-white/10 bg-white/5 text-white font-medium" data-tf="ytd">YTD</button>
-                      <button class="tf-btn px-2.5 py-1 rounded text-[11px] border border-white/10 text-zinc-500 hover:text-white transition-colors" data-tf="1m">1M</button>
-                      <button class="tf-btn px-2.5 py-1 rounded text-[11px] border border-white/10 text-zinc-500 hover:text-white transition-colors" data-tf="3m">3M</button>
-                      <button class="tf-btn px-2.5 py-1 rounded text-[11px] border border-white/10 text-zinc-500 hover:text-white transition-colors" data-tf="all">All</button>
-                    </div>
-                  </div>
-                  <div class="text-right">
-                    <div class="text-2xl font-medium text-white">$1.1400</div>
-                    <div class="text-xs text-zinc-500 mt-1">+14.0% since inception</div>
-                  </div>
-                </div>
-                <canvas id="perf-canvas" height="180"></canvas>
+            <!-- Live Pool Stats Row -->
+            <div class="grid grid-cols-4 gap-4" id="perf-live-stats">
+              <div class="glass-card rounded-2xl p-5">
+                <div class="text-xs text-zinc-500 uppercase tracking-widest mb-2">24h Fees</div>
+                <div class="text-xl font-semibold text-white font-mono" id="stat-fee24h">—</div>
+                <div class="text-xs text-zinc-600 mt-1">Pool earnings</div>
+              </div>
+              <div class="glass-card rounded-2xl p-5">
+                <div class="text-xs text-zinc-500 uppercase tracking-widest mb-2">7d Fees</div>
+                <div class="text-xl font-semibold text-white font-mono" id="stat-fee7d">—</div>
+                <div class="text-xs text-zinc-600 mt-1">Rolling 7 days</div>
+              </div>
+              <div class="glass-card rounded-2xl p-5">
+                <div class="text-xs text-zinc-500 uppercase tracking-widest mb-2">Pool TVL</div>
+                <div class="text-xl font-semibold text-white font-mono" id="stat-tvl">—</div>
+                <div class="text-xs text-zinc-600 mt-1">Total value locked</div>
+              </div>
+              <div class="glass-card rounded-2xl p-5">
+                <div class="text-xs text-zinc-500 uppercase tracking-widest mb-2">Fee APR</div>
+                <div class="text-xl font-semibold font-mono" id="stat-apr" style="color:#4ade80;">—</div>
+                <div class="text-xs text-zinc-600 mt-1">Annualised (Byreal)</div>
               </div>
             </div>
 
-            <!-- Historical Returns -->
+            <!-- SOL Price Chart (underlying asset of this SOL-USDC LP) -->
+            <div>
+              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">SOL Price · 14 Day</h3>
+              <div class="glass-card rounded-2xl p-6">
+                <div class="flex justify-between items-start mb-4">
+                  <div>
+                    <div class="text-xs text-zinc-500 uppercase tracking-widest mb-2">Solana / USDC · pool underlying</div>
+                    <div class="text-xs text-zinc-600" id="sol-vol">7d volatility: —</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-2xl font-medium text-white" id="sol-price-display">$—</div>
+                    <div class="text-xs mt-1" id="sol-change-display">—</div>
+                  </div>
+                </div>
+                <!-- Legend — updated to include fee accrual line -->
+                <div class="flex gap-5 mb-4">
+                  <div class="flex items-center gap-2">
+                    <div style="width:20px;height:2px;background:#a78bfa;border-radius:2px;"></div>
+                    <span class="text-xs text-zinc-400">SOL price</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div style="width:20px;height:2px;background:rgba(255,255,255,0.75);border-radius:2px;"></div>
+                    <span class="text-xs text-zinc-400">Fee accrual (APR)</span>
+                  </div>
+                  <div id="sol-status" class="text-xs text-zinc-600 ml-auto self-center"></div>
+                </div>
+                <div style="position:relative;">
+                  <canvas id="perf-canvas" height="200"></canvas>
+                  <div id="perf-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(6,6,6,0.6);border-radius:8px;">
+                    <span class="text-xs text-zinc-500">Loading SOL data…</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Historical Returns + Monthly Bar -->
             <div class="grid grid-cols-2 gap-8">
               <div class="glass-card rounded-2xl p-6">
                 <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Historical Returns</h3>
                 <table class="metrics-table">
-                  <tr><td>7 Day Return</td><td>+0.27%</td></tr>
-                  <tr><td>30 Day Return</td><td>+1.16%</td></tr>
-                  <tr><td>90 Day Return</td><td>+3.45%</td></tr>
-                  <tr><td>Since Inception</td><td>+14.00%</td></tr>
-                  <tr><td>Annualized APY</td><td style="color:#4ade80;">14.0%</td></tr>
+                  <tr><td>7 Day Return</td><td id="ret-7d">+0.27%</td></tr>
+                  <tr><td>30 Day Return</td><td id="ret-30d">+1.16%</td></tr>
+                  <tr><td>90 Day Return</td><td id="ret-90d">+3.45%</td></tr>
+                  <tr><td>Since Inception</td><td id="ret-inception">—</td></tr>
+                  <tr><td>Annualized APY</td><td id="ret-apy" style="color:#4ade80;">—</td></tr>
                 </table>
               </div>
               <div class="glass-card rounded-2xl p-6">
                 <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Monthly Price Appreciation</h3>
                 <div class="chart-wrap" style="height:160px;">
                   <canvas id="yield-chart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Income Simulator -->
+            <div>
+              <button id="simulate-toggle" style="
+                display:flex; align-items:center; gap:10px;
+                background:rgba(255,255,255,0.04);
+                border:1px solid rgba(255,255,255,0.1);
+                border-radius:12px; padding:12px 20px;
+                font-size:13px; font-weight:600; color:#a1a1aa;
+                cursor:pointer; transition:all 0.2s; width:100%;
+                font-family:'Inter',sans-serif;
+              ">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="simulate-chevron" style="transition:transform 0.2s;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+                <span>Simulate fee income annually</span>
+                <span style="margin-left:auto;font-size:11px;font-weight:400;color:#52525b;" id="simulate-apr-badge">APR: —</span>
+              </button>
+
+              <div id="simulate-panel" style="display:none; margin-top:8px;">
+                <div class="glass-card rounded-2xl p-6">
+
+                  <!-- Amount selector -->
+                  <div style="margin-bottom:24px;">
+                    <div style="font-size:11px;font-weight:600;color:#52525b;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px;">Deposit amount</div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                      <button class="sim-amt-btn active" data-amt="100">$100</button>
+                      <button class="sim-amt-btn" data-amt="500">$500</button>
+                      <button class="sim-amt-btn" data-amt="1000">$1,000</button>
+                      <button class="sim-amt-btn" data-amt="5000">$5,000</button>
+                      <button class="sim-amt-btn" data-amt="custom">Custom</button>
+                      <input id="sim-custom-input" type="number" min="1" placeholder="Enter amount…" style="
+                        display:none; flex:1; min-width:120px;
+                        background:rgba(255,255,255,0.04);
+                        border:1px solid rgba(255,255,255,0.1);
+                        border-radius:8px; padding:7px 12px;
+                        font-size:12px; color:#e5e5e5;
+                        font-family:'Inter',sans-serif; outline:none;
+                      ">
+                    </div>
+                  </div>
+
+                  <!-- Summary stats -->
+                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;">
+                    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;">
+                      <div style="font-size:10px;color:#52525b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Daily income</div>
+                      <div style="font-size:16px;font-weight:600;color:#fff;font-family:monospace;" id="sim-daily">—</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;">
+                      <div style="font-size:10px;color:#52525b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Monthly income</div>
+                      <div style="font-size:16px;font-weight:600;color:#fff;font-family:monospace;" id="sim-monthly">—</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;">
+                      <div style="font-size:10px;color:#52525b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Annual income</div>
+                      <div style="font-size:16px;font-weight:600;color:#4ade80;font-family:monospace;" id="sim-annual">—</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;">
+                      <div style="font-size:10px;color:#52525b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">End balance</div>
+                      <div style="font-size:16px;font-weight:600;color:#fff;font-family:monospace;" id="sim-endbal">—</div>
+                    </div>
+                  </div>
+
+                  <!-- Chart -->
+                  <div style="display:flex;gap:16px;margin-bottom:10px;">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                      <div style="width:18px;height:2px;background:#4ade80;border-radius:2px;"></div>
+                      <span style="font-size:11px;color:#a1a1aa;">Your balance (projected)</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                      <div style="width:18px;height:2px;background:#a78bfa;border-radius:2px;opacity:0.8;"></div>
+                      <span style="font-size:11px;color:#a1a1aa;">SOL price (14d, scaled)</span>
+                    </div>
+                  </div>
+                  <div style="position:relative;">
+                    <canvas id="sim-canvas" height="180"></canvas>
+                  </div>
+
+                  <div style="margin-top:12px;font-size:10px;color:#3f3f46;text-align:right;" id="sim-footnote">—</div>
                 </div>
               </div>
             </div>
@@ -1147,11 +1276,11 @@
             <div class="flex justify-between items-center mb-6 pb-5 border-b border-white/5">
               <div>
                 <p class="text-[10px] font-medium text-zinc-500 uppercase tracking-widest mb-1">Vault APY</p>
-                <p class="text-2xl font-semibold text-green-400">14.0%</p>
+                <p class="text-2xl font-semibold text-green-400" id="deposit-apy">—</p>
               </div>
               <div class="text-right">
                 <p class="text-[10px] font-medium text-zinc-500 uppercase tracking-widest mb-1">TVL</p>
-                <p class="text-2xl font-semibold text-white">$2.41M</p>
+                <p class="text-2xl font-semibold text-white" id="deposit-tvl">—</p>
               </div>
             </div>
 
@@ -1344,7 +1473,10 @@ document.querySelectorAll('#page-tabs button').forEach(btn => {
     const panel = document.getElementById('panel-' + btn.dataset.tab);
     if (panel) {
       panel.classList.add('active');
-      if (btn.dataset.tab === 'performance') initPerfCharts();
+      if (btn.dataset.tab === 'performance') {
+        initPerfCharts();
+        setTimeout(() => { redrawPerfChart(); }, 50);
+      }
     }
   });
 });
@@ -1362,9 +1494,6 @@ document.querySelectorAll('.dtab').forEach(btn => {
 });
 
 // ─── WALLET STATE ─────────────────────────
-// NOTE: wallet connection is handled entirely by the global React widget
-// mounted at #cain-wallet-root (cain-wallet-widget.iife.js). The functions
-// below only control the deposit card's locked/unlocked UI.
 let walletAddress = null;
 
 function onConnect(address) {
@@ -1385,18 +1514,14 @@ function showWalletForms() {
   document.getElementById('withdraw-form').classList.toggle('hidden', activeDepositTab !== 'withdraw');
 }
 
-// Listen for the global wallet widget events so the deposit card reacts
 window.addEventListener('cain:connected', e => {
   if (e.detail && e.detail.address) onConnect(e.detail.address);
 });
 window.addEventListener('cain:disconnected', () => onDisconnect());
 
-// "Connect Wallet to Deposit" button: delegate to the global widget's button
 document.getElementById('connect-card-btn').addEventListener('click', () => {
-  // Try to find and click the wallet widget's connect button
   const widgetBtn = document.querySelector('#cain-wallet-root button');
   if (widgetBtn) { widgetBtn.click(); return; }
-  // Fallback: direct provider call (mirrors index.html logic exactly)
   connectViaProvider();
 });
 
@@ -1468,7 +1593,6 @@ let currentLpWidth = '1%';
   lpCustom.addEventListener('input', () => lpCustom.classList.remove('error'));
 })();
 
-// Show/hide LP width section based on deposit amount
 function updateLpWidthVisibility() {
   const amt = parseFloat(document.getElementById('deposit-amount').value) || 0;
   const section = document.getElementById('lp-width-section');
@@ -1522,18 +1646,109 @@ document.querySelectorAll('.quick-pct').forEach(btn => {
 });
 
 // ─── DEPOSIT / WITHDRAW ACTIONS ──────────
-document.getElementById('deposit-btn').addEventListener('click', async () => {
+function lpWidthFraction() {
+  const raw = (currentLpWidth || '1%').replace('%', '').trim();
+  const v = parseFloat(raw);
+  return (!isNaN(v) && v > 0) ? v / 100 : 0.01;
+}
+
+function deriveTicksFromWidth(pool, widthFrac) {
+  const decA = Number(pool.decimalsA ?? 9);
+  const decB = Number(pool.decimalsB ?? 6);
+  const spacing = Number(pool.tickSpacing ?? 1) || 1;
+  const cur = Number(pool.price);
+  const lo = cur * (1 - widthFrac);
+  const hi = cur * (1 + widthFrac);
+  const LOG = Math.log(1.0001);
+  const priceToTick = (p) => Math.log(p * 10 ** (decB - decA)) / LOG;
+  const snap = (t) => Math.round(t / spacing) * spacing;
+  let tickLower = snap(priceToTick(lo));
+  let tickUpper = snap(priceToTick(hi));
+  if (tickLower > tickUpper) { const t = tickLower; tickLower = tickUpper; tickUpper = t; }
+  return { tickLower, tickUpper };
+}
+
+async function realDeposit() {
+  const btn = document.getElementById('deposit-btn');
   const amt = parseFloat(document.getElementById('deposit-amount').value);
   if (!amt || amt < 0.21) { showToast('Minimum deposit is $0.21', 'red'); return; }
-  const btn = document.getElementById('deposit-btn');
-  btn.disabled = true; btn.textContent = 'Building transaction…';
-  await new Promise(r => setTimeout(r, 1400));
-  showToast('Deposit submitted · tx: demo1234… · LP width: ' + currentLpWidth, 'green');
-  document.getElementById('deposit-amount').value = '';
-  document.getElementById('lp-width-section').classList.remove('visible');
-  updateDeposit();
-  btn.disabled = false; btn.textContent = 'Deposit USDC';
-});
+
+  const w = window.cainWallet;
+  const publicKey = w && w.provider && w.provider.publicKey;
+  if (!publicKey) { if (window.connectWallet) window.connectWallet(); return; }
+  if (typeof window.cainBuildZap !== 'function') {
+    showToast('Deposit module not loaded — rebuild the wallet widget', 'red');
+    return;
+  }
+
+  const setBusy = (label) => { btn.disabled = true; btn.textContent = label; };
+  const setIdle = () => { btn.disabled = false; btn.textContent = 'Deposit USDC'; };
+
+  try {
+    setBusy('Fetching pool…');
+    const poolRes = await fetch(`${WORKER_URL}/pool?id=${POOL_ID}`).then(r => r.json());
+    const pool = poolRes.pool;
+    if (!pool || pool.price == null || pool.tickSpacing == null) {
+      showToast('Pool range data unavailable', 'red'); setIdle(); return;
+    }
+    const { tickLower, tickUpper } = deriveTicksFromWidth(pool, lpWidthFraction());
+    const amountUnits = Math.round(amt * 1e6).toString();
+
+    const attempt = async () => {
+      setBusy('Building transaction…');
+      const built = await window.cainBuildZap({
+        owner: publicKey.toString(),
+        asset: 'USDC',
+        amount: amountUnits,
+        poolId: POOL_ID,
+        tickLower, tickUpper,
+        slippageBps: '50',
+      });
+
+      setBusy('Approve in wallet…');
+      const signed = await w.provider.signTransaction(built.tx);
+
+      setBusy('Sending…');
+      const sig = await window.cainSendRaw(signed, built.blockhash, built.lastValidBlockHeight);
+
+      await fetch(`${WORKER_URL}/positions`, {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          owner: publicKey.toString(), poolId: POOL_ID,
+          positionMint: built.positionMint, tickLower, tickUpper,
+          sig, feeUsdcUnits: built.feeUsdcUnits, asset: 'USDC',
+          amount: amountUnits, ts: Date.now(),
+        }),
+      }).catch(() => {});
+      return sig;
+    };
+
+    const isExpired = (e) => e?.name === 'TransactionExpiredBlockheightExceededError'
+      || /block height exceeded|blockhash/i.test(String(e?.message || e));
+    const isRejected = (e) => e?.code === 4001 || e?.name === 'WalletSignTransactionError'
+      || /reject|denied|cancel/i.test(String(e?.message || e));
+
+    let sig;
+    try {
+      sig = await attempt();
+    } catch (e) {
+      if (isRejected(e)) { showToast('Transaction cancelled', 'red'); setIdle(); return; }
+      if (isExpired(e)) { showToast('Blockhash expired — retrying…'); sig = await attempt(); }
+      else throw e;
+    }
+
+    showToast('Position opened · ' + sig.slice(0, 8) + '… · LP width ' + currentLpWidth, 'green');
+    document.getElementById('deposit-amount').value = '';
+    document.getElementById('lp-width-section').classList.remove('visible');
+    updateDeposit();
+  } catch (e) {
+    showToast('Failed: ' + (e.message || e), 'red');
+  } finally {
+    setIdle();
+  }
+}
+
+document.getElementById('deposit-btn').addEventListener('click', realDeposit);
 
 document.getElementById('withdraw-btn').addEventListener('click', async () => {
   const amt = parseFloat(document.getElementById('withdraw-amount').value);
@@ -1566,92 +1781,445 @@ function showToast(msg, type = '') {
   t._t = setTimeout(() => { t.className = ''; }, 3500);
 }
 
-// ─── OVERVIEW PERFORMANCE CHART ──────────
-(function() {
+// ══════════════════════════════════════════════════════════
+// PERFORMANCE DASHBOARD
+// ══════════════════════════════════════════════════════════
+
+const POOL_ID    = '9GTj99g9tbz9U6UYDsX6YeRTgUnkYG6GTnHv3qLa5aXq';
+const WORKER_URL = 'https://infofetchworker.doffecul.workers.dev';
+const SOL_WORKER = 'https://tikers.aboodgoudagad.workers.dev/';
+
+let _poolData = null;
+let _solData  = null;
+
+function fmtUSD(n) {
+  if (n == null) return '—';
+  n = Number(n);
+  if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+  if (n >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
+  return '$' + n.toFixed(2);
+}
+
+async function fetchPoolData() {
+  try {
+    const res = await fetch(`${WORKER_URL}/pool?id=${POOL_ID}`);
+    const json = await res.json();
+    if (json && json.pool && json.pool.ok) {
+      _poolData = json.pool;
+      applyPoolToUI();
+    }
+  } catch(e) {
+    console.warn('[Perf] Pool fetch failed:', e);
+  }
+}
+
+function applyPoolToUI() {
+  const p = _poolData;
+  if (!p) return;
+
+  document.getElementById('stat-fee24h').textContent = fmtUSD(p.fee24h);
+  document.getElementById('stat-fee7d').textContent  = fmtUSD(p.fee7d);
+  document.getElementById('stat-tvl').textContent    = fmtUSD(p.tvl);
+  document.getElementById('stat-apr').textContent    = p.apr ? p.apr + '%' : '—';
+
+  const aprDisplay = p.apr ? p.apr + '%' : '—';
+  const aprEl = [
+    document.getElementById('overview-apy'),
+    document.getElementById('deposit-apy'),
+    document.getElementById('ret-apy'),
+  ];
+  aprEl.forEach(el => { if (el) { el.textContent = aprDisplay; el.style.color = p.apr ? '#4ade80' : ''; } });
+
+  const tvlDisplay = fmtUSD(p.tvl);
+  [document.getElementById('overview-tvl'), document.getElementById('deposit-tvl')]
+    .forEach(el => { if (el) el.textContent = tvlDisplay; });
+
+  const badge = document.getElementById('simulate-apr-badge');
+  if (badge && p.apr) badge.textContent = `APR: ${p.apr}%`;
+
+  // Redraw chart now that APR is available, so the fee line appears
+  redrawPerfChart();
+
+  if (_simOpen) drawIncomeSimulator();
+}
+
+async function fetchSOL() {
+  try {
+    const res  = await fetch(SOL_WORKER);
+    const json = await res.json();
+    if (json && Array.isArray(json.prices) && json.prices.length) {
+      _solData = json.prices;
+
+      const last  = _solData[_solData.length - 1];
+      const first = _solData[0];
+      const priceEl  = document.getElementById('sol-price-display');
+      const changeEl = document.getElementById('sol-change-display');
+      const volEl    = document.getElementById('sol-vol');
+      if (priceEl) priceEl.textContent = '$' + Number(last.close).toFixed(2);
+      if (changeEl) {
+        const pct = ((last.close - first.close) / first.close) * 100;
+        changeEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '% over window';
+        changeEl.style.color = pct >= 0 ? '#4ade80' : '#f87171';
+      }
+      if (volEl && json.volatility_7d_annualised != null) {
+        volEl.textContent = `7d volatility (annualised): ${Number(json.volatility_7d_annualised).toFixed(1)}%`;
+      }
+      document.getElementById('sol-status').textContent = 'SOL live';
+    } else {
+      document.getElementById('sol-status').textContent = 'SOL unavailable';
+    }
+  } catch(e) {
+    document.getElementById('sol-status').textContent = 'SOL unavailable';
+    console.warn('[Perf] SOL fetch failed:', e);
+  }
+  redrawPerfChart();
+  if (_simOpen) drawIncomeSimulator();
+}
+
+// ─── Draw SOL price chart + fee accrual overlay ────────────
+function redrawPerfChart() {
   const canvas = document.getElementById('perf-canvas');
   if (!canvas) return;
+
+  const loading = document.getElementById('perf-loading');
+
+  if (!_solData || _solData.length < 2) {
+    if (loading) loading.style.display = 'flex';
+    return;
+  }
+  if (loading) loading.style.display = 'none';
+
+  const data   = _solData.slice(-14);
+  const closes = data.map(p => Number(p.close));
+
   const ctx = canvas.getContext('2d');
-  const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const data   = [1.000,1.009,1.022,1.018,1.035,1.049,1.063,1.072,1.090,1.106,1.122,1.140];
+  const W = canvas.parentElement.clientWidth - 48;
+  const H = 200;
+  canvas.width  = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(devicePixelRatio, devicePixelRatio);
 
-  function draw() {
-    const W = canvas.parentElement.clientWidth - 48;
-    const H = 180;
-    canvas.width  = W * devicePixelRatio;
-    canvas.height = H * devicePixelRatio;
-    canvas.style.width  = W + 'px';
-    canvas.style.height = H + 'px';
-    ctx.scale(devicePixelRatio, devicePixelRatio);
+  const pad = { top: 14, right: 48, bottom: 32, left: 54 };
+  const cW  = W - pad.left - pad.right;
+  const cH  = H - pad.top  - pad.bottom;
 
-    const pad = { top:10, right:12, bottom:28, left:44 };
-    const cW  = W - pad.left - pad.right;
-    const cH  = H - pad.top  - pad.bottom;
-    const min = 0.98, max = 1.16;
+  const rawMin = Math.min(...closes);
+  const rawMax = Math.max(...closes);
+  const padding = (rawMax - rawMin) * 0.12 || 1;
+  const min = rawMin - padding;
+  const max = rawMax + padding;
 
-    const xOf = i => pad.left + (i / (data.length-1)) * cW;
-    const yOf = v => pad.top  + cH - ((v-min)/(max-min)) * cH;
+  const xOf = i => pad.left + (i / (closes.length - 1)) * cW;
+  const yOf = v => pad.top + cH - ((v - min) / (max - min)) * cH;
 
-    ctx.clearRect(0,0,W,H);
+  ctx.clearRect(0, 0, W, H);
 
-    for (let i=0;i<=4;i++) {
-      const y = pad.top + (cH/4)*i;
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-      ctx.lineWidth = 1;
-      ctx.moveTo(pad.left,y); ctx.lineTo(W-pad.right,y); ctx.stroke();
-      const v = max - ((max-min)/4)*i;
-      ctx.fillStyle = '#52525b';
-      ctx.font = '10px Inter, sans-serif';
-      ctx.textAlign = 'right';
-      ctx.fillText(((v-1)*100).toFixed(1)+'%', pad.left-6, y+4);
-    }
-
-    ctx.fillStyle = '#52525b';
-    ctx.textAlign = 'center';
-    labels.forEach((l,i) => {
-      if (i%2===0) ctx.fillText(l, xOf(i), H-pad.bottom+14);
-    });
-
-    const grad = ctx.createLinearGradient(0,pad.top,0,pad.top+cH);
-    grad.addColorStop(0,'rgba(255,255,255,0.07)');
-    grad.addColorStop(1,'rgba(255,255,255,0)');
+  // Grid + y labels (SOL price, left axis)
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (cH / 4) * i;
     ctx.beginPath();
-    data.forEach((v,i) => i===0 ? ctx.moveTo(xOf(i),yOf(v)) : ctx.lineTo(xOf(i),yOf(v)));
-    ctx.lineTo(xOf(data.length-1),pad.top+cH);
-    ctx.lineTo(xOf(0),pad.top+cH);
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    const v = max - ((max - min) / 4) * i;
+    ctx.fillStyle = '#52525b';
+    ctx.font = '9px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('$' + v.toFixed(1), pad.left - 6, y + 3.5);
+  }
+
+  // X labels (dates)
+  ctx.fillStyle = '#52525b';
+  ctx.font = '9px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  const step = Math.max(1, Math.floor(data.length / 6));
+  data.forEach((p, i) => {
+    if (i % step !== 0 && i !== data.length - 1) return;
+    const d = new Date(p.date);
+    const lbl = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    ctx.fillText(lbl, xOf(i), H - pad.bottom + 14);
+  });
+
+  // SOL: filled area
+  const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + cH);
+  grad.addColorStop(0, 'rgba(167,139,250,0.15)');
+  grad.addColorStop(1, 'rgba(167,139,250,0)');
+  ctx.beginPath();
+  closes.forEach((v, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(v)) : ctx.lineTo(xOf(i), yOf(v)));
+  ctx.lineTo(xOf(closes.length - 1), pad.top + cH);
+  ctx.lineTo(xOf(0), pad.top + cH);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // SOL: price line (purple)
+  ctx.beginPath();
+  closes.forEach((v, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(v)) : ctx.lineTo(xOf(i), yOf(v)));
+  ctx.strokeStyle = '#a78bfa';
+  ctx.lineWidth   = 1.5;
+  ctx.lineJoin    = 'round';
+  ctx.stroke();
+
+  // SOL: end dot
+  ctx.beginPath();
+  ctx.arc(xOf(closes.length - 1), yOf(closes[closes.length - 1]), 4, 0, Math.PI * 2);
+  ctx.fillStyle   = '#a78bfa';
+  ctx.fill();
+  ctx.strokeStyle = '#060606';
+  ctx.lineWidth   = 2;
+  ctx.stroke();
+
+  // ── FEE ACCRUAL LINE (white) ────────────────────────────────────────
+  // Derived from live APR: cumulative fee index over the 14-day window.
+  // Plotted on a right-side secondary axis so it stays readable regardless
+  // of the SOL price range.
+  if (_poolData && _poolData.apr) {
+    const apr    = Number(_poolData.apr) / 100;
+    const dailyR = apr / 365;
+    const n      = closes.length;
+
+    // Build index: day 0 = 1.0000, grows by dailyR each step
+    const feeIdx = Array.from({ length: n }, (_, i) => Math.pow(1 + dailyR, i));
+    const fMin   = feeIdx[0];               // always 1.0
+    const fMax   = feeIdx[n - 1];
+    const fRange = (fMax - fMin) || 0.0001;
+
+    // Map fee index into the bottom-right 30% of the chart height so it
+    // sits clearly below the SOL line without overlapping
+    const fBandTop    = pad.top + cH * 0.62;   // top of fee band
+    const fBandBottom = pad.top + cH * 0.92;   // bottom of fee band
+    const fBandH      = fBandBottom - fBandTop;
+
+    const fXOf = i => pad.left + (i / (n - 1)) * cW;
+    const fYOf = v => fBandBottom - ((v - fMin) / fRange) * fBandH;
+
+    // Subtle fill under fee line
+    const fGrad = ctx.createLinearGradient(0, fBandTop, 0, fBandBottom);
+    fGrad.addColorStop(0, 'rgba(255,255,255,0.06)');
+    fGrad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.beginPath();
+    feeIdx.forEach((v, i) => i === 0 ? ctx.moveTo(fXOf(i), fYOf(v)) : ctx.lineTo(fXOf(i), fYOf(v)));
+    ctx.lineTo(fXOf(n - 1), fBandBottom);
+    ctx.lineTo(fXOf(0), fBandBottom);
     ctx.closePath();
-    ctx.fillStyle = grad;
+    ctx.fillStyle = fGrad;
     ctx.fill();
 
+    // Fee line (white)
     ctx.beginPath();
-    data.forEach((v,i) => i===0 ? ctx.moveTo(xOf(i),yOf(v)) : ctx.lineTo(xOf(i),yOf(v)));
-    ctx.strokeStyle = '#ffffff';
+    feeIdx.forEach((v, i) => i === 0 ? ctx.moveTo(fXOf(i), fYOf(v)) : ctx.lineTo(fXOf(i), fYOf(v)));
+    ctx.strokeStyle = 'rgba(255,255,255,0.80)';
     ctx.lineWidth   = 1.5;
     ctx.lineJoin    = 'round';
+    ctx.setLineDash([]);
     ctx.stroke();
 
+    // End dot
+    const fEndX = fXOf(n - 1);
+    const fEndY = fYOf(feeIdx[n - 1]);
     ctx.beginPath();
-    ctx.arc(xOf(data.length-1), yOf(data[data.length-1]), 4, 0, Math.PI*2);
+    ctx.arc(fEndX, fEndY, 3.5, 0, Math.PI * 2);
     ctx.fillStyle   = '#ffffff';
     ctx.fill();
     ctx.strokeStyle = '#060606';
     ctx.lineWidth   = 2;
     ctx.stroke();
+
+    // Right-axis label: total accrual over window as a % (e.g. "+0.37%")
+    const totalPct = ((feeIdx[n - 1] - 1) * 100).toFixed(2);
+    ctx.fillStyle  = 'rgba(255,255,255,0.45)';
+    ctx.font       = '9px Inter, sans-serif';
+    ctx.textAlign  = 'left';
+    ctx.fillText('+' + totalPct + '%', fEndX + 6, fEndY + 3.5);
+
+    // Right-axis tick label at bottom of band: "0%" baseline
+    ctx.fillStyle  = 'rgba(255,255,255,0.2)';
+    ctx.font       = '8px Inter, sans-serif';
+    ctx.textAlign  = 'left';
+    ctx.fillText('fee', W - pad.right + 6, fBandBottom + 3);
+  }
+}
+
+// ─── INCOME SIMULATOR ──────────────────────────────────────
+let _simAmt  = 100;
+let _simOpen = false;
+
+document.getElementById('simulate-toggle').addEventListener('click', () => {
+  _simOpen = !_simOpen;
+  document.getElementById('simulate-panel').style.display = _simOpen ? 'block' : 'none';
+  document.getElementById('simulate-chevron').style.transform = _simOpen ? 'rotate(180deg)' : '';
+  document.getElementById('simulate-toggle').style.color = _simOpen ? '#e5e5e5' : '#a1a1aa';
+  document.getElementById('simulate-toggle').style.borderColor = _simOpen ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)';
+  if (_simOpen) drawIncomeSimulator();
+});
+
+document.querySelectorAll('.sim-amt-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sim-amt-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const customInput = document.getElementById('sim-custom-input');
+    if (btn.dataset.amt === 'custom') {
+      customInput.style.display = 'block';
+      customInput.focus();
+    } else {
+      customInput.style.display = 'none';
+      _simAmt = Number(btn.dataset.amt);
+      drawIncomeSimulator();
+    }
+  });
+});
+
+document.getElementById('sim-custom-input').addEventListener('input', function() {
+  const v = parseFloat(this.value);
+  if (v > 0) { _simAmt = v; drawIncomeSimulator(); }
+});
+
+function drawIncomeSimulator() {
+  const p = _poolData;
+  if (!p || !p.apr) return;
+
+  const apr      = Number(p.apr) / 100;
+  const deposit  = _simAmt;
+  const dailyR   = apr / 365;
+  const days     = 365;
+
+  document.getElementById('simulate-apr-badge').textContent = `APR: ${p.apr}%`;
+
+  const balances = [];
+  let bal = deposit;
+  for (let i = 0; i <= days; i++) {
+    balances.push(bal);
+    bal = bal * (1 + dailyR);
   }
 
-  draw();
-  window.addEventListener('resize', draw);
-})();
+  const annualIncome  = balances[days] - deposit;
+  const monthlyIncome = deposit * (Math.pow(1 + dailyR, 30) - 1);
+  const dailyIncome   = deposit * dailyR;
 
-// ─── PERFORMANCE TAB CHARTS ──────────────
+  document.getElementById('sim-daily').textContent   = fmtUSD(dailyIncome);
+  document.getElementById('sim-monthly').textContent = fmtUSD(monthlyIncome);
+  document.getElementById('sim-annual').textContent  = fmtUSD(annualIncome);
+  document.getElementById('sim-endbal').textContent  = fmtUSD(balances[days]);
+  document.getElementById('sim-footnote').textContent =
+    `Based on ${p.apr}% APR (Byreal live) · $${deposit.toLocaleString()} deposit · daily compounding · fee income only, excludes SOL price movement (shown dashed)`;
+
+  const canvas = document.getElementById('sim-canvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const W = canvas.parentElement.clientWidth - 48;
+  const H = 180;
+  canvas.width  = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+
+  const pad = { top: 14, right: 12, bottom: 28, left: 60 };
+  const cW  = W - pad.left - pad.right;
+  const cH  = H - pad.top  - pad.bottom;
+  const minV = deposit;
+  const maxV = balances[days] * 1.02;
+
+  const xOf = i => pad.left + (i / (balances.length - 1)) * cW;
+  const yOf = v => pad.top  + cH - ((v - minV) / (maxV - minV)) * cH;
+
+  ctx.clearRect(0, 0, W, H);
+
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (cH / 4) * i;
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    const v = maxV - ((maxV - minV) / 4) * i;
+    ctx.fillStyle = '#52525b';
+    ctx.font = '9px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(fmtUSD(v), pad.left - 6, y + 3.5);
+  }
+
+  ctx.fillStyle = '#52525b';
+  ctx.font = '9px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].forEach((lbl, i) => {
+    ctx.fillText(lbl, xOf(Math.round((i / 11) * days)), H - pad.bottom + 14);
+  });
+
+  ctx.beginPath();
+  ctx.setLineDash([4, 4]);
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 1;
+  ctx.moveTo(pad.left, yOf(deposit)); ctx.lineTo(W - pad.right, yOf(deposit));
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + cH);
+  grad.addColorStop(0, 'rgba(74,222,128,0.15)');
+  grad.addColorStop(1, 'rgba(74,222,128,0)');
+  ctx.beginPath();
+  balances.forEach((v, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(v)) : ctx.lineTo(xOf(i), yOf(v)));
+  ctx.lineTo(xOf(balances.length - 1), yOf(deposit));
+  ctx.lineTo(xOf(0), yOf(deposit));
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  ctx.beginPath();
+  balances.forEach((v, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(v)) : ctx.lineTo(xOf(i), yOf(v)));
+  ctx.strokeStyle = 'rgba(74,222,128,0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  const lastX = xOf(balances.length - 1);
+  const lastY = yOf(balances[balances.length - 1]);
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
+  ctx.fillStyle = '#4ade80';
+  ctx.fill();
+  ctx.strokeStyle = '#060606';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  if (_solData && _solData.length > 1) {
+    const sol = _solData.slice(-14).map(p => Number(p.close));
+    const sMin = Math.min(...sol);
+    const sMax = Math.max(...sol);
+    const sRange = (sMax - sMin) || 1;
+    const sYOf = v => pad.top + cH - ((v - sMin) / sRange) * cH;
+    const sXOf = i => pad.left + (i / (sol.length - 1)) * cW;
+
+    ctx.beginPath();
+    sol.forEach((v, i) => i === 0 ? ctx.moveTo(sXOf(i), sYOf(v)) : ctx.lineTo(sXOf(i), sYOf(v)));
+    ctx.strokeStyle = 'rgba(167,139,250,0.8)';
+    ctx.lineWidth = 1.5;
+    ctx.lineJoin = 'round';
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.beginPath();
+    ctx.arc(sXOf(sol.length - 1), sYOf(sol[sol.length - 1]), 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#a78bfa';
+    ctx.fill();
+    ctx.strokeStyle = '#060606';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+}
+
+// ─── PERFORMANCE TAB CHARTS (monthly bar) ──────────────────
 let perfChartsInit = false;
 function initPerfCharts() {
   if (perfChartsInit) return;
   perfChartsInit = true;
   const yCtx = document.getElementById('yield-chart');
   if (!yCtx) return;
-  const months = ['Jul','Aug','Sep','Oct','Nov','Dec'];
-  const yields = [1.13, 1.27, 1.47, 1.39, 1.44, 1.54];
+  const months = ['Jan','Feb','Mar','Apr','May'];
+  const yields = [0.95, 1.12, 1.08, 1.21, 1.34];
   new Chart(yCtx, {
     type: 'bar',
     data: {
@@ -1692,15 +2260,16 @@ function initPerfCharts() {
   });
 }
 
-// ─── TIMEFRAME BUTTONS ───────────────────
-document.querySelectorAll('.tf-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tf-btn').forEach(b => {
-      b.className = 'tf-btn px-2.5 py-1 rounded text-[11px] border border-white/10 text-zinc-500 hover:text-white transition-colors';
-    });
-    btn.className = 'tf-btn active px-2.5 py-1 rounded text-[11px] border border-white/10 bg-white/5 text-white font-medium';
-  });
+// ─── Boot ─────────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  redrawPerfChart();
+  if (_simOpen) drawIncomeSimulator();
 });
+
+fetchPoolData();
+fetchSOL();
+
+setInterval(() => { fetchPoolData(); fetchSOL(); }, 30 * 60 * 1000);
 
 // ─── SPREAD SELECTOR ─────────────────────
 (function() {
@@ -1765,6 +2334,12 @@ document.querySelectorAll('.tf-btn').forEach(btn => {
 
   window.addEventListener('cain:disconnected', window.resetCainBalanceUI);
 })();
+</script>
+
+<!-- ══ CAIN TREASURY + RPC GLOBALS (must load BEFORE the widget bundle) ══ -->
+<script>
+  window.CAIN_TREASURY_PUBKEY   = 'YOUR_TREASURY_SOL_ADDRESS';
+  window.CAIN_TREASURY_USDC_ATA = 'YOUR_TREASURY_USDC_TOKEN_ACCOUNT';
 </script>
 
 <!-- ══ GLOBAL WALLET: React Wallet Adapter widget (copied from index.html) ══ -->
