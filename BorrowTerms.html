@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<link rel="icon" type="image/png" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<link rel="apple-touch-icon" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<title>Cain Finance - Borrow Terms</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'nest-black': '#060606',
+            'nest-gray': '#111111',
+            'nest-border': '#1F1F1F',
+            'nest-text-muted': '#888888',
+            'nest-blue': '#3B82F6',
+            'cain-accent': '#2DD4BF',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+<style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #060606;
+      color: #ffffff;
+      -webkit-font-smoothing: antialiased;
+      font-family: 'Inter', sans-serif;
+    }
+    .dot-grid {
+      background-image: radial-gradient(#1f1f1f 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 10px;
+    }
+    .legal-content {
+      max-width: 880px;
+    }
+    .legal-section {
+      scroll-margin-top: 100px;
+    }
+    .legal-title {
+      background: linear-gradient(135deg, #FFFFFF 0%, #9CA3AF 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+    .footer-link-group a {
+      transition: all 0.2s ease;
+    }
+    .footer-link-group a:hover {
+      color: #ffffff;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  </style>
+</head>
+<body class="dot-grid">
+
+<!-- MAIN CONTENT - No sidebar, no top navbar, only logo + legal doc + footer -->
+<main class="min-h-screen flex flex-col">
+  
+  <!-- Logo section (centered, clean, no navbar) -->
+  <div class="flex justify-center pt-10 pb-4">
+    <div class="flex items-center gap-3 bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl px-6 py-3 shadow-xl">
+      <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-md">
+        <svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <span class="text-2xl font-bold tracking-tight text-white">Cain<span class="text-cyan-300">.Finance</span></span>
+    </div>
+  </div>
+
+  <!-- Legal Document Content Section - Centered, clean typography -->
+  <div class="flex justify-center px-6 md:px-12 py-10 flex-1">
+    <div class="legal-content w-full">
+      <!-- Document Header / Title area with Cain styling -->
+      <div class="mb-12 border-b border-nest-border/60 pb-8">
+        <div class="flex items-center gap-4 mb-6">
+          <div class="w-12 h-12 bg-gradient-to-br from-cyan-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          </div>
+          <div>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight legal-title">Borrow Terms</h1>
+            <p class="text-nest-text-muted mt-2 flex items-center gap-2 text-sm">Legal agreement · Effective May 31, 2026 <span class="w-1 h-1 bg-nest-text-muted rounded-full"></span> <span class="text-cain-accent">CAIN FINANCE</span></p>
+          </div>
+        </div>
+        <div class="bg-nest-gray/50 border-l-4 border-cain-accent p-5 rounded-r-xl text-sm text-nest-text-muted leading-relaxed">
+          <strong class="text-white block mb-1">IMPORTANT NOTICE:</strong> Borrowing digital assets involves significant risk, including rapid liquidation and potential total loss of collateral. You are solely responsible for managing risk exposure at all times.
+        </div>
+      </div>
+
+      <!-- Full Legal Text with proper section styling -->
+      <div class="space-y-12">
+        <!-- Section 1 -->
+        <section class="legal-section space-y-4" id="introduction">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">1. INTRODUCTION</h2>
+          <p class="text-nest-text-muted leading-relaxed">These Borrow Terms (“Borrow Terms”) govern your access to and use of any borrowing, credit, leverage, margin-style functionality, or liquidity advance features made available through Cain Finance (the “Borrow Services”).</p>
+          <p class="text-nest-text-muted leading-relaxed">By accessing or using the Borrow Services, you agree to be legally bound by these Borrow Terms. If you do not agree, you must not use the Borrow Services.</p>
+        </section>
+
+        <!-- Section 2 -->
+        <section class="legal-section space-y-4">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">2. NATURE OF BORROW SERVICES</h2>
+          <p class="text-nest-text-muted leading-relaxed">Cain Finance provides non-custodial software interfaces that allow users to interact with decentralized finance (DeFi) protocols and liquidity systems that may enable overcollateralized borrowing or credit-like functionality.</p>
+          <p class="text-nest-text-muted leading-relaxed">Cain Finance does not itself issue loans, act as a lender, or extend credit. All borrowing activity occurs through blockchain-based smart contracts and/or third-party decentralized protocols.</p>
+        </section>
+
+        <!-- Section 3 -->
+        <section class="legal-section space-y-4">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">3. NO CUSTODY OR CREDIT RELATIONSHIP</h2>
+          <p class="text-nest-text-muted leading-relaxed">Cain Finance does not:</p>
+          <ul class="list-disc list-inside text-nest-text-muted space-y-1 ml-4 marker:text-cain-accent">
+            <li>Hold or custody user assets</li>
+            <li>Issue loans from its own balance sheet</li>
+            <li>Act as a credit institution or lender</li>
+            <li>Guarantee repayment structures or credit availability</li>
+          </ul>
+          <p class="text-nest-text-muted leading-relaxed mt-3">Any borrowing executed through the Platform is strictly between the user and the underlying protocol(s). Cain Finance is not a party to any loan agreement formed on-chain.</p>
+        </section>
+
+        <!-- Section 4 -->
+        <section class="legal-section space-y-4">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">4. COLLATERAL REQUIREMENTS</h2>
+          <p class="text-nest-text-muted leading-relaxed">Borrowing activity may require the provision of digital assets as collateral within third-party smart contracts or liquidity systems.</p>
+          <p class="text-nest-text-muted leading-relaxed">Users acknowledge that:</p>
+          <ul class="list-disc list-inside text-nest-text-muted space-y-1 ml-4">
+            <li>Collateral values are volatile and may fluctuate rapidly</li>
+            <li>Collateral requirements may change without notice</li>
+            <li>Additional collateral may be required at any time to maintain positions</li>
+          </ul>
+          <p class="text-nest-text-muted leading-relaxed">Failure to maintain required collateral levels may result in partial or full liquidation by third-party protocols.</p>
+        </section>
+
+        <!-- Section 5 -->
+        <section class="legal-section space-y-4">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">5. LIQUIDATION RISK</h2>
+          <p class="text-nest-text-muted leading-relaxed">Users expressly acknowledge that liquidation may occur automatically and without prior notice when collateral thresholds are breached.</p>
+          <p class="text-nest-text-muted leading-relaxed">Liquidation outcomes are determined by third-party protocols and market conditions, and may include:</p>
+          <ul class="list-disc list-inside text-nest-text-muted space-y-1 ml-4">
+            <li>Partial or total loss of collateral</li>
+            <li>Forced sale of assets at unfavorable prices</li>
+            <li>Additional fees imposed by underlying protocols</li>
+          </ul>
+          <p class="text-nest-text-muted leading-relaxed">Cain Finance does not control liquidation timing, pricing, or execution.</p>
+        </section>
+
+        <!-- Section 6 -->
+        <section class="legal-section space-y-4">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">6. INTEREST, FEES, AND COSTS</h2>
+          <p class="text-nest-text-muted leading-relaxed">Borrowing activity may involve variable interest rates, protocol fees, and network transaction costs. All rates and fees are determined by underlying third-party protocols and may change at any time without notice.</p>
+          <p class="text-nest-text-muted leading-relaxed">Cain Finance does not guarantee or control any interest rate, APR, or borrowing cost displayed on the Platform.</p>
+        </section>
+
+        <!-- Section 7 -->
+        <section class="legal-section space-y-4">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">7. MARKET AND VOLATILITY RISK</h2>
+          <p class="text-nest-text-muted leading-relaxed">Users acknowledge that digital asset markets are highly volatile and that borrowing amplifies exposure to price movements. Risks include but are not limited to:</p>
+          <ul class="list-disc list-inside text-nest-text-muted space-y-1 ml-4">
+            <li>Rapid collateral depreciation</li>
+            <li>Liquidation during market volatility</li>
+            <li>Loss exceeding initial expectations of position value</li>
+            <li>Price divergence between oracle and market pricing</li>
+          </ul>
+        </section>
+
+        <!-- Section 8 -->
+        <section class="legal-section space-y-4">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">8. THIRD-PARTY PROTOCOL DEPENDENCY</h2>
+          <p class="text-nest-text-muted leading-relaxed">Borrow Services rely on decentralized protocols and external liquidity infrastructure. Cain Finance has no control over:</p>
+          <ul class="list-disc list-inside text-nest-text-muted space-y-1 ml-4">
+            <li>Smart contract performance or security</li>
+            <li>Oracle accuracy or pricing feeds</li>
+            <li>Protocol governance decisions or upgrades</li>
+            <li>Network congestion or failures</li>
+          </ul>
+          <p class="text-nest-text-muted leading-relaxed">All interactions with third-party systems are at the user’s sole risk.</p>
+        </section>
+
+        <!-- Section 9 -->
+        <section class="legal-section space-y-4">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">9. NO GUARANTEE OF BORROWING ACCESS</h2>
+          <p class="text-nest-text-muted leading-relaxed">Cain Finance does not guarantee: availability of borrowing capacity, stability of collateral ratios, execution of borrow or repay transactions, or continued access to any lending protocol. Borrowing functionality may be modified, restricted, or removed at any time.</p>
+        </section>
+
+        <!-- Section 10 -->
+        <section class="legal-section space-y-4">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">10. ASSUMPTION OF RISK</h2>
+          <p class="text-nest-text-muted leading-relaxed">By using Borrow Services, you acknowledge and agree that you understand the risks of leveraged and collateralized positions; you may lose part or all of your collateral; you are solely responsible for managing your positions; and you accept that liquidation may occur without warning.</p>
+        </section>
+
+        <!-- Section 11 -->
+        <section class="legal-section space-y-4">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">11. NO WARRANTIES</h2>
+          <p class="text-nest-text-muted leading-relaxed">The Borrow Services are provided on an “AS IS” and “AS AVAILABLE” basis without warranties of any kind, including but not limited to: accuracy of borrowing rates, stability of collateral values, continuous availability of lending markets, or fitness for a particular financial purpose.</p>
+        </section>
+
+        <!-- Section 12 -->
+        <section class="legal-section space-y-4">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">12. LIMITATION OF LIABILITY</h2>
+          <p class="text-nest-text-muted leading-relaxed">To the maximum extent permitted by applicable law, Cain Finance and its affiliates, contributors, developers, and partners shall not be liable for any losses arising from: use of Borrow Services, liquidation events triggered by third-party protocols, smart contract failures or exploits, market volatility or collateral depreciation, errors in pricing or oracle data.</p>
+          <p class="text-nest-text-muted leading-relaxed">Cain Finance’s total liability, if any, shall not exceed fees paid by the user to Cain Finance in the 12 months preceding the claim, or £0 where no fees have been paid. Nothing in these Borrow Terms excludes liability for fraud or gross negligence where such exclusion is not permitted by law.</p>
+        </section>
+
+        <!-- Sections 13-16 -->
+        <section class="legal-section space-y-4">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">13. NO FINANCIAL ADVICE</h2>
+          <p class="text-nest-text-muted leading-relaxed">Nothing in the Borrow Services constitutes financial, investment, legal, or tax advice. You are solely responsible for your borrowing decisions.</p>
+        </section>
+
+        <section class="legal-section space-y-4">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">14. TERMINATION AND MODIFICATION</h2>
+          <p class="text-nest-text-muted leading-relaxed">Cain Finance may suspend, restrict, or terminate access to Borrow Services at any time without notice. These Borrow Terms may be updated at any time. Continued use constitutes acceptance of changes.</p>
+        </section>
+
+        <section class="legal-section space-y-4">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">15. INDEMNIFICATION</h2>
+          <p class="text-nest-text-muted leading-relaxed">You agree to indemnify and hold harmless Cain Finance from any claims, losses, or liabilities arising from your use of Borrow Services or breach of these Terms.</p>
+        </section>
+
+        <section class="legal-section space-y-4">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">16. GOVERNING LAW</h2>
+          <p class="text-nest-text-muted leading-relaxed">These Borrow Terms shall be governed by the jurisdiction in which Cain Finance is operated or incorporated, as determined by Cain Finance from time to time.</p>
+        </section>
+
+        <!-- Final footer note inside legal content -->
+        <div class="mt-16 pt-10 border-t border-nest-border/40 text-center space-y-5">
+          <div class="flex justify-center gap-12 text-xs text-nest-text-muted">
+            <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"></path></svg> Fully non-custodial</span>
+            <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2"></path></svg> Real-time liquidation</span>
+            <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 6h18M9 12h6m-6 6h6" stroke-width="2"></path></svg> Overcollateralized only</span>
+          </div>
+          <div class="text-sm font-medium tracking-wide text-white/80">CAIN FINANCE © 2026 — ALL RIGHTS RESERVED</div>
+          <div class="text-[11px] text-nest-text-muted max-w-md mx-auto">These Borrow Terms represent the complete agreement between you and Cain Finance regarding borrowing services. By interacting with any Cain Finance smart contract or interface, you irrevocably confirm acceptance.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER with community links + legal doc references (same as previous design, no navbar/topbar interference) -->
+  <footer class="border-t border-white/10 bg-black/40 backdrop-blur-sm mt-12">
+    <div class="max-w-6xl mx-auto px-6 py-10">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-6 h-6 bg-cyan-400 rounded-md"></div>
+            <span class="font-bold text-white">Cain Finance</span>
+          </div>
+          <p class="text-white/40 text-xs">Non-custodial DeFi interface. Borrow, swap, and yield on Solana.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold text-white/80 mb-3">Community</h4>
+          <ul class="space-y-2 footer-link-group">
+            <li><a href="#" class="text-white/50 hover:text-white transition">𝕏 Twitter / X.com</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">Reddit Community</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">Discord</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">Telegram</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">GitHub</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold text-white/80 mb-3">Legal</h4>
+          <ul class="space-y-2 footer-link-group">
+            <li><a href="#" class="text-white/50 hover:text-white transition">📄 Borrow Terms</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">⚠️ Risk Disclosure</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">Privacy Policy</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">Cookie Notice</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">Earn Terms</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold text-white/80 mb-3">Resources</h4>
+          <ul class="space-y-2 footer-link-group">
+            <li><a href="#" class="text-white/50 hover:text-white transition">Documentation</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">Audits</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">Status</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="text-center text-[11px] text-white/30 pt-8 border-t border-white/5 mt-8">
+        © 2026 Cain Finance — All rights reserved. By interacting with any smart contract you assume full responsibility.
+      </div>
+    </div>
+  </footer>
+</main>
+
+</body>
+</html>

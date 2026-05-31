@@ -1,0 +1,355 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<link rel="icon" type="image/png" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<link rel="apple-touch-icon" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<title>Cain Finance - Terms & Conditions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'nest-black': '#060606',
+            'nest-gray': '#111111',
+            'nest-border': '#1F1F1F',
+            'nest-text-muted': '#888888',
+            'cain-accent': '#2DD4BF',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+<style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #060606;
+      color: #ffffff;
+      -webkit-font-smoothing: antialiased;
+      font-family: 'Inter', sans-serif;
+    }
+    .dot-grid {
+      background-image: radial-gradient(#1f1f1f 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 10px;
+    }
+    .legal-content {
+      max-width: 880px;
+    }
+    .legal-section {
+      scroll-margin-top: 100px;
+    }
+    .footer-link-group a {
+      transition: all 0.2s ease;
+    }
+    .footer-link-group a:hover {
+      color: #ffffff;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  </style>
+</head>
+<body class="dot-grid">
+
+<!-- MAIN CONTENT - No sidebar, no top navbar, only logo + legal doc + footer -->
+<main class="min-h-screen flex flex-col">
+  
+  <!-- Logo section (centered, clean, no navbar) -->
+  <div class="flex justify-center pt-10 pb-4">
+    <div class="flex items-center gap-3 bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl px-6 py-3 shadow-xl">
+      <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-md">
+        <svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <span class="text-2xl font-bold tracking-tight text-white">Cain<span class="text-cyan-300">.Finance</span></span>
+    </div>
+  </div>
+
+  <!-- Legal Document Content Section -->
+  <div class="flex justify-center px-6 md:px-12 py-10 flex-1">
+    <div class="legal-content w-full">
+      
+      <!-- Document Header -->
+      <div class="mb-10 border-b border-nest-border/60 pb-6">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-md shadow-cyan-500/20">
+            <svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white">Terms & Conditions</h1>
+            <p class="text-nest-text-muted mt-2 flex items-center gap-2 text-sm">Last updated: May 31, 2026 <span class="w-1 h-1 bg-nest-text-muted rounded-full"></span> <span class="text-cain-accent">CAIN FINANCE</span></p>
+            <p class="text-xs text-nest-text-muted/70 mt-1">Full Platform Agreement</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full Legal Text - Terms & Conditions (Full Platform Agreement) -->
+      <div class="space-y-8 text-nest-text-muted leading-relaxed">
+        
+        <!-- 1. INTRODUCTION -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">1. INTRODUCTION</h2>
+          <p>These Terms & Conditions (“Terms”) govern your access to and use of Cain Finance, including its websites, applications, interfaces, APIs, dashboards, smart contract interactions, routing systems, documentation, and any related services (collectively, the “Platform” or “Services”).</p>
+          <p>By accessing or using the Platform, you agree to be legally bound by these Terms. If you do not agree, you must not use the Services.</p>
+          <p>Cain Finance may update or modify these Terms at any time. Continued use constitutes acceptance of the updated Terms.</p>
+        </section>
+
+        <!-- 2. PLATFORM NATURE (NON-CUSTODIAL INTERFACE) -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">2. PLATFORM NATURE (NON-CUSTODIAL INTERFACE)</h2>
+          <p>Cain Finance is a non-custodial software interface and liquidity aggregation layer providing access to decentralized finance (DeFi) protocols, routing systems, and blockchain-based infrastructure.</p>
+          <p>Cain Finance is not a bank, broker, exchange, financial institution, investment advisor, or custodian.</p>
+          <p>The Platform does not take custody, control, or possession of user assets at any time. All blockchain transactions are executed by users through external wallets and decentralized protocols.</p>
+        </section>
+
+        <!-- 3. DEFINITIONS AND INTERPRETATION -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">3. DEFINITIONS AND INTERPRETATION</h2>
+          <p>Unless otherwise defined:</p>
+          <ul class="list-disc list-inside ml-4 space-y-1">
+            <li><strong class="text-white">“Wallet”</strong> means a cryptographic key pair used to manage Digital Assets.</li>
+            <li><strong class="text-white">“Digital Assets”</strong> means blockchain-based tokens or cryptocurrencies.</li>
+            <li><strong class="text-white">“Protocol”</strong> means any third-party decentralized smart contract system accessed via the Platform.</li>
+            <li><strong class="text-white">“Interface”</strong> means Cain Finance user-facing software tools.</li>
+            <li><strong class="text-white">“Services”</strong> means all features, routing systems, analytics, and integrations.</li>
+            <li><strong class="text-white">“Third-Party Protocols”</strong> means external DeFi systems not controlled by Cain Finance.</li>
+            <li><strong class="text-white">“Non-Custodial”</strong> means Cain Finance never holds user funds or private keys.</li>
+            <li><strong class="text-white">“User”</strong> means any individual or entity interacting with the Platform.</li>
+          </ul>
+          <p class="mt-2">Interpretation principles: Words include singular/plural interchangeably, “Including” means without limitation, Headings are for convenience only.</p>
+        </section>
+
+        <!-- 4. ELIGIBILITY -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">4. ELIGIBILITY</h2>
+          <p>To use the Platform, you confirm that:</p>
+          <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>You are legally capable of entering binding agreements</li>
+            <li>You are at least 18 years old or legal age in your jurisdiction</li>
+            <li>You are not a Restricted Person or located in a Restricted Jurisdiction</li>
+            <li>You comply with all applicable laws and regulations</li>
+            <li>You are not using the Platform on behalf of prohibited entities</li>
+          </ul>
+          <p>Cain Finance may restrict access at its sole discretion.</p>
+        </section>
+
+        <!-- 5. PLATFORM ARCHITECTURE & THIRD PARTIES -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">5. PLATFORM ARCHITECTURE & THIRD PARTIES</h2>
+          <p>The Platform aggregates public blockchain data, displays routing and liquidity information, and provides interface tools for interacting with decentralized protocols.</p>
+          <p>Cain Finance does not operate blockchain networks, control liquidity pools or AMMs, execute trades on behalf of users, or guarantee pricing, execution, or availability.</p>
+          <p>All interactions occur directly between the user and third-party protocols.</p>
+        </section>
+
+        <!-- 6. ACCEPTANCE OF RISKS -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">6. ACCEPTANCE OF RISKS</h2>
+          <p>By using the Platform, you acknowledge:</p>
+          <ul class="list-disc list-inside ml-4 space-y-1">
+            <li>Digital assets are highly volatile</li>
+            <li>You may lose all funds</li>
+            <li>Smart contracts may contain bugs or exploits</li>
+            <li>Liquidity may be unavailable or fragmented</li>
+            <li>Blockchain networks may fail or congest</li>
+          </ul>
+          <p>You accept full responsibility for all actions taken.</p>
+        </section>
+
+        <!-- 7. NO CUSTODY OF FUNDS -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">7. NO CUSTODY OF FUNDS</h2>
+          <p>Cain Finance never stores user funds, controls wallets, holds private keys, or can reverse blockchain transactions. Users maintain full custody at all times.</p>
+        </section>
+
+        <!-- 8. THIRD-PARTY PROTOCOLS & SERVICES -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">8. THIRD-PARTY PROTOCOLS & SERVICES</h2>
+          <p>The Platform may integrate decentralized exchanges, liquidity aggregators (e.g., routing systems), staking and yield protocols, and external analytics providers. These systems are independent and outside Cain Finance’s control. Users interact with them entirely at their own risk.</p>
+        </section>
+
+        <!-- 9. NO FINANCIAL ADVICE -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">9. NO FINANCIAL ADVICE</h2>
+          <p>Cain Finance does not provide investment advice, legal advice, tax advice, or trading recommendations. All content is informational only and should not be relied upon for financial decisions.</p>
+        </section>
+
+        <!-- 10. LIQUIDITY & DEFI RISKS -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">10. LIQUIDITY & DEFI RISKS</h2>
+          <p>Users acknowledge risks including impermanent loss, slippage and price impact, pool imbalance or depletion, oracle failures, and smart contract vulnerabilities. Conditions may change without notice.</p>
+        </section>
+
+        <!-- 11. NO WARRANTIES -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">11. NO WARRANTIES</h2>
+          <p>The Platform is provided “AS IS” and “AS AVAILABLE” without warranties of any kind, including accuracy, reliability, availability, security, or fitness for purpose.</p>
+        </section>
+
+        <!-- 12. LIMITATION OF LIABILITY -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">12. LIMITATION OF LIABILITY</h2>
+          <p>To the maximum extent permitted by law, Cain Finance is not liable for loss of funds or digital assets, smart contract failures, third-party protocol failures, market volatility, or network outages or hacks. Total liability is limited to fees paid in the last 12 months, or £0 if none were paid.</p>
+        </section>
+
+        <!-- 13. INDEMNIFICATION -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">13. INDEMNIFICATION</h2>
+          <p>You agree to indemnify Cain Finance against any claims arising from your use of the Platform, violation of these Terms, violation of applicable law, or interaction with third-party protocols.</p>
+        </section>
+
+        <!-- 14. PROHIBITED USES -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">14. PROHIBITED USES</h2>
+          <p>You may not use the Platform for illegal activity, money laundering or terrorism financing, market manipulation, exploiting system vulnerabilities, or unauthorized access or attacks.</p>
+        </section>
+
+        <!-- 15. INTELLECTUAL PROPERTY -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">15. INTELLECTUAL PROPERTY</h2>
+          <p>All branding, software, and content belong to Cain Finance or its licensors. You may not copy, modify, reverse engineer, or redistribute without permission.</p>
+        </section>
+
+        <!-- 16. SERVICE MODIFICATIONS -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">16. SERVICE MODIFICATIONS</h2>
+          <p>Cain Finance may modify features, suspend services, or discontinue parts of the Platform at any time without notice.</p>
+        </section>
+
+        <!-- 17. TERMINATION -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">17. TERMINATION</h2>
+          <p>Access may be suspended or terminated at any time for violation of Terms, security concerns, regulatory risk, or abuse or misuse.</p>
+        </section>
+
+        <!-- 18. RISK DISCLOSURE ACKNOWLEDGEMENT -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">18. RISK DISCLOSURE ACKNOWLEDGEMENT</h2>
+          <p>You confirm you understand DeFi risks, accept potential total loss, are solely responsible for decisions, and waive related claims against Cain Finance.</p>
+        </section>
+
+        <!-- 19. DISPUTE RESOLUTION & ARBITRATION -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">19. DISPUTE RESOLUTION & ARBITRATION</h2>
+          <p>Any dispute must first be submitted to support for informal resolution. If unresolved within 60 days, disputes will be resolved by binding arbitration in: Seat: London, United Kingdom. Rules: Digital Dispute Resolution Rules (DDRR). Arbitrator: Single qualified arbitrator. Language: English. Law: Arbitration Act 1996. Awards are final and binding.</p>
+        </section>
+
+        <!-- 20. CLASS ACTION WAIVER -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">20. CLASS ACTION WAIVER</h2>
+          <p>Users agree no class actions, no collective proceedings, and all claims must be individual. Jury trial rights are waived where applicable.</p>
+        </section>
+
+        <!-- 21. GOVERNING LAW -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">21. GOVERNING LAW</h2>
+          <p>These Terms are governed by the jurisdiction determined by Cain Finance from time to time, unless otherwise required by law.</p>
+        </section>
+
+        <!-- 22. FORCE MAJEURE -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">22. FORCE MAJEURE</h2>
+          <p>Cain Finance is not liable for failures caused by blockchain outages, hacks or exploits, war or government actions, network failures, or natural disasters.</p>
+        </section>
+
+        <!-- 23. PRIVACY & DATA HANDLING -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">23. PRIVACY & DATA HANDLING</h2>
+          <p>The Platform may process limited technical data for security, compliance, and abuse prevention. Cain Finance does not guarantee confidentiality of on-chain or network-derived data.</p>
+        </section>
+
+        <!-- 24. ENTIRE AGREEMENT -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">24. ENTIRE AGREEMENT</h2>
+          <p>These Terms represent the entire agreement between you and Cain Finance and supersede all prior communications or understandings.</p>
+        </section>
+
+        <!-- 25. SEVERABILITY -->
+        <section class="legal-section space-y-3">
+          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">25. SEVERABILITY</h2>
+          <p>If any provision is invalid, the remaining Terms remain fully enforceable.</p>
+        </section>
+
+        <!-- Final footer note inside legal content -->
+        <div class="mt-12 pt-8 border-t border-nest-border/40 text-center space-y-4">
+          <div class="text-sm font-medium tracking-wide text-white/80">CAIN FINANCE © 2026 — ALL RIGHTS RESERVED</div>
+          <div class="text-[11px] text-nest-text-muted max-w-md mx-auto leading-relaxed bg-nest-gray/30 py-3 px-4 rounded-lg">
+            IMPORTANT NOTICE: By using the Services, you acknowledge that you understand and accept all risks described herein, including the possibility of total loss of funds with no recourse whatsoever, to the maximum extent permitted by law.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER with community links + legal doc references -->
+  <footer class="border-t border-white/10 bg-black/40 backdrop-blur-sm mt-12">
+    <div class="max-w-6xl mx-auto px-6 py-10">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-6 h-6 bg-cyan-400 rounded-md"></div>
+            <span class="font-bold text-white">Cain Finance</span>
+          </div>
+          <p class="text-white/40 text-xs">Non-custodial DeFi interface. Liquidity routing, swaps, yield, and borrowing on Solana.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold text-white/80 mb-3">Community</h4>
+          <ul class="space-y-2 footer-link-group">
+            <li><a href="#" class="text-white/50 hover:text-white transition">𝕏 Twitter / X.com</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">Reddit Community</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">Discord</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">Telegram</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">GitHub</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold text-white/80 mb-3">Legal</h4>
+          <ul class="space-y-2 footer-link-group">
+            <li><a href="#" class="text-white/50 hover:text-white transition">📄 Borrow Terms</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">⚠️ Risk Disclosure</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">📈 Earn Terms</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">📜 Terms & Conditions</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">Privacy Policy</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">Cookie Notice</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold text-white/80 mb-3">Resources</h4>
+          <ul class="space-y-2 footer-link-group">
+            <li><a href="#" class="text-white/50 hover:text-white transition">Documentation</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">Audits & Security</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">Byreal Info</a></li>
+            <li><a href="#" class="text-white/50 hover:text-white transition">Status</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="text-center text-[11px] text-white/30 pt-8 border-t border-white/5 mt-8">
+        © 2026 Cain Finance — All rights reserved. By interacting with any smart contract you assume full responsibility for all risks.
+      </div>
+    </div>
+  </footer>
+</main>
+
+</body>
+</html>
