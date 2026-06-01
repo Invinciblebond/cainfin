@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Byreal LP Deposit</title>
+  <script>
+    // Inline Buffer polyfill — the buffer@6 CDN is CommonJS and breaks in browsers.
+    // web3.js internals (toBufferLE, SystemProgram, etc.) need Buffer.from with hex/base64 encoding.
+    (function () {
+      function Buffer(arg, encodingOrOffset) {
+        if (!(this instanceof Buffer)) return Buffer.from(arg, encodingOrOffset);
+        var u = typeof arg === 'number' ? new Uint8Array(arg) : Buffer.from(arg, encodingOrOffset);
+        Object.setPrototypeOf(u, Buffer.prototype);
+        return u;
+      }
+      Buffer.prototype = Object.create(Uint8Array.prototype);
+      Buffer.prototype._isBuffer = true;
+
+      Buffer.from = function (value, encoding) {
+        if (typeof value === 'string') {
+          var enc = (encoding || 'utf8').toLowerCase();
+          if (enc === 'hex') {
+            var bytes = new Uint8Array(value.length >>> 1);
+            for (var i = 0; i < bytes.length; i++)
+              bytes[i] = parseInt(value.substr(i * 2, 2), 16);
+            return bytes;
+          }
+          if (enc === 'base64') {
+            var bin = atob(value.replace(/-/g, '+').replace(/_/g, '/'));
+            var out = new Uint8Array(bin.length);
+            for (var j = 0; j < bin.length; j++) out[j] = bin.charCodeAt(j);
+            return out;
+          }
+          return new TextEncoder().encode(value);
+        }
+        if (value instanceof ArrayBuffer) return new Uint8Array(value);
+        if (ArrayBuffer.isView(value)) return new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+        return new Uint8Array(value);
+      };
+      Buffer.alloc = function (size, fill) {
+        var b = new Uint8Array(size);
+        if (fill != null) b.fill(typeof fill === 'string' ? fill.charCodeAt(0) : fill);
+        return b;
+      };
+      Buffer.allocUnsafe = function (size) { return new Uint8Array(size); };
+      Buffer.allocUnsafeSlow = Buffer.allocUnsafe;
+      Buffer.isBuffer = function (o) { return o != null && (o._isBuffer === true || o instanceof Uint8Array); };
+      Buffer.concat = function (list, len) {
+        var total = len || list.reduce(function (a, b) { return a + b.length; }, 0);
+        var out = new Uint8Array(total), offset = 0;
+        list.forEach(function (b) { out.set(b, offset); offset += b.length; });
+        return out;
+      };
+      Buffer.byteLength = function (str, enc) { return Buffer.from(str, enc).length; };
+
+      window.Buffer = Buffer;
+      globalThis.Buffer = Buffer;
+      console.log('[Buffer polyfill] inline OK — Buffer.from =', typeof Buffer.from);
+    })();
+  </script>
+  <script src="https://unpkg.com/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
+  <script>
+    if (typeof globalThis.Buffer?.from !== 'function') {
+      console.error('[Buffer post-web3] Buffer.from still missing after web3.js load');
+    } else {
+      console.log('[Buffer post-web3] OK — Buffer.from =', typeof globalThis.Buffer.from, '| solanaWeb3 =', !!window.solanaWeb3);
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d0f14;
+      color: #e2e8f0;
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 80px;
+    }
+
+    header {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 36px;
+    }
+
+    .logo { font-size: 1.3rem; font-weight: 700; color: #7c6bf8; letter-spacing: -0.5px; }
+
+    #connect-btn {
+      background: #7c6bf8;
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 8px 18px;
+      transition: background 0.2s;
+    }
+    #connect-btn:hover { background: #6a59e8; }
+    #connect-btn.connected { background: #1e2535; color: #7c6bf8; border: 1px solid #7c6bf820; cursor: default; }
+
+    .card {
+      background: #161b27;
+      border: 1px solid #1e2840;
+      border-radius: 16px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 520px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      background: #0d0f14;
+      border: 1px solid #1e2840;
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      padding: 11px 14px;
+      margin-bottom: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: #7c6bf8; }
+    input::placeholder { color: #3a4560; }
+    input[readonly] { color: #64748b; cursor: default; }
+
+    .range-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .range-row input { margin-bottom: 0; }
+
+    .info-pill {
+      background: #0d0f14;
+      border: 1px solid #1e2840;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .info-pill span { color: #94a3b8; font-weight: 600; }
+
+    #deposit-btn {
+      width: 100%;
+      background: #7c6bf8;
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 14px;
+      margin-top: 20px;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    #deposit-btn:hover:not(:disabled) { background: #6a59e8; }
+    #deposit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .fee-note { text-align: center; font-size: 0.75rem; color: #3a4560; margin-top: 10px; }
+
+    .deposit-mode-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .deposit-mode-toggle button {
+      flex: 1;
+      background: #0d0f14;
+      border: 1px solid #1e2840;
+      border-radius: 8px;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 9px;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .deposit-mode-toggle button.active {
+      background: #7c6bf820;
+      border-color: #7c6bf8;
+      color: #a89cf8;
+    }
+    #base-token-select {
+      width: 100%;
+      background: #0d0f14;
+      border: 1px solid #1e2840;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 0.9rem;
+      padding: 11px 12px;
+      cursor: pointer;
+    }
+
+    .rent-disclaimer {
+      position: relative;
+      margin-top: 14px;
+      border: 1px solid #1e2840;
+      border-radius: 10px;
+      background: #0d0f14;
+      padding: 12px 36px 12px 14px;
+      font-size: 0.74rem;
+      line-height: 1.5;
+      color: #64748b;
+    }
+    .rent-disclaimer .rd-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .rent-disclaimer .rd-row:first-child { margin-top: 0; }
+    .rent-disclaimer .rd-row .rd-label { font-weight: 600; }
+    .rent-disclaimer .rd-row .rd-desc  { text-align: right; color: #94a3b8; flex: 1; }
+    .rent-disclaimer .rd-refund   { color: #34d399; }
+    .rent-disclaimer .rd-norefund { color: #fb923c; }
+
+    .rent-disclaimer .rd-info {
+      position: absolute;
+      top: 10px; right: 10px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 1px solid #3a4560;
+      color: #64748b;
+      font-size: 0.7rem;
+      font-style: italic;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      cursor: help;
+      user-select: none;
+    }
+    .rent-disclaimer .rd-info:hover { border-color: #7c6bf8; color: #a89cf8; }
+    .rent-disclaimer .rd-tooltip {
+      display: none;
+      position: absolute;
+      top: 24px; right: 0;
+      width: 260px;
+      background: #111827;
+      border: 1px solid #1e2840;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.72rem;
+      font-style: normal;
+      font-weight: 400;
+      line-height: 1.5;
+      color: #94a3b8;
+      text-align: left;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+      z-index: 50;
+    }
+    .rent-disclaimer .rd-tooltip b { color: #cbd5e1; }
+    .rent-disclaimer .rd-info:hover .rd-tooltip,
+    .rent-disclaimer .rd-info:focus .rd-tooltip { display: block; }
+    .rent-refund-note {
+      margin-top: 14px;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      color: #64748b;
+      background: #0f2a1e;
+      border: 1px solid #34d39940;
+      border-radius: 10px;
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .rent-refund-note b { color: #34d399; }
+
+
+    #fee-wallet-warn {
+      background: #2a1a0a;
+      border: 1px solid #7c4a0040;
+      border-radius: 8px;
+      color: #fb923c;
+      font-size: 0.8rem;
+      padding: 10px 14px;
+      margin-top: 14px;
+      display: none;
+    }
+
+    #status-box { width: 100%; max-width: 520px; margin-bottom: 20px; display: none; }
+    .status-msg { border-radius: 10px; padding: 12px 16px; font-size: 0.85rem; font-weight: 500; }
+    .status-msg.info    { background: #1a2545; color: #7c6bf8; }
+    .status-msg.success { background: #0f2a1e; color: #34d399; }
+    .status-msg.error   { background: #2a0f0f; color: #f87171; }
+
+    .positions-list { list-style: none; }
+
+    /* ── Success popup ── */
+    #success-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    #success-modal {
+      background: #111827;
+      border: 1px solid #1e2840;
+      border-radius: 20px;
+      padding: 40px 32px 32px;
+      max-width: 420px; width: 90%;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+      animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to   { transform: scale(1);    opacity: 1; }
+    }
+    #success-icon {
+      width: 64px; height: 64px;
+      background: #0f2a1e;
+      border: 2px solid #34d399;
+      border-radius: 50%;
+      font-size: 1.8rem; color: #34d399;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+    }
+    #success-title {
+      font-size: 1.4rem; font-weight: 700;
+      color: #f1f5f9; margin-bottom: 8px;
+    }
+    #success-subtitle {
+      font-size: 0.875rem; color: #64748b; margin-bottom: 20px;
+    }
+    #success-details {
+      background: #0d0f14;
+      border: 1px solid #1e2840;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 0.78rem; color: #64748b;
+      text-align: left; margin-bottom: 20px;
+      line-height: 1.8;
+    }
+    #success-details span { color: #94a3b8; font-weight: 600; }
+    #success-solscan {
+      display: block;
+      background: #7c6bf820;
+      border: 1px solid #7c6bf840;
+      border-radius: 10px;
+      color: #a89cf8;
+      font-size: 0.85rem; font-weight: 600;
+      padding: 10px;
+      margin-bottom: 12px;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    #success-solscan:hover { background: #7c6bf835; }
+    #success-modal > button {
+      width: 100%; background: transparent;
+      border: 1px solid #1e2840; border-radius: 10px;
+      color: #3a4560; cursor: pointer;
+      font-size: 0.85rem; padding: 10px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    #success-modal > button:hover { border-color: #3a4560; color: #64748b; }
+
+    /* ── Close-position options modal ── */
+    #close-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    #close-modal {
+      background: #111827;
+      border: 1px solid #1e2840;
+      border-radius: 20px;
+      padding: 28px 24px 22px;
+      max-width: 420px; width: 90%;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+      animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    #close-title { font-size: 1.25rem; font-weight: 700; color: #f1f5f9; text-align: center; }
+    #close-subtitle { font-size: 0.9rem; font-weight: 600; color: #fb923c; text-align: center; margin-top: 4px; }
+    #close-warn {
+      font-size: 0.78rem; color: #64748b; line-height: 1.5;
+      background: #0d0f14; border: 1px solid #1e2840; border-radius: 10px;
+      padding: 12px 14px; margin: 16px 0;
+    }
+    #close-warn b { color: #94a3b8; }
+    #close-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    #close-options button {
+      width: 100%; text-align: left;
+      background: #0d0f14; border: 1px solid #1e2840; border-radius: 10px;
+      color: #e2e8f0; cursor: pointer;
+      font-size: 0.85rem; font-weight: 600; padding: 12px 14px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    #close-options button:hover { background: #161d30; border-color: #7c6bf8; }
+    #close-options button .opt-sub { display: block; font-size: 0.72rem; font-weight: 400; color: #64748b; margin-top: 3px; }
+    #close-modal .close-cancel {
+      width: 100%; background: transparent;
+      border: 1px solid #1e2840; border-radius: 10px;
+      color: #3a4560; cursor: pointer;
+      font-size: 0.85rem; padding: 10px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    #close-modal .close-cancel:hover { border-color: #3a4560; color: #64748b; }
+
+    .position-item {
+      border: 1px solid #1e2840;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      font-size: 0.82rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 4px 16px;
+    }
+    .position-pair { font-weight: 700; color: #e2e8f0; }
+    .position-tvl  { font-weight: 700; color: #7c6bf8; text-align: right; }
+    .position-meta { color: #64748b; grid-column: 1 / -1; margin-top: 2px; }
+    .position-nft  { color: #3a4560; font-size: 0.73rem; grid-column: 1 / -1; word-break: break-all; margin-top: 2px; }
+    .position-close-btn {
+      grid-column: 1 / -1;
+      margin-top: 8px;
+      width: 100%;
+      background: transparent;
+      border: 1px solid #7c4a0060;
+      border-radius: 8px;
+      color: #fb923c;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 8px;
+      transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+    }
+    .position-close-btn:hover:not(:disabled) { background: #7c4a0020; border-color: #fb923c; }
+    .position-close-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .empty-state { color: #3a4560; font-size: 0.85rem; text-align: center; padding: 20px 0; }
+    a { color: #7c6bf8; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Byreal LP</div>
+  <button id="connect-btn" onclick="connectWallet()">Connect Wallet</button>
+</header>
+
+<div class="card">
+  <div class="card-title">Open LP Position</div>
+
+  <label>Pool Address</label>
+  <input type="text" id="pool-address" placeholder="e.g. HrWp3QR3hNeVy6tEZtcpsjwEiGgKJuL1NDP84EaaU2Nh" />
+
+  <label>Deposit Mode</label>
+  <div class="deposit-mode-toggle">
+    <button id="mode-usd-btn" class="active" onclick="setDepositMode('usd')">Both tokens (USD)</button>
+    <button id="mode-single-btn" onclick="setDepositMode('single')">Single token</button>
+  </div>
+
+  <div id="single-token-row" style="display:none">
+    <label>Token to deposit</label>
+    <select id="base-token-select" onchange="updateAmountLabel()"></select>
+  </div>
+
+  <label id="amount-label">Investment (USD)</label>
+  <input type="number" id="amount-usd" placeholder="e.g. 50" min="0.01" step="0.01" />
+
+  <div class="range-row">
+    <div>
+      <label>Price Lower (auto −10%)</label>
+      <input type="text" id="price-lower" placeholder="—" readonly />
+    </div>
+    <div>
+      <label>Price Upper (auto +10%)</label>
+      <input type="text" id="price-upper" placeholder="—" readonly />
+    </div>
+  </div>
+
+  <div class="info-pill">
+    Current price <span id="current-price-display">—</span>
+  </div>
+
+  <div id="fee-wallet-warn">
+    ⚠ FEE_WALLET is not configured. Replace <code>YOUR_FEE_WALLET_ADDRESS_HERE</code> in index.html before depositing.
+  </div>
+
+  <button id="deposit-btn" disabled onclick="deposit()">Connect wallet to deposit</button>
+
+  <div class="rent-disclaimer">
+    <div class="rd-row">
+      <span class="rd-label rd-refund">Refundable</span>
+      <span class="rd-desc">Account rent (~0.01 SOL)</span>
+    </div>
+    <div class="rd-row">
+      <span class="rd-label rd-norefund">Non-refundable</span>
+      <span class="rd-desc">Network fee (~0.000005 SOL)</span>
+    </div>
+    <span class="rd-info" tabindex="0">i
+      <span class="rd-tooltip">
+        <b>Account rent</b> is a deposit Solana requires to create your position's on-chain accounts. It is returned to your wallet when you close the position.<br><br>
+        <b>Network fee</b> is paid to Solana validators and is not refundable.<br><br>
+        For SOL pools, a temporary wrapped-SOL account is also created and automatically unwrapped within the same transaction.
+      </span>
+    </span>
+  </div>
+</div>
+
+<div id="status-box">
+  <div id="status-msg" class="status-msg info"></div>
+</div>
+
+<!-- ─── Success Popup ─────────────────────────────────────────────────────── -->
+<div id="success-overlay" style="display:none" onclick="if(event.target===this)closeSuccessPopup()">
+  <div id="success-modal">
+    <div id="success-icon">✓</div>
+    <div id="success-title">Position Created!</div>
+    <div id="success-subtitle">Your LP position has been successfully opened on Byreal.</div>
+    <div id="success-details"></div>
+    <a id="success-solscan" href="#" target="_blank">View on Solscan ↗</a>
+    <button onclick="closeSuccessPopup()">Close</button>
+  </div>
+</div>
+
+<!-- ─── Close-Position Options ────────────────────────────────────────────── -->
+<div id="close-overlay" style="display:none" onclick="if(event.target===this)hideCloseOptions()">
+  <div id="close-modal">
+    <div id="close-title">Close Position</div>
+    <div id="close-subtitle"></div>
+    <div id="close-warn">
+      This removes <b>all liquidity</b> and permanently <b>burns the position NFT</b>.
+      Account rent is refunded to your wallet. Choose how you'd like to receive your funds:
+    </div>
+    <div id="close-options"></div>
+    <button class="close-cancel" onclick="hideCloseOptions()">Cancel</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Your Positions</div>
+  <ul class="positions-list" id="positions-list">
+    <li class="empty-state">Connect your wallet to view positions</li>
+  </ul>
+</div>
+
+<script>
+// ─── Config ───────────────────────────────────────────────────────────────────
+// Local dev hits the Node server on :3000. In production (served from Cloudflare),
+// point at the Railway backend URL. Replace BYREAL_API_URL after Railway gives you the HTTPS URL.
+const BYREAL_API_URL = 'https://REPLACE-ME.up.railway.app';
+const SERVER       = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? 'http://localhost:3000'
+  : BYREAL_API_URL;
+const FEE_WALLET   = 'Kd3Rfno1ja3ABNhWEFDBmb2FEzXPBSiUooopm98xHwZ';
+const FEE_LAMPORTS = 2000000; // 0.002 SOL
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let walletPubkey   = null;
+let walletAdapter  = null;
+let priceFetchTimer = null;
+let positionsIndex  = {};   // nftMintAddress -> { pair, mintA:{symbol,address}, mintB:{symbol,address} }
+let pendingCloseBtn = null;  // close button element awaiting an option choice
+let depositMode     = 'usd'; // 'usd' (both tokens) | 'single' (one token, auto-swap)
+let currentPoolMints = null; // { mintA:{symbol}, mintB:{symbol} } for the loaded pool
+
+// ─── Startup ──────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  if (FEE_WALLET === 'YOUR_FEE_WALLET_ADDRESS_HERE') {
+    document.getElementById('fee-wallet-warn').style.display = 'block';
+  }
+  loadWeb3().catch(() => {});
+
+  // Auto-reconnect if wallet already authorized
+  const adapter = detectWallet();
+  if (adapter?.isConnected && adapter.publicKey) {
+    walletAdapter = adapter;
+    walletPubkey  = adapter.publicKey.toString();
+    setConnected(walletPubkey);
+    loadPositions();
+  }
+
+  if (document.getElementById('pool-address').value) schedulePriceFetch();
+});
+
+// ─── Wallet ───────────────────────────────────────────────────────────────────
+function detectWallet() {
+  if (window.phantom?.solana?.isPhantom) return window.phantom.solana;
+  if (window.solana?.isPhantom)          return window.solana;
+  if (window.solflare?.isSolflare)       return window.solflare;
+  return null;
+}
+
+async function connectWallet() {
+  const adapter = detectWallet();
+  if (!adapter) return showStatus('No Solana wallet found. Install Phantom or Solflare.', 'error');
+  try {
+    const resp = await adapter.connect();
+    walletAdapter = adapter;
+    walletPubkey  = resp.publicKey.toString();
+    setConnected(walletPubkey);
+    loadPositions();
+  } catch (e) {
+    showStatus('Wallet connection rejected: ' + e.message, 'error');
+  }
+}
+
+function setConnected(pubkey) {
+  const btn = document.getElementById('connect-btn');
+  btn.textContent = pubkey.slice(0, 4) + '…' + pubkey.slice(-4);
+  btn.classList.add('connected');
+  const dep = document.getElementById('deposit-btn');
+  dep.disabled    = false;
+  dep.textContent = 'Deposit';
+}
+
+// ─── Pool price auto-fill ─────────────────────────────────────────────────────
+document.getElementById('pool-address').addEventListener('input', schedulePriceFetch);
+
+function schedulePriceFetch() {
+  clearTimeout(priceFetchTimer);
+  priceFetchTimer = setTimeout(fetchPoolPrice, 600);
+}
+
+async function fetchPoolPrice() {
+  const pool = document.getElementById('pool-address').value.trim();
+  if (pool.length < 32) return;
+  try {
+    const r    = await fetch(`${SERVER}/api/pool-details?poolAddress=${encodeURIComponent(pool)}`);
+    const body = await r.json();
+
+    // Confirmed response shape from actual API capture:
+    // { retCode: 0, result: { data: { baseMint: { price: "..." }, quoteMint: { price: "..." }, mintA: {...}, mintB: {...} } } }
+    const data = body?.result?.data;
+    if (!data) return;
+
+    // Price derivation confirmed from byreal-sdk/src/api/transform.ts:
+    // poolPrice = baseMintPrice / quoteMintPrice
+    const baseMintPrice  = parseFloat(data.baseMint?.price  || data.mintA?.price  || '0');
+    const quoteMintPrice = parseFloat(data.quoteMint?.price || data.mintB?.price  || '0');
+    if (!baseMintPrice || !quoteMintPrice) return;
+
+    const currentPrice = baseMintPrice / quoteMintPrice;
+    document.getElementById('current-price-display').textContent = currentPrice.toFixed(6);
+    document.getElementById('price-lower').value = (currentPrice * 0.9).toFixed(6);
+    document.getElementById('price-upper').value = (currentPrice * 1.1).toFixed(6);
+
+    // Capture token symbols for single-token deposit mode
+    const symA = data.mintA?.mintInfo?.symbol || data.mintA?.symbol || 'Token A';
+    const symB = data.mintB?.mintInfo?.symbol || data.mintB?.symbol || 'Token B';
+    currentPoolMints = { mintA: { symbol: symA }, mintB: { symbol: symB } };
+
+    const sel = document.getElementById('base-token-select');
+    sel.innerHTML =
+      `<option value="MintA">${symA}</option>` +
+      `<option value="MintB">${symB}</option>`;
+    updateAmountLabel();
+  } catch (_) {}
+}
+
+// ─── Deposit mode (USD vs single-token auto-swap) ─────────────────────────────
+function setDepositMode(mode) {
+  depositMode = mode;
+  document.getElementById('mode-usd-btn').classList.toggle('active', mode === 'usd');
+  document.getElementById('mode-single-btn').classList.toggle('active', mode === 'single');
+  document.getElementById('single-token-row').style.display = mode === 'single' ? 'block' : 'none';
+  document.getElementById('amount-usd').value = '';
+  updateAmountLabel();
+}
+
+function updateAmountLabel() {
+  const label = document.getElementById('amount-label');
+  const input = document.getElementById('amount-usd');
+  if (depositMode === 'single') {
+    const sel = document.getElementById('base-token-select');
+    const sym = sel?.selectedOptions?.[0]?.textContent || 'token';
+    label.textContent  = `Amount (${sym})`;
+    input.placeholder  = `e.g. 1.5 ${sym}`;
+  } else {
+    label.textContent  = 'Investment (USD)';
+    input.placeholder  = 'e.g. 50';
+  }
+}
+
+// ─── Deposit ──────────────────────────────────────────────────────────────────
+async function deposit() {
+  if (!walletPubkey) return showStatus('Connect your wallet first.', 'error');
+  if (FEE_WALLET === 'YOUR_FEE_WALLET_ADDRESS_HERE') {
+    return showStatus('FEE_WALLET is not configured in index.html.', 'error');
+  }
+
+  const pool      = document.getElementById('pool-address').value.trim();
+  const amount    = parseFloat(document.getElementById('amount-usd').value);
+  const lower     = document.getElementById('price-lower').value.trim();
+  const upper     = document.getElementById('price-upper').value.trim();
+
+  if (!pool)               return showStatus('Enter a pool address.', 'error');
+  if (!amount || amount <= 0) {
+    return showStatus(depositMode === 'single' ? 'Enter a valid token amount.' : 'Enter a valid USD amount.', 'error');
+  }
+  if (!lower || !upper)    return showStatus('Pool price not loaded yet — paste the pool address and wait.', 'error');
+
+  // Single-token mode params
+  const base = depositMode === 'single' ? document.getElementById('base-token-select').value : null;
+  if (depositMode === 'single' && base !== 'MintA' && base !== 'MintB') {
+    return showStatus('Select a token to deposit.', 'error');
+  }
+
+  const btn = document.getElementById('deposit-btn');
+  btn.disabled = true;
+
+  try {
+    // 1. Build unsigned position tx via CLI proxy
+    showStatus('Building position transaction…', 'info');
+    const buildBody = depositMode === 'single'
+      ? { poolAddress: pool, priceLower: lower, priceUpper: upper, walletAddress: walletPubkey,
+          autoSwap: true, base, amount: String(amount) }
+      : { poolAddress: pool, priceLower: lower, priceUpper: upper, walletAddress: walletPubkey,
+          amountUsd: String(amount) };
+    const buildRes  = await fetch(`${SERVER}/api/build-tx`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(buildBody),
+    });
+    const buildData = await buildRes.json();
+    if (!buildRes.ok || !buildData.unsignedTransactions?.length) {
+      const errMsg = buildData.error || 'Failed to build transaction';
+      if (errMsg.includes('40501') || errMsg.includes('simulation failed')) {
+        throw new Error("You don't have enough tokens to complete this transaction, please try a smaller amount or deposit more tokens into your wallet to achieve this transaction");
+      }
+      throw new Error(errMsg);
+    }
+
+    // 2. Fetch recent blockhash via server proxy (Helius blocks browser CORS)
+    showStatus('Fetching blockhash…', 'info');
+    const bhRes  = await fetch(`${SERVER}/api/blockhash`);
+    const bhData = await bhRes.json();
+    if (!bhRes.ok || !bhData.blockhash) throw new Error(bhData.error || 'Failed to fetch blockhash');
+
+    // 3. Build fee transfer as VersionedTransaction (same type as position tx)
+    // TODO: re-enable fee tx once LP deposit is confirmed working
+    const FEE_DISABLED = true;
+    const { VersionedTransaction, TransactionMessage, SystemProgram, PublicKey } = await loadWeb3();
+    console.log('[debug step 3] web3 classes loaded');
+    console.log('[debug step 3] globalThis.Buffer =', typeof globalThis.Buffer, '| Buffer.from =', typeof globalThis.Buffer?.from);
+    console.log('[debug step 3] window.Buffer =', typeof window.Buffer, '| Buffer.from =', typeof window.Buffer?.from);
+
+    const feePayer = new PublicKey(walletPubkey);
+    console.log('[debug step 3] feePayer OK:', feePayer.toBase58());
+
+    let feeMsg, feeTx;
+    try {
+      feeMsg = new TransactionMessage({
+        payerKey:        feePayer,
+        recentBlockhash: bhData.blockhash,
+        instructions: [SystemProgram.transfer({
+          fromPubkey: feePayer,
+          toPubkey:   new PublicKey(FEE_WALLET),
+          lamports:   FEE_LAMPORTS,
+        })],
+      }).compileToV0Message();
+      console.log('[debug step 3] feeMsg compiled OK');
+      feeTx = new VersionedTransaction(feeMsg);
+      console.log('[debug step 3] feeTx constructed OK');
+    } catch (e) {
+      console.error('[debug step 3] FAILED building feeTx:', e);
+      throw e;
+    }
+
+    // 4. Deserialize position tx(s) from CLI output
+    console.log('[debug step 4] unsignedTransactions count:', buildData.unsignedTransactions.length);
+    console.log('[debug step 4] first tx b64 (first 60 chars):', buildData.unsignedTransactions[0]?.slice(0, 60));
+    const positionTxs = [];
+    for (let i = 0; i < buildData.unsignedTransactions.length; i++) {
+      const b64 = buildData.unsignedTransactions[i];
+      try {
+        const bytes = b64ToBytes(b64);
+        console.log(`[debug step 4] tx[${i}] b64ToBytes OK, length=${bytes.length}, type=${bytes.constructor.name}`);
+        const tx = VersionedTransaction.deserialize(bytes);
+        console.log(`[debug step 4] tx[${i}] deserialize OK`);
+        positionTxs.push(tx);
+      } catch (e) {
+        console.error(`[debug step 4] tx[${i}] FAILED:`, e);
+        console.error(`[debug step 4] tx[${i}] error stack:`, e.stack);
+        throw e;
+      }
+    }
+
+    // 5. Sign position txs (fee tx skipped while FEE_DISABLED)
+    showStatus('Waiting for wallet approval…', 'info');
+    const txsToSign = FEE_DISABLED ? positionTxs : [feeTx, ...positionTxs];
+    console.log('[debug step 5] calling signAllTransactions, tx count:', txsToSign.length, '| fee disabled:', FEE_DISABLED);
+    const signed = await walletAdapter.signAllTransactions(txsToSign);
+    console.log('[debug step 5] signAllTransactions OK, signed count:', signed.length);
+
+    const signedPositionTxs = FEE_DISABLED ? signed : signed.slice(1);
+
+    if (!FEE_DISABLED) {
+      // 6a. Submit fee tx via standard RPC
+      showStatus('Submitting fee transaction…', 'info');
+      let feeSerialised;
+      try {
+        feeSerialised = signed[0].serialize();
+        console.log('[debug step 6a] fee tx serialize OK, length=', feeSerialised.length);
+      } catch (e) {
+        console.error('[debug step 6a] fee tx serialize FAILED:', e);
+        throw e;
+      }
+      const feeRes  = await fetch(`${SERVER}/api/send-fee-tx`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transaction: bytesToB64(feeSerialised) }),
+      });
+      const feeData = await feeRes.json();
+      console.log('[debug step 6a] fee tx response:', feeData);
+      if (!feeRes.ok || !feeData.signature) {
+        throw new Error(feeData.error || 'Failed to submit fee transaction');
+      }
+      console.log('[debug step 6a] fee tx confirmed:', feeData.signature);
+    }
+
+    // 6b. Serialize position txs
+    showStatus('Submitting position transaction…', 'info');
+    const b64Txs = [];
+    for (let i = 0; i < signedPositionTxs.length; i++) {
+      try {
+        const serialized = signedPositionTxs[i].serialize();
+        console.log(`[debug step 6b] position tx[${i}] serialize OK, length=${serialized.length}`);
+        b64Txs.push(bytesToB64(serialized));
+      } catch (e) {
+        console.error(`[debug step 6b] position tx[${i}] serialize FAILED:`, e);
+        throw e;
+      }
+    }
+
+    // 6c. Simulate each tx before sending — catches tick errors, slippage, missing ATAs, etc.
+    showStatus('Simulating transaction…', 'info');
+    for (let i = 0; i < b64Txs.length; i++) {
+      const simRes  = await fetch(`${SERVER}/api/simulate-tx`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transaction: b64Txs[i] }),
+      });
+      const simData = await simRes.json();
+      console.log(`[simulate tx[${i}]] err:`, simData.err);
+      console.log(`[simulate tx[${i}]] logs:`, simData.logs);
+      console.log(`[simulate tx[${i}]] unitsConsumed:`, simData.unitsConsumed);
+      if (simData.err) {
+        // Check for the most common human-readable failure: insufficient SOL for rent
+        const insufficientLog = simData.logs?.find(l => l.includes('insufficient lamports'));
+        if (insufficientLog) {
+          const match = insufficientLog.match(/insufficient lamports (\d+), need (\d+)/);
+          if (match) {
+            const has  = (parseInt(match[1]) / 1e9).toFixed(5);
+            const need = (parseInt(match[2]) / 1e9).toFixed(5);
+            const diff = ((parseInt(match[2]) - parseInt(match[1])) / 1e9).toFixed(5);
+            throw new Error(
+              `Insufficient SOL for account creation.\n` +
+              `Your wallet has ${has} SOL available but the transaction needs ${need} SOL for rent.\n` +
+              `Please add at least ${diff} SOL to your wallet and try again.`
+            );
+          }
+        }
+        const logSummary = simData.logs?.slice(-5).join('\n') || '(no logs)';
+        throw new Error(`Transaction simulation failed:\n${JSON.stringify(simData.err)}\n\nLast logs:\n${logSummary}`);
+      }
+    }
+    console.log('[simulate] all txs passed simulation');
+
+    // 6d. Submit to Byreal
+    showStatus('Submitting to Byreal…', 'info');
+    const sendRes  = await fetch(`${SERVER}/api/send-tx`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transactions: b64Txs }),
+    });
+    const sendData = await sendRes.json();
+    console.log('[debug step 6d] Byreal response:', sendData);
+
+    // Extract signature — handle parsed response OR raw Byreal JSON leaked as error string
+    let positionSig = sendData.signatures?.[sendData.signatures.length - 1];
+    if (!positionSig && sendData.error) {
+      try {
+        const raw = JSON.parse(sendData.error);
+        if (raw?.result?.success && Array.isArray(raw.result.data)) {
+          positionSig = raw.result.data[raw.result.data.length - 1];
+        }
+      } catch (_) {}
+    }
+    if (!positionSig) {
+      throw new Error(sendData.error || 'Failed to submit position transaction');
+    }
+
+    // Verify the tx landed on-chain via Solscan (poll up to 20s)
+    // Non-blocking: if verify endpoint is down or tx not indexed yet, still show success
+    showStatus('Verifying transaction on-chain…', 'info');
+    let verified = null;
+    try {
+      verified = await pollTxVerification(positionSig);
+      if (!verified) {
+        console.warn('[verify] tx not found on Solscan after polling — showing success anyway, may still be indexing');
+      }
+    } catch (e) {
+      // on-chain failure is a hard stop; everything else is not
+      if (e.message.includes('failed')) throw e;
+      console.warn('[verify] verification error (non-fatal):', e.message);
+    }
+
+    showSuccessPopup(positionSig, verified || {});
+    loadPositions();
+  } catch (e) {
+    showStatus('Error: ' + (e.message || String(e)), 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ─── Close Position ───────────────────────────────────────────────────────────
+// Step 1: open the options modal letting the user pick how to receive funds.
+function openCloseOptions(nftMint, btnEl) {
+  if (!walletPubkey || !walletAdapter) return showStatus('Connect your wallet first.', 'error');
+  const info = positionsIndex[nftMint];
+  if (!info) return showStatus('Position data not loaded — please refresh.', 'error');
+
+  pendingCloseBtn = btnEl || null;
+
+  document.getElementById('close-subtitle').textContent = info.pair;
+
+  const opts = document.getElementById('close-options');
+  const buttons = [];
+
+  // Default: receive both tokens (no auto-swap)
+  buttons.push(
+    `<button onclick="executeClose('${nftMint}', false, null, 'both tokens')">
+       Receive both tokens
+       <span class="opt-sub">Withdraw your ${info.pair} liquidity as-is (no swap)</span>
+     </button>`
+  );
+
+  // Auto-swap into a single token — one button per pool token (needs a known mint address)
+  if (info.mintA.address) {
+    buttons.push(
+      `<button onclick="executeClose('${nftMint}', true, '${info.mintA.address}', 'all ${info.mintA.symbol.replace(/'/g, '')}')">
+         Receive all as ${info.mintA.symbol}
+         <span class="opt-sub">Auto-swap the other side into ${info.mintA.symbol}</span>
+       </button>`
+    );
+  }
+  if (info.mintB.address) {
+    buttons.push(
+      `<button onclick="executeClose('${nftMint}', true, '${info.mintB.address}', 'all ${info.mintB.symbol.replace(/'/g, '')}')">
+         Receive all as ${info.mintB.symbol}
+         <span class="opt-sub">Auto-swap the other side into ${info.mintB.symbol}</span>
+       </button>`
+    );
+  }
+
+  opts.innerHTML = buttons.join('');
+  document.getElementById('close-overlay').style.display = 'flex';
+}
+
+function hideCloseOptions() {
+  document.getElementById('close-overlay').style.display = 'none';
+}
+
+// Step 2: build → sign → simulate → submit → verify, with the chosen receive mode.
+async function executeClose(nftMint, autoSwap, outputMint, receiveLabel) {
+  hideCloseOptions();
+  if (!walletPubkey || !walletAdapter) return showStatus('Connect your wallet first.', 'error');
+
+  const info     = positionsIndex[nftMint] || {};
+  const pairLabel = info.pair || 'LP';
+  const btnEl    = pendingCloseBtn;
+  const origText = btnEl?.textContent;
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Closing…'; }
+
+  try {
+    // 1. Build unsigned close tx via CLI proxy (optionally auto-swap into one token)
+    showStatus('Building close transaction…', 'info');
+    const buildRes  = await fetch(`${SERVER}/api/build-close-tx`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nftMint, walletAddress: walletPubkey, autoSwap, outputMint }),
+    });
+    const buildData = await buildRes.json();
+    if (!buildRes.ok || !buildData.unsignedTransactions?.length) {
+      throw new Error(buildData.error || 'Failed to build close transaction');
+    }
+
+    // 2. Sign → simulate → submit → verify (shared flow)
+    const { signature, verified } = await signSimulateSubmitVerify(buildData.unsignedTransactions, 'close');
+
+    // 3. Success
+    showSuccessPopup(signature, verified || {}, {
+      title:    'Position Closed!',
+      subtitle: `Your ${pairLabel} position has been closed — you received ${receiveLabel}.`,
+      note:     '💡 The account rent for this position has been refunded to your wallet, ' +
+                'along with your liquidity. Only the small network fee was non-refundable.',
+    });
+    loadPositions();
+  } catch (e) {
+    showStatus('Error: ' + (e.message || String(e)), 'error');
+    if (btnEl) { btnEl.disabled = false; btnEl.textContent = origText || 'Close Position'; }
+  }
+}
+
+// ─── Shared: sign → simulate → submit (Byreal) → verify on-chain ───────────────
+// Takes an array of base64 unsigned VersionedTransactions. Returns { signature, verified }.
+// Throws on simulation failure, submission failure, or confirmed on-chain failure.
+async function signSimulateSubmitVerify(unsignedTxsB64, verb) {
+  const { VersionedTransaction } = await loadWeb3();
+
+  // Deserialize
+  const txs = unsignedTxsB64.map((b64, i) => {
+    try { return VersionedTransaction.deserialize(b64ToBytes(b64)); }
+    catch (e) { console.error(`[${verb}] tx[${i}] deserialize failed:`, e); throw e; }
+  });
+
+  // Sign — single wallet popup
+  showStatus('Waiting for wallet approval…', 'info');
+  const signed = await walletAdapter.signAllTransactions(txs);
+
+  // Serialize
+  const b64Txs = signed.map(tx => bytesToB64(tx.serialize()));
+
+  // Simulate — hard block on error
+  showStatus('Simulating transaction…', 'info');
+  for (let i = 0; i < b64Txs.length; i++) {
+    const simRes  = await fetch(`${SERVER}/api/simulate-tx`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transaction: b64Txs[i] }),
+    });
+    const simData = await simRes.json();
+    console.log(`[${verb} simulate tx[${i}]] err:`, simData.err, '| logs:', simData.logs);
+    if (simData.err) {
+      const insufficientLog = simData.logs?.find(l => l.includes('insufficient lamports'));
+      const m = insufficientLog && insufficientLog.match(/insufficient lamports (\d+), need (\d+)/);
+      if (m) {
+        const has  = (parseInt(m[1]) / 1e9).toFixed(5);
+        const need = (parseInt(m[2]) / 1e9).toFixed(5);
+        const diff = ((parseInt(m[2]) - parseInt(m[1])) / 1e9).toFixed(5);
+        throw new Error(
+          `Insufficient SOL for account creation.\n` +
+          `Your wallet has ${has} SOL available but the transaction needs ${need} SOL.\n` +
+          `Please add at least ${diff} SOL to your wallet and try again.`
+        );
+      }
+      const logSummary = simData.logs?.slice(-5).join('\n') || '(no logs)';
+      throw new Error(`Transaction simulation failed:\n${JSON.stringify(simData.err)}\n\nLast logs:\n${logSummary}`);
+    }
+  }
+
+  // Submit to Byreal
+  showStatus(`Submitting ${verb}…`, 'info');
+  const sendRes  = await fetch(`${SERVER}/api/send-tx`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ transactions: b64Txs }),
+  });
+  const sendData = await sendRes.json();
+  console.log(`[${verb}] Byreal response:`, sendData);
+
+  let sig = sendData.signatures?.[sendData.signatures.length - 1];
+  if (!sig && sendData.error) {
+    try {
+      const raw = JSON.parse(sendData.error);
+      if (raw?.result?.success && Array.isArray(raw.result.data)) {
+        sig = raw.result.data[raw.result.data.length - 1];
+      }
+    } catch (_) {}
+  }
+  if (!sig) throw new Error(sendData.error || `Failed to submit ${verb} transaction`);
+
+  // Verify on-chain (non-blocking unless confirmed failure)
+  showStatus('Verifying transaction on-chain…', 'info');
+  let verified = null;
+  try {
+    verified = await pollTxVerification(sig);
+  } catch (e) {
+    if (e.message.includes('failed')) throw e;
+    console.warn(`[${verb} verify] non-fatal:`, e.message);
+  }
+
+  return { signature: sig, verified };
+}
+
+// ─── TX Verification ─────────────────────────────────────────────────────────
+async function pollTxVerification(signature, attempts = 10, intervalMs = 3000) {
+  for (let i = 0; i < attempts; i++) {
+    await new Promise(r => setTimeout(r, intervalMs));
+    try {
+      const r = await fetch(`${SERVER}/api/verify-tx?signature=${signature}`);
+      if (!r.ok) {
+        console.warn(`[verify tx] attempt ${i + 1}: server returned ${r.status} — endpoint may not be running`);
+        return null;
+      }
+      const data = await r.json();
+      console.log(`[verify tx] attempt ${i + 1}:`, data);
+      if (data.found) {
+        if (data.status === 'confirmed' || data.status === 'failed') {
+          // Pull full logs for diagnosis regardless of outcome
+          try {
+            const txRes  = await fetch(`${SERVER}/api/get-tx?signature=${signature}`);
+            const txData = await txRes.json();
+            console.log(`[get-tx] err:`, txData.err);
+            console.log(`[get-tx] logs:`, txData.logs);
+            if (data.status === 'failed') {
+              const logSummary = txData.logs?.slice(-8).join('\n') || '(no logs)';
+              throw new Error(`Transaction failed on-chain.\nErr: ${JSON.stringify(txData.err)}\n\nLogs:\n${logSummary}`);
+            }
+          } catch (e) { if (data.status === 'failed') throw e; }
+          return data;
+        }
+      }
+      // not yet indexed — keep polling
+    } catch (e) {
+      if (e.message.includes('failed')) throw e;
+      console.warn(`[verify tx] attempt ${i + 1} error:`, e.message);
+    }
+  }
+  return null; // not found after all attempts
+}
+
+// ─── Success Popup ────────────────────────────────────────────────────────────
+function showSuccessPopup(signature, txData = {}, opts = {}) {
+  const ts  = txData.blockTime ? new Date(txData.blockTime * 1000) : new Date();
+  const timeStr = ts.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const dateStr = ts.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
+  const shortSig = signature.slice(0, 16) + '…' + signature.slice(-8);
+
+  document.getElementById('success-title').textContent    = opts.title    || 'Position Created!';
+  document.getElementById('success-subtitle').textContent = opts.subtitle || 'Your LP position has been successfully opened on Byreal.';
+
+  document.getElementById('success-details').innerHTML =
+    `🕐 Time: <span>${dateStr} ${timeStr}</span><br>` +
+    `📋 Signature: <span title="${signature}">${shortSig}</span><br>` +
+    `🌐 Network: <span>Solana Mainnet</span><br>` +
+    `⚡ Status: <span style="color:#34d399">Confirmed</span>`;
+
+  // Refund reminder — defaults to the open-position wording, overridable per flow
+  let refundNote = document.getElementById('rent-refund-note');
+  if (!refundNote) {
+    refundNote = document.createElement('div');
+    refundNote.id = 'rent-refund-note';
+    refundNote.className = 'rent-refund-note';
+    document.getElementById('success-details').insertAdjacentElement('afterend', refundNote);
+  }
+  refundNote.innerHTML = opts.note ||
+    (`💡 Most of the SOL spent was <b>account rent</b> — a refundable deposit for your ` +
+     `position's on-chain accounts. It returns to your wallet when you close this position. ` +
+     `Only the tiny network fee is non-refundable.`);
+
+  document.getElementById('success-solscan').href = `https://solscan.io/tx/${signature}`;
+  document.getElementById('success-overlay').style.display = 'flex';
+  document.getElementById('status-box').style.display = 'none';
+}
+
+function closeSuccessPopup() {
+  document.getElementById('success-overlay').style.display = 'none';
+}
+
+// ─── Positions ────────────────────────────────────────────────────────────────
+async function loadPositions() {
+  if (!walletPubkey) return;
+  const list = document.getElementById('positions-list');
+  list.innerHTML = '<li class="empty-state">Loading…</li>';
+  try {
+    const r    = await fetch(`${SERVER}/api/positions?userAddress=${walletPubkey}`);
+    const body = await r.json();
+
+    // Confirmed response shape from byreal-api-docs swagger + byreal-sdk src/api/positions.ts:
+    // { retCode: 0, result: { data: { positions: PositionItem[], poolMap: {...}, total: N } } }
+    const data      = body?.result?.data;
+    const positions = data?.positions ?? [];
+    // poolMap is keyed by poolAddress — used to resolve token symbols
+    // since `pair` is SDK-derived and NOT present in the raw API response
+    const poolMap   = data?.poolMap ?? {};
+
+    if (!positions.length) {
+      list.innerHTML = '<li class="empty-state">No open positions found.</li>';
+      positionsIndex = {};
+      return;
+    }
+
+    positionsIndex = {}; // reset index keyed by nftMintAddress
+
+    list.innerHTML = positions.map(p => {
+      // Confirmed raw field names from swagger PositionItem schema:
+      // nftMintAddress, lowerTick, upperTick, liquidityUsd, apr, pnlUsd, earnedUsd (all strings)
+      // poolMap[poolAddress] has mintA.symbol / mintB.symbol for the pair label
+      const pool  = poolMap[p.poolAddress] || {};
+      const symA  = pool.mintA?.symbol || pool.mintA?.mintInfo?.symbol || '?';
+      const symB  = pool.mintB?.symbol || pool.mintB?.mintInfo?.symbol || '?';
+      const mintAddrA = pool.mintA?.mintInfo?.address || pool.mintA?.address || null;
+      const mintAddrB = pool.mintB?.mintInfo?.address || pool.mintB?.address || null;
+      const pair  = `${symA}/${symB}`;
+
+      if (p.nftMintAddress) {
+        positionsIndex[p.nftMintAddress] = {
+          pair,
+          mintA: { symbol: symA, address: mintAddrA },
+          mintB: { symbol: symB, address: mintAddrB },
+        };
+      }
+      const tvl   = p.liquidityUsd   != null ? '$' + parseFloat(p.liquidityUsd).toFixed(2)   : '—';
+      const apr   = p.apr            != null ? parseFloat(p.apr).toFixed(2) + '%'             : null;
+      const pnl   = p.pnlUsd         != null ? '$' + parseFloat(p.pnlUsd).toFixed(2)         : null;
+      const earned = p.earnedUsd     != null ? '$' + parseFloat(p.earnedUsd).toFixed(2)      : null;
+      const meta  = [
+        `Ticks: ${p.lowerTick ?? '—'} → ${p.upperTick ?? '—'}`,
+        apr    && `APR: ${apr}`,
+        pnl    && `PnL: ${pnl}`,
+        earned && `Earned: ${earned}`,
+      ].filter(Boolean).join(' · ');
+
+      const closeBtn = p.nftMintAddress
+        ? `<button class="position-close-btn"
+                   onclick="openCloseOptions('${p.nftMintAddress}', this)">
+             Close Position
+           </button>`
+        : '';
+
+      return `
+        <li class="position-item">
+          <div class="position-pair">${pair}</div>
+          <div class="position-tvl">${tvl}</div>
+          <div class="position-meta">${meta}</div>
+          <div class="position-nft">NFT: ${p.nftMintAddress ?? '—'}</div>
+          ${closeBtn}
+        </li>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = `<li class="empty-state" style="color:#f87171">Failed to load: ${e.message}</li>`;
+  }
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function showStatus(msg, type) {
+  const box = document.getElementById('status-box');
+  const el  = document.getElementById('status-msg');
+  box.style.display = 'block';
+  el.className      = `status-msg ${type}`;
+  el.innerHTML      = msg;
+}
+
+function b64ToBytes(b64) {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+function bytesToB64(bytes) {
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+
+// web3.js and Buffer loaded statically in <head>
+function loadWeb3() {
+  return Promise.resolve(window.solanaWeb3);
+}
+</script>
+</body>
+</html>
