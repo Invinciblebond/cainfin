@@ -1,360 +1,261 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta content="width=device-width, initial-scale=1.0" name="viewport">
-<link rel="icon" type="image/png" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
-<link rel="apple-touch-icon" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
-<title>Cain Finance - Earn Terms</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com" rel="preconnect">
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
-<script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            'nest-black': '#060606',
-            'nest-gray': '#111111',
-            'nest-border': '#1F1F1F',
-            'nest-text-muted': '#888888',
-            'cain-accent': '#2DD4BF',
-          },
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          },
-        }
-      }
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earn Terms — Cain Finance</title>
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #060606; --text: #f0f0f0; --muted: #b8b8b8; --label: #555;
+      --border: rgba(255,255,255,0.08); --accent: #c8a870;
     }
-  </script>
-<style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    html { scroll-behavior: smooth; }
     body {
-      background-color: #060606;
-      color: #ffffff;
+      background-color: var(--bg);
+      background-image: radial-gradient(rgba(255,255,255,0.065) 1px, transparent 1px);
+      background-size: 28px 28px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      line-height: 1.75;
+      min-height: 100vh;
       -webkit-font-smoothing: antialiased;
-      font-family: 'Inter', sans-serif;
     }
-    .dot-grid {
-      background-image: radial-gradient(#1f1f1f 1px, transparent 1px);
-      background-size: 24px 24px;
-    }
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #333;
-      border-radius: 10px;
-    }
-    .legal-content {
-      max-width: 880px;
-    }
-    .legal-section {
-      scroll-margin-top: 100px;
-    }
-    .footer-link-group a {
-      transition: all 0.2s ease;
-    }
-    .footer-link-group a:hover {
-      color: #ffffff;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
+    .top-bar { display:flex; align-items:center; justify-content:center; padding:40px 24px 0; }
+    .logo-wrap { display:flex; align-items:center; gap:12px; text-decoration:none; }
+    .logo-mark { width:36px; height:36px; background:#fff; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .logo-mark-inner { width:18px; height:18px; background:#000; border-radius:4px; }
+    .logo-name { font-family:'DM Sans',sans-serif; font-weight:600; font-size:18px; color:#fff; letter-spacing:-0.3px; }
+    .logo-sub { font-size:10px; color:var(--label); text-transform:uppercase; letter-spacing:0.12em; margin-top:3px; }
+    .doc-wrap { max-width:740px; margin:60px auto 0; padding:0 24px 80px; }
+    .doc-header { margin-bottom:52px; padding-bottom:32px; border-bottom:1px solid var(--border); }
+    .doc-category { display:inline-flex; align-items:center; gap:8px; font-size:11px; font-weight:500; color:var(--accent); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:20px; }
+    .doc-category::before { content:''; display:block; width:20px; height:1px; background:var(--accent); opacity:0.6; }
+    .doc-title { font-family:'Instrument Serif',serif; font-size:clamp(38px,6vw,58px); font-weight:400; line-height:1.08; letter-spacing:-0.5px; color:#fff; margin-bottom:18px; }
+    .doc-meta { font-size:13px; color:var(--label); letter-spacing:0.02em; }
+    .doc-intro { font-size:15px; color:var(--muted); line-height:1.82; margin-bottom:48px; }
+    .doc-section { margin-bottom:44px; }
+    .doc-section h2 { font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; color:var(--label); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+    .doc-section p { font-size:15px; color:var(--muted); line-height:1.82; margin-bottom:14px; }
+    .doc-section p:last-child { margin-bottom:0; }
+    .doc-section ul { list-style:none; margin:10px 0 14px; padding:0; }
+    .doc-section ul li { font-size:15px; color:var(--muted); line-height:1.75; padding:4px 0 4px 20px; position:relative; }
+    .doc-section ul li::before { content:'–'; position:absolute; left:0; color:var(--label); }
+    .notice-box { margin-top:52px; border:1px solid rgba(200,168,112,0.22); border-radius:16px; background:rgba(200,168,112,0.04); padding:28px 32px; }
+    .notice-label { font-size:10px; font-weight:600; color:var(--accent); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:10px; }
+    .notice-box p { font-size:13px; color:#888; line-height:1.78; }
+    footer { margin-top:80px; border-top:1px solid var(--border); padding:52px 24px 36px; }
+    .footer-inner { max-width:740px; margin:0 auto; }
+    .footer-logo-row { display:flex; align-items:center; gap:10px; margin-bottom:36px; }
+    .footer-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:32px; margin-bottom:40px; }
+    @media(max-width:580px){ .footer-grid{ grid-template-columns:1fr 1fr; } }
+    .footer-col h4 { font-size:10px; font-weight:600; color:var(--label); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:14px; }
+    .footer-col a { display:block; font-size:13px; color:#666; text-decoration:none; margin-bottom:8px; transition:color .15s; }
+    .footer-col a:hover { color:var(--text); }
+    .footer-social { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:32px; }
+    .social-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border:1px solid var(--border); border-radius:8px; font-size:12px; font-weight:500; color:#666; text-decoration:none; transition:color .15s,border-color .15s; }
+    .social-btn:hover { color:var(--text); border-color:rgba(255,255,255,0.2); }
+    .footer-bottom { padding-top:24px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    .footer-bottom p { font-size:12px; color:var(--label); }
+    .footer-bottom-links { display:flex; gap:16px; }
+    .footer-bottom-links a { font-size:12px; color:var(--label); text-decoration:none; transition:color .15s; }
+    .footer-bottom-links a:hover { color:var(--muted); }
   </style>
 </head>
-<body class="dot-grid">
-
-<!-- MAIN CONTENT - No sidebar, no top navbar, only logo + legal doc + footer -->
-<main class="min-h-screen flex flex-col">
-  
-  <!-- Logo section (centered, clean, no navbar) -->
-  <div class="flex justify-center pt-10 pb-4">
-    <div class="flex items-center gap-3 bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl px-6 py-3 shadow-xl">
-      <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-md">
-        <svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-        </svg>
+<body>
+  <div class="top-bar">
+    <a class="logo-wrap" href="/">
+      <div class="logo-mark"><div class="logo-mark-inner"></div></div>
+      <div style="display:flex;flex-direction:column;line-height:1;">
+        <span class="logo-name">Cain</span>
+        <span class="logo-sub">Finance</span>
       </div>
-      <span class="text-2xl font-bold tracking-tight text-white">Cain<span class="text-cyan-300">.Finance</span></span>
+    </a>
+  </div>
+
+  <div class="doc-wrap">
+    <div class="doc-header">
+      <div class="doc-category">Legal</div>
+      <h1 class="doc-title">Earn Terms</h1>
+      <p class="doc-meta">Last updated: May 31, 2026</p>
+    </div>
+
+    <p class="doc-intro">These Earn Terms ("Earn Terms") govern your participation in any yield-generating, interest-bearing, staking, lending, or rewards-based products offered through Cain Finance (the "Earn Services"). These Earn Terms are incorporated into and form part of the Cain Finance Terms of Service. By using the Earn Services, you agree to these Earn Terms in full. If you do not agree, you must not participate in any Earn Services.</p>
+
+    <div class="doc-section"><h2>1. Nature of Earn Services</h2>
+      <p>Cain Finance Earn Services are digital asset yield interfaces that may provide access to third-party liquidity markets, decentralized finance protocols, lending pools, staking mechanisms, or other blockchain-based yield strategies.</p>
+      <p>The Earn Services are software-based interfaces only. Cain Finance does not itself operate a bank, deposit-taking institution, or regulated investment fund. You acknowledge that Earn Services are experimental financial tools involving significant risk.</p>
+    </div>
+
+    <div class="doc-section"><h2>2. No Deposit or Banking Relationship</h2>
+      <p>Nothing in these Earn Terms shall be interpreted to mean that:</p>
+      <ul>
+        <li>You are making a deposit with Cain Finance</li>
+        <li>Cain Finance acts as a bank or credit institution</li>
+        <li>Your assets are insured or guaranteed</li>
+      </ul>
+      <p>All assets used in Earn Services remain digital crypto assets subject to blockchain network risks and third-party protocol exposure.</p>
+    </div>
+
+    <div class="doc-section"><h2>3. Acceptance of Risk</h2>
+      <p>By participating in Earn Services, you expressly acknowledge and accept that:</p>
+      <ul>
+        <li>You may lose some or all of your digital assets</li>
+        <li>Yield is not guaranteed and may fluctuate or cease entirely</li>
+        <li>Market conditions may adversely affect returns</li>
+        <li>Smart contracts may fail, be exploited, or behave unexpectedly</li>
+        <li>Third-party protocols may be hacked, paused, or become insolvent</li>
+      </ul>
+      <p>You assume full responsibility for all outcomes arising from your participation.</p>
+    </div>
+
+    <div class="doc-section"><h2>4. Variable and Non-Guaranteed Yield</h2>
+      <p>Any displayed interest rates, APY figures, or reward estimates are:</p>
+      <ul>
+        <li>Indicative only</li>
+        <li>Subject to change at any time without notice</li>
+        <li>Dependent on external market and protocol conditions</li>
+      </ul>
+      <p>Cain Finance does not guarantee that any specific yield will be achieved or maintained.</p>
+    </div>
+
+    <div class="doc-section"><h2>5. Asset Pooling and Use</h2>
+      <p>Where applicable, you acknowledge that assets deposited into Earn Services may be:</p>
+      <ul>
+        <li>Pooled with assets from other users</li>
+        <li>Deployed into third-party lending markets or liquidity pools</li>
+        <li>Reused, rehypothecated, or otherwise utilized within permitted protocols</li>
+      </ul>
+      <p>Cain Finance does not guarantee segregation of assets within underlying protocols.</p>
+    </div>
+
+    <div class="doc-section"><h2>6. Third-Party Protocol Dependency</h2>
+      <p>Earn Services may rely on external blockchain protocols, validators, liquidity providers, or smart contracts. Cain Finance has no control over and assumes no responsibility for:</p>
+      <ul>
+        <li>Protocol insolvency or failure</li>
+        <li>Smart contract vulnerabilities or exploits</li>
+        <li>Oracle inaccuracies or price feed errors</li>
+        <li>Governance decisions or protocol upgrades</li>
+        <li>Liquidity withdrawal or market disruption</li>
+      </ul>
+    </div>
+
+    <div class="doc-section"><h2>7. No Guarantee of Liquidity or Redemption</h2>
+      <p>While Cain Finance may provide withdrawal functionality, liquidity is not guaranteed. Withdrawals may be delayed, limited, or unavailable due to:</p>
+      <ul>
+        <li>Market conditions</li>
+        <li>Protocol constraints</li>
+        <li>Liquidity shortages</li>
+        <li>Security events</li>
+      </ul>
+      <p>Cain Finance is not liable for delays or inability to withdraw assets.</p>
+    </div>
+
+    <div class="doc-section"><h2>8. Platform Discretion</h2>
+      <p>Cain Finance reserves the right to modify, suspend, or terminate Earn Services at any time, including adjusting yield strategies, changing reward mechanisms, adding or removing supported protocols, or restricting access to certain Earn products. Continued use of Earn Services constitutes acceptance of such changes.</p>
+    </div>
+
+    <div class="doc-section"><h2>9. Fees and Reward Structure</h2>
+      <p>Cain Finance may charge fees in connection with Earn Services, including but not limited to performance fees, management fees, or protocol routing fees. Fees may change at any time without prior notice.</p>
+    </div>
+
+    <div class="doc-section"><h2>10. No Warranties</h2>
+      <p>The Earn Services are provided on an "AS IS" and "AS AVAILABLE" basis without warranties of any kind, including merchantability, fitness for a particular purpose, non-infringement, continuous availability, or profitability or yield generation.</p>
+    </div>
+
+    <div class="doc-section"><h2>11. Limitation of Liability</h2>
+      <p>To the maximum extent permitted by law, Cain Finance and its affiliates, contributors, developers, and partners shall not be liable for any losses arising from participation in Earn Services. This includes loss of deposited assets or digital tokens, loss of expected or actual yield, smart contract failure or exploitation, third-party protocol failure or insolvency, and market volatility or liquidity collapse.</p>
+      <p>Cain Finance's total liability shall be limited to the total fees paid by the user in the 12 months preceding the claim, or £0 if no fees were paid.</p>
+    </div>
+
+    <div class="doc-section"><h2>12. No Fiduciary Duty</h2>
+      <p>Nothing in these Earn Terms creates any fiduciary, advisory, agency, or trust relationship between Cain Finance and users. Cain Finance does not act in your best financial interest and has no obligation to do so.</p>
+    </div>
+
+    <div class="doc-section"><h2>13. Tax Responsibility</h2>
+      <p>Users are solely responsible for determining and fulfilling any tax obligations arising from participation in Earn Services. Cain Finance does not provide tax advice.</p>
+    </div>
+
+    <div class="doc-section"><h2>14. Termination and Suspension</h2>
+      <p>Cain Finance may suspend or terminate access to Earn Services at any time, with or without notice, for any reason including security, compliance, or operational concerns.</p>
+    </div>
+
+    <div class="doc-section"><h2>15. Force Majeure</h2>
+      <p>Cain Finance shall not be liable for any failure or delay in performance resulting from events beyond its reasonable control, including blockchain failures, cyberattacks, regulatory actions, or infrastructure outages.</p>
+    </div>
+
+    <div class="doc-section"><h2>16. Indemnification</h2>
+      <p>You agree to indemnify and hold harmless Cain Finance from any claims, liabilities, losses, or expenses arising out of your use of Earn Services or violation of these Earn Terms.</p>
+    </div>
+
+    <div class="doc-section"><h2>17. Entire Agreement</h2>
+      <p>These Earn Terms, together with the Cain Finance Terms of Service, constitute the entire agreement governing Earn Services.</p>
+    </div>
+
+    <div class="doc-section"><h2>18. Severability</h2>
+      <p>If any provision is found invalid or unenforceable, the remaining provisions shall remain in full force and effect.</p>
+    </div>
+
+    <div class="doc-section"><h2>19. Governing Law</h2>
+      <p>These Earn Terms shall be governed by the jurisdiction selected by Cain Finance in its Terms of Service.</p>
+    </div>
+
+    <div class="notice-box">
+      <p class="notice-label">Important Notice</p>
+      <p>Participation in Earn Services involves substantial risk, including the potential loss of all deposited assets. No returns, yields, or liquidity are guaranteed under any circumstances. Cain Finance © 2026. All rights reserved.</p>
     </div>
   </div>
 
-  <!-- Legal Document Content Section -->
-  <div class="flex justify-center px-6 md:px-12 py-10 flex-1">
-    <div class="legal-content w-full">
-      
-      <!-- Document Header -->
-      <div class="mb-10 border-b border-nest-border/60 pb-6">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-md shadow-cyan-500/20">
-            <svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-            </svg>
-          </div>
-          <div>
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white">Earn Terms</h1>
-            <p class="text-nest-text-muted mt-2 flex items-center gap-2 text-sm">Last updated: May 31, 2026 <span class="w-1 h-1 bg-nest-text-muted rounded-full"></span> <span class="text-cain-accent">CAIN FINANCE</span></p>
-          </div>
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo-row">
+        <div class="logo-mark"><div class="logo-mark-inner"></div></div>
+        <span style="font-family:'DM Sans',sans-serif;font-weight:600;font-size:16px;color:#fff;">Cain Finance</span>
+      </div>
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="/termsofservice.html">Terms of Service</a>
+          <a href="/Riskdisclosurestatement.html">Risk Disclosure</a>
+          <a href="/BorrowTerms.html">Borrow Terms</a>
+          <a href="/Earnterms.html">Earn Terms</a>
+          <a href="/termsandconditions.html">Terms &amp; Conditions</a>
+        </div>
+        <div class="footer-col">
+          <h4>Platform</h4>
+          <a href="/">Dashboard</a>
+          <a href="/vault-acain.html">aCain Vault</a>
+          <a href="/faucet">Faucet</a>
+          <a href="/swap.html">Swap</a>
+        </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <a href="https://x.com/CainFinance" target="_blank" rel="noopener">X (Twitter)</a>
+          <a href="https://discord.gg/CainFinance" target="_blank" rel="noopener">Discord</a>
+          <a href="https://reddit.com/r/CainFinance" target="_blank" rel="noopener">Reddit</a>
+          <a href="https://t.me/CainFinance" target="_blank" rel="noopener">Telegram</a>
+          <a href="https://assets.backed.fi/" target="_blank" rel="noopener">Backed Finance</a>
         </div>
       </div>
-
-      <!-- Full Legal Text - Earn Terms -->
-      <div class="space-y-8 text-nest-text-muted leading-relaxed">
-        
-        <!-- Opening paragraph -->
-        <div class="space-y-3">
-          <p>These Earn Terms (“Earn Terms”) govern your participation in any yield-generating, interest-bearing, staking, lending, or rewards-based products offered through Cain Finance (the “Earn Services”). These Earn Terms are incorporated into and form part of the Cain Finance Terms of Service.</p>
-          <p>By using the Earn Services, you agree to these Earn Terms in full. If you do not agree, you must not participate in any Earn Services.</p>
-        </div>
-
-        <!-- 1. NATURE OF EARN SERVICES -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">1. NATURE OF EARN SERVICES</h2>
-          <p>Cain Finance Earn Services are digital asset yield interfaces that may provide access to third-party liquidity markets, decentralized finance protocols, lending pools, staking mechanisms, or other blockchain-based yield strategies.</p>
-          <p>The Earn Services are software-based interfaces only. Cain Finance does not itself operate a bank, deposit-taking institution, or regulated investment fund.</p>
-          <p>You acknowledge that Earn Services are experimental financial tools involving significant risk.</p>
-        </section>
-
-        <!-- 2. NO DEPOSIT OR BANKING RELATIONSHIP -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">2. NO DEPOSIT OR BANKING RELATIONSHIP</h2>
-          <p>Nothing in these Earn Terms shall be interpreted to mean that:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>You are making a deposit with Cain Finance</li>
-            <li>Cain Finance acts as a bank or credit institution</li>
-            <li>Your assets are insured or guaranteed</li>
-          </ul>
-          <p>All assets used in Earn Services remain digital crypto assets subject to blockchain network risks and third-party protocol exposure.</p>
-        </section>
-
-        <!-- 3. ACCEPTANCE OF RISK -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">3. ACCEPTANCE OF RISK</h2>
-          <p>By participating in Earn Services, you expressly acknowledge and accept that:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>You may lose some or all of your digital assets</li>
-            <li>Yield is not guaranteed and may fluctuate or cease entirely</li>
-            <li>Market conditions may adversely affect returns</li>
-            <li>Smart contracts may fail, be exploited, or behave unexpectedly</li>
-            <li>Third-party protocols may be hacked, paused, or become insolvent</li>
-          </ul>
-          <p>You assume full responsibility for all outcomes arising from your participation.</p>
-        </section>
-
-        <!-- 4. VARIABLE AND NON-GUARANTEED YIELD -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">4. VARIABLE AND NON-GUARANTEED YIELD</h2>
-          <p>Any displayed interest rates, APY figures, or reward estimates are:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>Indicative only</li>
-            <li>Subject to change at any time without notice</li>
-            <li>Dependent on external market and protocol conditions</li>
-          </ul>
-          <p>Cain Finance does not guarantee that any specific yield will be achieved or maintained.</p>
-        </section>
-
-        <!-- 5. ASSET POOLING AND USE -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">5. ASSET POOLING AND USE</h2>
-          <p>Where applicable, you acknowledge that assets deposited into Earn Services may be:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>Pooled with assets from other users</li>
-            <li>Deployed into third-party lending markets or liquidity pools</li>
-            <li>Reused, rehypothecated, or otherwise utilized within permitted protocols</li>
-          </ul>
-          <p>Cain Finance does not guarantee segregation of assets within underlying protocols.</p>
-        </section>
-
-        <!-- 6. THIRD-PARTY PROTOCOL DEPENDENCY -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">6. THIRD-PARTY PROTOCOL DEPENDENCY</h2>
-          <p>Earn Services may rely on external blockchain protocols, validators, liquidity providers, or smart contracts.</p>
-          <p>Cain Finance has no control over and assumes no responsibility for:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>Protocol insolvency or failure</li>
-            <li>Smart contract vulnerabilities or exploits</li>
-            <li>Oracle inaccuracies or price feed errors</li>
-            <li>Governance decisions or protocol upgrades</li>
-            <li>Liquidity withdrawal or market disruption</li>
-          </ul>
-        </section>
-
-        <!-- 7. NO GUARANTEE OF LIQUIDITY OR REDEMPTION -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">7. NO GUARANTEE OF LIQUIDITY OR REDEMPTION</h2>
-          <p>While Cain Finance may provide withdrawal functionality, liquidity is not guaranteed.</p>
-          <p>Withdrawals may be delayed, limited, or unavailable due to:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>Market conditions</li>
-            <li>Protocol constraints</li>
-            <li>Liquidity shortages</li>
-            <li>Security events</li>
-          </ul>
-          <p>Cain Finance is not liable for delays or inability to withdraw assets.</p>
-        </section>
-
-        <!-- 8. PLATFORM DISCRETION -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">8. PLATFORM DISCRETION</h2>
-          <p>Cain Finance reserves the right to modify, suspend, or terminate Earn Services at any time, including:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>Adjusting yield strategies</li>
-            <li>Changing reward mechanisms</li>
-            <li>Adding or removing supported protocols</li>
-            <li>Restricting access to certain Earn products</li>
-          </ul>
-          <p>Continued use of Earn Services constitutes acceptance of such changes.</p>
-        </section>
-
-        <!-- 9. FEES AND REWARD STRUCTURE -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">9. FEES AND REWARD STRUCTURE</h2>
-          <p>Cain Finance may charge fees in connection with Earn Services, including but not limited to performance fees, management fees, or protocol routing fees.</p>
-          <p>Fees may change at any time without prior notice.</p>
-        </section>
-
-        <!-- 10. NO WARRANTIES -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">10. NO WARRANTIES</h2>
-          <p>The Earn Services are provided on an “AS IS” and “AS AVAILABLE” basis without warranties of any kind, including:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>Merchantability</li>
-            <li>Fitness for a particular purpose</li>
-            <li>Non-infringement</li>
-            <li>Continuous availability</li>
-            <li>Profitability or yield generation</li>
-          </ul>
-        </section>
-
-        <!-- 11. LIMITATION OF LIABILITY -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">11. LIMITATION OF LIABILITY</h2>
-          <p>To the maximum extent permitted by law, Cain Finance and its affiliates, contributors, developers, and partners shall not be liable for any losses arising from participation in Earn Services.</p>
-          <p>This includes, without limitation:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>Loss of deposited assets or digital tokens</li>
-            <li>Loss of expected or actual yield</li>
-            <li>Smart contract failure or exploitation</li>
-            <li>Third-party protocol failure or insolvency</li>
-            <li>Market volatility or liquidity collapse</li>
-          </ul>
-          <p>Cain Finance's total liability shall be limited to the total fees paid by the user in the 12 months preceding the claim, or £0 if no fees were paid.</p>
-        </section>
-
-        <!-- 12. NO FIDUCIARY DUTY -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">12. NO FIDUCIARY DUTY</h2>
-          <p>Nothing in these Earn Terms creates any fiduciary, advisory, agency, or trust relationship between Cain Finance and users.</p>
-          <p>Cain Finance does not act in your best financial interest and has no obligation to do so.</p>
-        </section>
-
-        <!-- 13. TAX RESPONSIBILITY -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">13. TAX RESPONSIBILITY</h2>
-          <p>Users are solely responsible for determining and fulfilling any tax obligations arising from participation in Earn Services.</p>
-          <p>Cain Finance does not provide tax advice.</p>
-        </section>
-
-        <!-- 14. TERMINATION AND SUSPENSION -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">14. TERMINATION AND SUSPENSION</h2>
-          <p>Cain Finance may suspend or terminate access to Earn Services at any time, with or without notice, for any reason including security, compliance, or operational concerns.</p>
-        </section>
-
-        <!-- 15. FORCE MAJEURE -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">15. FORCE MAJEURE</h2>
-          <p>Cain Finance shall not be liable for any failure or delay in performance resulting from events beyond its reasonable control, including blockchain failures, cyberattacks, regulatory actions, or infrastructure outages.</p>
-        </section>
-
-        <!-- 16. INDEMNIFICATION -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">16. INDEMNIFICATION</h2>
-          <p>You agree to indemnify and hold harmless Cain Finance from any claims, liabilities, losses, or expenses arising out of your use of Earn Services or violation of these Earn Terms.</p>
-        </section>
-
-        <!-- 17. ENTIRE AGREEMENT -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">17. ENTIRE AGREEMENT</h2>
-          <p>These Earn Terms, together with the Cain Finance Terms of Service, constitute the entire agreement governing Earn Services.</p>
-        </section>
-
-        <!-- 18. SEVERABILITY -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">18. SEVERABILITY</h2>
-          <p>If any provision is found invalid or unenforceable, the remaining provisions shall remain in full force and effect.</p>
-        </section>
-
-        <!-- 19. GOVERNING LAW -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">19. GOVERNING LAW</h2>
-          <p>These Earn Terms shall be governed by the jurisdiction selected by Cain Finance in its Terms of Service.</p>
-        </section>
-
-        <!-- Final footer note inside legal content -->
-        <div class="mt-12 pt-8 border-t border-nest-border/40 text-center space-y-4">
-          <div class="text-sm font-medium tracking-wide text-white/80">CAIN FINANCE © 2026 — ALL RIGHTS RESERVED</div>
-          <div class="text-[11px] text-nest-text-muted max-w-md mx-auto leading-relaxed bg-nest-gray/30 py-3 px-4 rounded-lg">
-            IMPORTANT NOTICE: Participation in Earn Services involves substantial risk, including the potential loss of all deposited assets. No returns, yields, or liquidity are guaranteed under any circumstances.
-          </div>
-        </div>
+      <div class="footer-social">
+        <a class="social-btn" href="https://x.com/CainFinance" target="_blank" rel="noopener">𝕏 Twitter</a>
+        <a class="social-btn" href="https://discord.gg/CainFinance" target="_blank" rel="noopener">Discord</a>
+        <a class="social-btn" href="https://reddit.com/r/CainFinance" target="_blank" rel="noopener">Reddit</a>
+        <a class="social-btn" href="https://t.me/CainFinance" target="_blank" rel="noopener">Telegram</a>
       </div>
-    </div>
-  </div>
-
-  <!-- FOOTER with community links + legal doc references -->
-  <footer class="border-t border-white/10 bg-black/40 backdrop-blur-sm mt-12">
-    <div class="max-w-6xl mx-auto px-6 py-10">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
-        <div>
-          <div class="flex items-center gap-2 mb-4">
-            <div class="w-6 h-6 bg-cyan-400 rounded-md"></div>
-            <span class="font-bold text-white">Cain Finance</span>
-          </div>
-          <p class="text-white/40 text-xs">Non-custodial DeFi interface. Liquidity routing, swaps, yield, and borrowing on Solana.</p>
+      <div class="footer-bottom">
+        <p>© 2026 Cain Finance. All rights reserved.</p>
+        <div class="footer-bottom-links">
+          <a href="/termsofservice.html">Terms</a>
+          <a href="/Riskdisclosurestatement.html">Risk Disclosure</a>
+          <a href="/termsandconditions.html">T&amp;C</a>
         </div>
-        <div>
-          <h4 class="font-semibold text-white/80 mb-3">Community</h4>
-          <ul class="space-y-2 footer-link-group">
-            <li><a href="#" class="text-white/50 hover:text-white transition">𝕏 Twitter / X.com</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">Reddit Community</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">Discord</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">Telegram</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">GitHub</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="font-semibold text-white/80 mb-3">Legal</h4>
-          <ul class="space-y-2 footer-link-group">
-            <li><a href="#" class="text-white/50 hover:text-white transition">📄 Borrow Terms</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">⚠️ Risk Disclosure</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">📈 Earn Terms</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">📜 Terms of Service</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">Privacy Policy</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">Cookie Notice</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="font-semibold text-white/80 mb-3">Resources</h4>
-          <ul class="space-y-2 footer-link-group">
-            <li><a href="#" class="text-white/50 hover:text-white transition">Documentation</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">Audits & Security</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">Byreal Info</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">Status</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="text-center text-[11px] text-white/30 pt-8 border-t border-white/5 mt-8">
-        © 2026 Cain Finance — All rights reserved. By interacting with any smart contract you assume full responsibility for all risks.
       </div>
     </div>
   </footer>
-</main>
-
 </body>
 </html>

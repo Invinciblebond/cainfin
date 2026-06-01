@@ -449,6 +449,30 @@
     transition: background 0.12s, color 0.12s;
   }
   .dropdown-menu a:hover { background: #1e1e1e; color: #fff; }
+  /* ── Legal dropdown ── */
+  .legal-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    min-width: 200px;
+    z-index: 50;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+  .legal-menu.open { display: block; }
+  .legal-menu a {
+    display: block;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: #bbb;
+    text-decoration: none;
+    transition: background 0.12s, color 0.12s;
+  }
+  .legal-menu a:hover { background: #1e1e1e; color: #fff; }
 
   /* ── "Get ready to start earning" expandable panel ── */
   #earning-panel {
@@ -503,6 +527,7 @@
   }
   .asset-menu a:hover { background: #1e1e1e; color: #fff; }
 </style>
+<base target="_blank">
 </head>
 <body class="h-full font-sans overflow-hidden">
 
@@ -640,9 +665,19 @@
       </div>
     </div>
     <div class="flex items-center gap-3">
-      <a href="/Legal" class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-      </a>
+      <div class="dropdown" style="position:relative;">
+        <button onclick="toggleLegalMenu()" class="flex items-center gap-1.5 px-3 py-2 hover:bg-white/5 rounded-lg text-cain-gray-text text-sm font-medium transition-colors">
+          Legal
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        </button>
+        <div id="legal-menu" class="legal-menu">
+          <a href="/termsofservice.html">Terms of Service</a>
+          <a href="/termsandconditions.html">Terms &amp; Conditions</a>
+          <a href="/Riskdisclosurestatement.html">Risk Disclosure</a>
+          <a href="/BorrowTerms.html">Borrow Terms</a>
+          <a href="/Earnterms.html">Earn Terms</a>
+        </div>
+      </div>
       <div class="dropdown">
         <button onclick="toggleDropdown()" class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
@@ -943,6 +978,9 @@
 </div>
 
 <script>
+  function toggleLegalMenu() {
+    document.getElementById('legal-menu').classList.toggle('open');
+  }
   function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('collapsed');
   }
@@ -961,11 +999,12 @@
   document.addEventListener('click', function(e) {
     // Community dropdown
     var dropdowns = document.querySelectorAll('.dropdown');
-    var insideCommunity = false, insideAsset = false;
+    var insideCommunity = false, insideAsset = false, insideLegal = false;
     dropdowns.forEach(function (d) {
       if (d.contains(e.target)) {
         if (d.querySelector('#community-dropdown')) insideCommunity = true;
         if (d.querySelector('#asset-menu')) insideAsset = true;
+        if (d.querySelector('#legal-menu')) insideLegal = true;
       }
     });
     if (!insideCommunity) {
@@ -975,6 +1014,10 @@
     if (!insideAsset) {
       var am = document.getElementById('asset-menu');
       if (am) am.classList.remove('open');
+    }
+    if (!insideLegal) {
+      var lm = document.getElementById('legal-menu');
+      if (lm) lm.classList.remove('open');
     }
   });
 </script>

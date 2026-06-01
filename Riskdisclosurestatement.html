@@ -1,340 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta content="width=device-width, initial-scale=1.0" name="viewport">
-<link rel="icon" type="image/png" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
-<link rel="apple-touch-icon" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
-<title>Cain Finance - Risk Disclosure Statement</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com" rel="preconnect">
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
-<script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            'nest-black': '#060606',
-            'nest-gray': '#111111',
-            'nest-border': '#1F1F1F',
-            'nest-text-muted': '#888888',
-            'cain-accent': '#2DD4BF',
-          },
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          },
-        }
-      }
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Risk Disclosure Statement — Cain Finance</title>
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #060606; --text: #f0f0f0; --muted: #b8b8b8; --label: #555;
+      --border: rgba(255,255,255,0.08); --accent: #c8a870; --card: rgba(255,255,255,0.025);
     }
-  </script>
-<style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    html { scroll-behavior: smooth; }
     body {
-      background-color: #060606;
-      color: #ffffff;
+      background-color: var(--bg);
+      background-image: radial-gradient(rgba(255,255,255,0.065) 1px, transparent 1px);
+      background-size: 28px 28px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      line-height: 1.75;
+      min-height: 100vh;
       -webkit-font-smoothing: antialiased;
-      font-family: 'Inter', sans-serif;
     }
-    .dot-grid {
-      background-image: radial-gradient(#1f1f1f 1px, transparent 1px);
-      background-size: 24px 24px;
-    }
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #333;
-      border-radius: 10px;
-    }
-    .legal-content {
-      max-width: 880px;
-    }
-    .legal-section {
-      scroll-margin-top: 100px;
-    }
-    .legal-title {
-      background: linear-gradient(135deg, #FFFFFF 0%, #9CA3AF 100%);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-    }
-    .footer-link-group a {
-      transition: all 0.2s ease;
-    }
-    .footer-link-group a:hover {
-      color: #ffffff;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
+    .top-bar { display:flex; align-items:center; justify-content:center; padding:40px 24px 0; }
+    .logo-wrap { display:flex; align-items:center; gap:12px; text-decoration:none; }
+    .logo-mark { width:36px; height:36px; background:#fff; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .logo-mark-inner { width:18px; height:18px; background:#000; border-radius:4px; }
+    .logo-name { font-family:'DM Sans',sans-serif; font-weight:600; font-size:18px; color:#fff; letter-spacing:-0.3px; }
+    .logo-sub { font-size:10px; color:var(--label); text-transform:uppercase; letter-spacing:0.12em; margin-top:3px; }
+    .doc-wrap { max-width:740px; margin:60px auto 0; padding:0 24px 80px; }
+    .doc-header { margin-bottom:52px; padding-bottom:32px; border-bottom:1px solid var(--border); }
+    .doc-category { display:inline-flex; align-items:center; gap:8px; font-size:11px; font-weight:500; color:#e05b5b; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:20px; }
+    .doc-category::before { content:''; display:block; width:20px; height:1px; background:#e05b5b; opacity:0.6; }
+    .doc-title { font-family:'Instrument Serif',serif; font-size:clamp(36px,5.5vw,54px); font-weight:400; line-height:1.08; letter-spacing:-0.5px; color:#fff; margin-bottom:18px; }
+    .doc-meta { font-size:13px; color:var(--label); letter-spacing:0.02em; }
+    .doc-intro { font-size:15px; color:var(--muted); line-height:1.82; margin-bottom:48px; }
+    .doc-section { margin-bottom:44px; }
+    .doc-section h2 { font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; color:var(--label); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+    .doc-section p { font-size:15px; color:var(--muted); line-height:1.82; margin-bottom:14px; }
+    .doc-section p:last-child { margin-bottom:0; }
+    .doc-section ul { list-style:none; margin:10px 0 14px; padding:0; }
+    .doc-section ul li { font-size:15px; color:var(--muted); line-height:1.75; padding:4px 0 4px 20px; position:relative; }
+    .doc-section ul li::before { content:'–'; position:absolute; left:0; color:var(--label); }
+    .notice-box { margin-top:52px; border:1px solid rgba(224,91,91,0.25); border-radius:16px; background:rgba(224,91,91,0.04); padding:28px 32px; }
+    .notice-label { font-size:10px; font-weight:600; color:#e05b5b; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:10px; }
+    .notice-box p { font-size:13px; color:#888; line-height:1.78; }
+    footer { margin-top:80px; border-top:1px solid var(--border); padding:52px 24px 36px; }
+    .footer-inner { max-width:740px; margin:0 auto; }
+    .footer-logo-row { display:flex; align-items:center; gap:10px; margin-bottom:36px; }
+    .footer-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:32px; margin-bottom:40px; }
+    @media(max-width:580px){ .footer-grid{ grid-template-columns:1fr 1fr; } }
+    .footer-col h4 { font-size:10px; font-weight:600; color:var(--label); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:14px; }
+    .footer-col a { display:block; font-size:13px; color:#666; text-decoration:none; margin-bottom:8px; transition:color .15s; }
+    .footer-col a:hover { color:var(--text); }
+    .footer-social { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:32px; }
+    .social-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border:1px solid var(--border); border-radius:8px; font-size:12px; font-weight:500; color:#666; text-decoration:none; transition:color .15s,border-color .15s; }
+    .social-btn:hover { color:var(--text); border-color:rgba(255,255,255,0.2); }
+    .footer-bottom { padding-top:24px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    .footer-bottom p { font-size:12px; color:var(--label); }
+    .footer-bottom-links { display:flex; gap:16px; }
+    .footer-bottom-links a { font-size:12px; color:var(--label); text-decoration:none; transition:color .15s; }
+    .footer-bottom-links a:hover { color:var(--muted); }
   </style>
 </head>
-<body class="dot-grid">
-
-<!-- MAIN CONTENT - No sidebar, no top navbar, only logo + legal doc + footer -->
-<main class="min-h-screen flex flex-col">
-  
-  <!-- Logo section (centered, clean, no navbar) -->
-  <div class="flex justify-center pt-10 pb-4">
-    <div class="flex items-center gap-3 bg-black/40 backdrop-blur-sm border border-white/10 rounded-2xl px-6 py-3 shadow-xl">
-      <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-md">
-        <svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-        </svg>
+<body>
+  <div class="top-bar">
+    <a class="logo-wrap" href="/">
+      <div class="logo-mark"><div class="logo-mark-inner"></div></div>
+      <div style="display:flex;flex-direction:column;line-height:1;">
+        <span class="logo-name">Cain</span>
+        <span class="logo-sub">Finance</span>
       </div>
-      <span class="text-2xl font-bold tracking-tight text-white">Cain<span class="text-cyan-300">.Finance</span></span>
+    </a>
+  </div>
+
+  <div class="doc-wrap">
+    <div class="doc-header">
+      <div class="doc-category">Compliance</div>
+      <h1 class="doc-title">Risk Disclosure Statement</h1>
+      <p class="doc-meta">Last updated: May 31, 2026</p>
+    </div>
+
+    <p class="doc-intro">This Risk Disclosure Statement ("Disclosure") applies to all users of Cain Finance and all interactions with liquidity pools, routing systems, swap interfaces, yield interfaces, and any other DeFi-related features available through Cain Finance (collectively, the "Services"). By accessing or using Cain Finance, you acknowledge that you have read, understood, and agreed to the risks described in this Disclosure. If you do not agree, you must not use the Services.</p>
+
+    <div class="doc-section"><h2>1. Nature of the Platform</h2>
+      <p>Cain Finance is a non-custodial software interface and liquidity aggregation layer that provides users with access to decentralized liquidity sources and blockchain-based protocols.</p>
+      <p>Cain Finance does not custody, hold, control, or manage user funds at any time. All transactions are executed by users directly through blockchain wallets and external decentralized protocols. Cain Finance acts solely as an interface and routing layer.</p>
+    </div>
+
+    <div class="doc-section"><h2>2. Routing and Third-Party Infrastructure</h2>
+      <p>The Services may route transactions through third-party liquidity infrastructure, including decentralized liquidity routing systems on the Solana network. Third-party liquidity routing providers are responsible for execution, settlement, liquidity access, and on-chain transaction finality where applicable.</p>
+      <p>Cain Finance does not operate any underlying liquidity protocol and has no control over their performance, uptime, pricing, execution, or liquidity conditions.</p>
+    </div>
+
+    <div class="doc-section"><h2>3. No Control or Custody of Funds</h2>
+      <p>Cain Finance does not at any point:</p>
+      <ul>
+        <li>Take custody of user assets</li>
+        <li>Hold user private keys</li>
+        <li>Store or manage user funds</li>
+        <li>Execute trades on behalf of users in a custodial capacity</li>
+      </ul>
+      <p>All assets remain under the sole control of the user's wallet and the underlying blockchain protocols. Once a transaction is submitted, it is executed independently by the relevant blockchain network and/or third-party liquidity systems.</p>
+    </div>
+
+    <div class="doc-section"><h2>4. Solana Liquidity Pool Risks</h2>
+      <p>Users acknowledge that interaction with Solana-based liquidity pools and automated market maker (AMM) systems involves significant risk, including but not limited to:</p>
+      <ul>
+        <li>Impermanent loss due to price divergence of paired assets</li>
+        <li>Liquidity withdrawal by other market participants at any time</li>
+        <li>Pool imbalance or complete liquidity depletion</li>
+        <li>Smart contract bugs, exploits, or failures</li>
+        <li>Oracle price feed inaccuracies or manipulation</li>
+        <li>Network congestion, downtime, or transaction failure on Solana</li>
+      </ul>
+      <p>Liquidity pool performance is inherently unpredictable and may result in partial or total loss of deposited assets.</p>
+    </div>
+
+    <div class="doc-section"><h2>5. Third-Party Execution Risk</h2>
+      <p>Where routing is performed via any third-party liquidity provider:</p>
+      <ul>
+        <li>Cain Finance does not execute, settle, or guarantee any transaction outcome</li>
+        <li>Cain Finance does not control pricing, slippage, liquidity depth, or routing logic</li>
+        <li>Cain Finance is not responsible for failed, delayed, or partially executed transactions</li>
+        <li>Cain Finance does not assume liability for any loss arising from third-party infrastructure or external protocol behavior</li>
+      </ul>
+      <p>All execution risk lies entirely with the user and the third-party liquidity infrastructure provider.</p>
+    </div>
+
+    <div class="doc-section"><h2>6. No Guarantee of Execution, Price, or Liquidity</h2>
+      <p>Cain Finance does not guarantee execution at any specific price, availability of liquidity at any time, successful routing through any protocol, or stability of spreads or slippage conditions. Market conditions may change rapidly, and execution outcomes may differ significantly from displayed estimates.</p>
+    </div>
+
+    <div class="doc-section"><h2>7. Total Loss Risk</h2>
+      <p>Users expressly acknowledge that:</p>
+      <ul>
+        <li>Digital assets may lose all value</li>
+        <li>Liquidity positions may become worthless</li>
+        <li>Smart contract or protocol failures may result in total loss</li>
+        <li>Bridging, routing, or execution failures may permanently affect assets</li>
+      </ul>
+      <p>You accept full responsibility for all losses incurred through use of the Services.</p>
+    </div>
+
+    <div class="doc-section"><h2>8. No Warranties or Guarantees</h2>
+      <p>All Services are provided on an "AS IS" and "AS AVAILABLE" basis without warranties of any kind, including fitness for a particular purpose, accuracy of pricing or analytics, continuous availability of liquidity routes, successful execution of transactions, or security or integrity of third-party protocols.</p>
+    </div>
+
+    <div class="doc-section"><h2>9. Assumption of Risk</h2>
+      <p>By using Cain Finance, you confirm that you understand the risks of decentralized finance systems, you are capable of independently evaluating financial risk, you accept that losses may occur without recourse, and you voluntarily choose to interact with blockchain-based liquidity systems.</p>
+    </div>
+
+    <div class="doc-section"><h2>10. Limitation of Liability</h2>
+      <p>To the maximum extent permitted by law, Cain Finance, its affiliates, developers, contributors, and partners shall not be liable for any loss or damage arising from use of liquidity pools or AMM systems, routing through third-party protocols, smart contract failures or exploits, market volatility or liquidity changes, or transaction failures, delays, or reverts.</p>
+      <p>Cain Finance's total liability, if any, shall be limited to fees paid by the user to Cain Finance in the 12 months preceding the claim, or £0 if no fees were paid.</p>
+    </div>
+
+    <div class="doc-section"><h2>11. Independent Third-Party Relationships</h2>
+      <p>Cain Finance is not affiliated with, owned by, or controlled by any third-party liquidity provider unless explicitly stated. All third-party protocols operate independently and are governed by their own terms and risks.</p>
+    </div>
+
+    <div class="doc-section"><h2>12. No Financial Advice</h2>
+      <p>Nothing within Cain Finance constitutes financial, investment, legal, or tax advice. All users are solely responsible for their own decisions.</p>
+    </div>
+
+    <div class="doc-section"><h2>13. Updates and Changes</h2>
+      <p>This Disclosure may be updated at any time without notice. Continued use of the Services constitutes acceptance of the updated Disclosure.</p>
+    </div>
+
+    <div class="notice-box">
+      <p class="notice-label">Important Notice</p>
+      <p>DeFi participation involves substantial risk. You may lose all funds without warning or recourse. All usage is at your own discretion and risk. Cain Finance © 2026. All rights reserved.</p>
     </div>
   </div>
 
-  <!-- Legal Document Content Section -->
-  <div class="flex justify-center px-6 md:px-12 py-10 flex-1">
-    <div class="legal-content w-full">
-      
-      <!-- Document Header -->
-      <div class="mb-10 border-b border-nest-border/60 pb-6">
-        <div class="flex items-center gap-4 mb-4">
-          <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-md shadow-cyan-500/20">
-            <svg class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-            </svg>
-          </div>
-          <div>
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white">Risk Disclosure Statement</h1>
-            <p class="text-nest-text-muted mt-2 flex items-center gap-2 text-sm">Last updated: May 31, 2026 <span class="w-1 h-1 bg-nest-text-muted rounded-full"></span> <span class="text-cain-accent">CAIN FINANCE</span></p>
-          </div>
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo-row">
+        <div class="logo-mark"><div class="logo-mark-inner"></div></div>
+        <span style="font-family:'DM Sans',sans-serif;font-weight:600;font-size:16px;color:#fff;">Cain Finance</span>
+      </div>
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="/termsofservice.html">Terms of Service</a>
+          <a href="/Riskdisclosurestatement.html">Risk Disclosure</a>
+          <a href="/BorrowTerms.html">Borrow Terms</a>
+          <a href="/Earnterms.html">Earn Terms</a>
+          <a href="/termsandconditions.html">Terms &amp; Conditions</a>
+        </div>
+        <div class="footer-col">
+          <h4>Platform</h4>
+          <a href="/">Dashboard</a>
+          <a href="/vault-acain.html">aCain Vault</a>
+          <a href="/faucet">Faucet</a>
+          <a href="/swap.html">Swap</a>
+        </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <a href="https://x.com/CainFinance" target="_blank" rel="noopener">X (Twitter)</a>
+          <a href="https://discord.gg/CainFinance" target="_blank" rel="noopener">Discord</a>
+          <a href="https://reddit.com/r/CainFinance" target="_blank" rel="noopener">Reddit</a>
+          <a href="https://t.me/CainFinance" target="_blank" rel="noopener">Telegram</a>
+          <a href="https://assets.backed.fi/" target="_blank" rel="noopener">Backed Finance</a>
         </div>
       </div>
-
-      <!-- Full Legal Text -->
-      <div class="space-y-8 text-nest-text-muted leading-relaxed">
-        
-        <!-- IMPORTANT RISK SUMMARY section (no red, no box) -->
-        <div class="space-y-4">
-          <h2 class="text-xl font-bold text-white">IMPORTANT RISK SUMMARY</h2>
-          <p>The Cain Finance website, interface, and all related services (including routing tools, analytics, aggregation systems, and any integrated third-party protocols) are experimental technologies and are provided strictly on an “AS IS” and “AS AVAILABLE” basis.</p>
-          <p>They may carry significant risks including but not limited to:</p>
-          <ul class="list-disc list-inside space-y-1 ml-2">
-            <li>Bugs, vulnerabilities, exploits, or operational failures in smart contracts, routing systems, or underlying blockchain networks</li>
-            <li>Total, partial, or irreversible loss of digital assets due to cyberattacks, protocol exploits, wallet compromise, user error, or interface errors</li>
-            <li>No insurance, compensation scheme, or guarantee is provided by Cain Finance or any affiliated or related party</li>
-            <li>Regulatory, legal, tax, or compliance risks depending on the user’s jurisdiction</li>
-            <li>Market volatility, liquidity failure, or complete disappearance of liquidity in decentralized pools</li>
-          </ul>
-          <p>This Disclosure is provided solely for informational awareness and does not constitute financial, legal, tax, or investment advice. Users must conduct their own independent due diligence before using the Platform.</p>
-          <p class="font-semibold text-white/90">Do not use Cain Finance unless you fully understand and accept these risks.</p>
-          <p class="text-sm border-t border-nest-border/30 pt-4 mt-2">This Risk Disclosure Statement (the “Disclosure”) is incorporated by reference into, and forms an integral part of, the Terms of Service and all related Borrow Terms, Earn Terms, or similar agreements governing use of the Platform. All defined terms herein have the meaning assigned in those agreements.</p>
-          <p class="text-sm">The Operator and any Related Parties expressly disclaim all liability for any losses or damages arising from these risks. By using the Platform, you expressly acknowledge, accept, and assume these risks and, to the maximum extent permitted by law, waive and release any present or future claims against the Operator and Related Parties, whether known or unknown, including claims arising from negligence where legally permissible.</p>
-        </div>
-
-        <!-- 1. DISCLAIMER OF WARRANTIES -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">1. DISCLAIMER OF WARRANTIES</h2>
-          <p>The Platform (including all interfaces, APIs, routing systems, dashboards, and integrated third-party protocols) is experimental and provided without warranties of any kind.</p>
-          <p>To the maximum extent permitted by law, the Operator and Related Parties disclaim all warranties, including but not limited to:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>That the Platform will be free from bugs, vulnerabilities, errors, exploits, delays, or security failures</li>
-            <li>That the Platform will operate continuously, securely, or without interruption</li>
-            <li>Implied warranties of merchantability, fitness for a particular purpose, and non-infringement</li>
-          </ul>
-        </section>
-
-        <!-- 2. OPERATIONAL AND SYSTEM RISKS -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">2. OPERATIONAL AND SYSTEM RISKS</h2>
-          <p>The Operator does not guarantee that the Platform will be secure, uninterrupted, or error-free.</p>
-          <p>Events outside the Operator’s control may impair or terminate access, including but not limited to:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>Cyberattacks, hacks, phishing attacks, or infrastructure compromise</li>
-            <li>Blockchain congestion, validator failure, or network outages</li>
-            <li>Regulatory intervention, sanctions, or legal restrictions</li>
-            <li>Cloud service failures, hosting outages, or DNS disruptions</li>
-          </ul>
-          <p>The Operator reserves the right to modify, suspend, or discontinue any part of the Platform at any time without notice.</p>
-          <p>Users are solely responsible for verifying they are interacting with official interfaces and not fraudulent or compromised versions. Interaction with fake or altered interfaces may result in total and irreversible loss of assets.</p>
-        </section>
-
-        <!-- 3. BLOCKCHAIN AND SMART CONTRACT RISKS -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">3. BLOCKCHAIN AND SMART CONTRACT RISKS</h2>
-          <p>Users acknowledge and accept that blockchain systems are inherently risky and may fail unpredictably.</p>
-          <p>Risks include but are not limited to:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>Smart contract vulnerabilities, exploits, or coding errors</li>
-            <li>Permanent loss of assets due to irreversible transactions</li>
-            <li>Blockchain forks, reorganizations, or protocol upgrades</li>
-            <li>Validator misbehavior or consensus failure</li>
-            <li>Gas spikes, congestion, or transaction failure</li>
-          </ul>
-          <p>All blockchain transactions are final, irreversible, and cannot be reversed or refunded by Cain Finance or any related party.</p>
-          <p>Advanced cryptographic risks, including future developments such as quantum computing, may compromise blockchain security and result in asset loss or inaccessibility.</p>
-        </section>
-
-        <!-- 4. THIRD-PARTY AND ROUTING RISKS -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">4. THIRD-PARTY AND ROUTING RISKS</h2>
-          <p>Cain Finance is a non-custodial interface and liquidity routing layer. It does not custody funds or execute transactions on behalf of users.</p>
-          <p>The Platform may interact with or route transactions through third-party protocols and liquidity systems, including but not limited to Byreal and other decentralized routing infrastructure.</p>
-          <p>These third-party systems operate independently and are not controlled by Cain Finance.</p>
-          <p>Users acknowledge that:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>Third-party protocols may fail, update, pause, or be exploited</li>
-            <li>Liquidity may be unavailable or insufficient</li>
-            <li>Pricing, slippage, or routing outcomes may vary significantly</li>
-            <li>Transactions may fail, partially execute, or revert</li>
-          </ul>
-          <p>Cain Finance assumes no responsibility for third-party performance, security, or availability.</p>
-        </section>
-
-        <!-- 5. PROTOCOL DEPENDENCY RISKS -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">5. PROTOCOL DEPENDENCY RISKS</h2>
-          <p>The Platform may depend on external DeFi infrastructure, oracle feeds, and liquidity systems.</p>
-          <p>Failures, delays, manipulation, or inaccuracies in these systems may result in:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>Incorrect pricing or valuation</li>
-            <li>Suboptimal execution or losses</li>
-            <li>Failed or delayed transactions</li>
-            <li>Inability to access liquidity or withdraw assets</li>
-          </ul>
-          <p>Users accept full responsibility for all outcomes resulting from protocol dependency risks.</p>
-        </section>
-
-        <!-- 6. MARKET AND LIQUIDITY RISKS -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">6. MARKET AND LIQUIDITY RISKS</h2>
-          <p>Digital assets are highly volatile and may lose all value without warning.</p>
-          <p>Liquidity pools may:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>Become illiquid or collapse entirely</li>
-            <li>Experience impermanent loss</li>
-            <li>Be drained by market participants</li>
-            <li>Diverge significantly in price from expected values</li>
-          </ul>
-          <p>Past performance is not indicative of future results.</p>
-        </section>
-
-        <!-- 7. WALLET AND USER SECURITY RISKS -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">7. WALLET AND USER SECURITY RISKS</h2>
-          <p>Users are solely responsible for securing wallet credentials, including private keys, seed phrases, and passwords.</p>
-          <p>Loss or compromise of wallet credentials may result in permanent loss of assets with no recovery mechanism.</p>
-          <p>Cain Finance does not provide custodial services or account recovery functionality.</p>
-        </section>
-
-        <!-- 8. THIRD-PARTY COSTS -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">8. THIRD-PARTY COSTS</h2>
-          <p>Users may incur blockchain fees, protocol fees, and third-party service costs. These costs are variable, unpredictable, and outside the control of Cain Finance.</p>
-        </section>
-
-        <!-- 9. REGULATORY AND TAX RISKS -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">9. REGULATORY AND TAX RISKS</h2>
-          <p>Regulatory frameworks governing digital assets are uncertain and subject to change.</p>
-          <p>Users may face restrictions, penalties, or legal consequences depending on jurisdiction.</p>
-          <p>Users are solely responsible for all tax obligations arising from Platform usage.</p>
-          <p>Cain Finance does not provide tax or legal advice.</p>
-        </section>
-
-        <!-- 10. NO INSURANCE OR GUARANTEES -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">10. NO INSURANCE OR GUARANTEES</h2>
-          <p>Digital assets and transactions conducted through the Platform are not insured, guaranteed, or protected by any government, financial institution, or compensation scheme.</p>
-          <p>No party associated with Cain Finance guarantees preservation of capital, performance, or access to liquidity.</p>
-        </section>
-
-        <!-- 11. INCORPORATION INTO TERMS -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">11. INCORPORATION INTO TERMS</h2>
-          <p>This Disclosure is incorporated by reference into all Cain Finance Terms, including Terms of Service, Borrow Terms, and Earn Terms.</p>
-        </section>
-
-        <!-- 12. ASSUMPTION OF RISK -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">12. ASSUMPTION OF RISK</h2>
-          <p>By using Cain Finance, you expressly acknowledge and agree that:</p>
-          <ul class="list-disc list-inside ml-4 space-y-1">
-            <li>You understand all risks described in this Disclosure</li>
-            <li>You are solely responsible for your financial decisions</li>
-            <li>You may lose all assets with no recourse</li>
-            <li>You voluntarily accept all risks associated with decentralized systems</li>
-          </ul>
-        </section>
-
-        <!-- 13. LIMITATION OF LIABILITY -->
-        <section class="legal-section space-y-3">
-          <h2 class="text-2xl font-bold tracking-tight text-white border-b border-nest-border/40 pb-2 inline-block">13. LIMITATION OF LIABILITY</h2>
-          <p>To the maximum extent permitted by applicable law, Cain Finance and its affiliates, contributors, developers, contractors, and related parties shall not be liable for any losses arising from use of the Platform, including negligence where legally permissible.</p>
-        </section>
-
-        <!-- Final footer note -->
-        <div class="mt-12 pt-8 border-t border-nest-border/40 text-center space-y-4">
-          <div class="flex flex-wrap justify-center gap-6 text-xs text-nest-text-muted">
-            <span class="flex items-center gap-1">⚠️ No insurance or guarantees</span>
-            <span class="flex items-center gap-1">🔒 Non-custodial</span>
-            <span class="flex items-center gap-1">💸 Total loss possible</span>
-            <span class="flex items-center gap-1">⚖️ No fiduciary duty</span>
-          </div>
-          <div class="text-sm font-medium tracking-wide text-white/80">CAIN FINANCE © 2026 — ALL RIGHTS RESERVED</div>
-          <div class="text-[11px] text-nest-text-muted max-w-md mx-auto leading-relaxed">
-            IMPORTANT NOTICE: Digital asset and DeFi participation involves extreme risk, including the possible loss of all funds without warning, compensation, or recourse.
-          </div>
-        </div>
+      <div class="footer-social">
+        <a class="social-btn" href="https://x.com/CainFinance" target="_blank" rel="noopener">𝕏 Twitter</a>
+        <a class="social-btn" href="https://discord.gg/CainFinance" target="_blank" rel="noopener">Discord</a>
+        <a class="social-btn" href="https://reddit.com/r/CainFinance" target="_blank" rel="noopener">Reddit</a>
+        <a class="social-btn" href="https://t.me/CainFinance" target="_blank" rel="noopener">Telegram</a>
       </div>
-    </div>
-  </div>
-
-  <!-- FOOTER with community links + legal doc references -->
-  <footer class="border-t border-white/10 bg-black/40 backdrop-blur-sm mt-12">
-    <div class="max-w-6xl mx-auto px-6 py-10">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-sm">
-        <div>
-          <div class="flex items-center gap-2 mb-4">
-            <div class="w-6 h-6 bg-cyan-400 rounded-md"></div>
-            <span class="font-bold text-white">Cain Finance</span>
-          </div>
-          <p class="text-white/40 text-xs">Non-custodial DeFi interface. Liquidity routing, swaps, yield, and borrowing on Solana.</p>
+      <div class="footer-bottom">
+        <p>© 2026 Cain Finance. All rights reserved.</p>
+        <div class="footer-bottom-links">
+          <a href="/termsofservice.html">Terms</a>
+          <a href="/Riskdisclosurestatement.html">Risk Disclosure</a>
+          <a href="/termsandconditions.html">T&amp;C</a>
         </div>
-        <div>
-          <h4 class="font-semibold text-white/80 mb-3">Community</h4>
-          <ul class="space-y-2 footer-link-group">
-            <li><a href="#" class="text-white/50 hover:text-white transition">𝕏 Twitter / X.com</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">Reddit Community</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">Discord</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">Telegram</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">GitHub</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="font-semibold text-white/80 mb-3">Legal</h4>
-          <ul class="space-y-2 footer-link-group">
-            <li><a href="#" class="text-white/50 hover:text-white transition">📄 Borrow Terms</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">⚠️ Risk Disclosure</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">📈 Earn Terms</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">Privacy Policy</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">Cookie Notice</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="font-semibold text-white/80 mb-3">Resources</h4>
-          <ul class="space-y-2 footer-link-group">
-            <li><a href="#" class="text-white/50 hover:text-white transition">Documentation</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">Audits & Security</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">Byreal Info</a></li>
-            <li><a href="#" class="text-white/50 hover:text-white transition">Status</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="text-center text-[11px] text-white/30 pt-8 border-t border-white/5 mt-8">
-        © 2026 Cain Finance — All rights reserved. By interacting with any smart contract you assume full responsibility for all risks.
       </div>
     </div>
   </footer>
-</main>
-
 </body>
 </html>

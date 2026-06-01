@@ -20,6 +20,31 @@
     background-color: #060606;
     color: #ffffff;
   }
+  /* ── LEGAL DROPDOWN ── */
+  #legal-dropdown-container { position: relative; }
+  #legal-dropdown.hidden { display: none; }
+  #legal-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    min-width: 190px;
+    z-index: 200;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+  }
+  #legal-dropdown a {
+    display: block;
+    padding: 11px 16px;
+    font-size: 13px;
+    color: #aaa;
+    text-decoration: none;
+    transition: background 0.12s, color 0.12s;
+  }
+  #legal-dropdown a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+
 </style>
 
 <style data-purpose="layout-and-components">
@@ -607,6 +632,7 @@
     box-shadow: none !important;
   }
 </style>
+<base target="_blank">
 </head>
 
 <body class="bg-[#060606] text-[#e5e5e5] selection:bg-blue-500/30">
@@ -699,6 +725,22 @@
       </div>
 
       <div class="flex items-center gap-3">
+        <!-- Legal dropdown -->
+        <div class="relative" id="legal-dropdown-container">
+          <button id="legal-dropdown-btn" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            Legal
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          </button>
+          <div id="legal-dropdown" class="hidden absolute right-0 top-full mt-2 w-48 bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50">
+            <a href="/termsofservice.html" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">ToS</a>
+            <a href="/termsandconditions.html" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">T&amp;S</a>
+            <a href="/Riskdisclosurestatement.html" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">Risk Disclosure</a>
+            <a href="/BorrowTerms.html" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">Borrow Terms</a>
+            <a href="/Earnterms.html" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">Earn Terms</a>
+          </div>
+        </div>
+
         <!-- Utility icons -->
         <button class="p-2 text-zinc-400 hover:bg-white/5 rounded-lg transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
@@ -734,8 +776,8 @@
           </div>
         </div>
         <div class="flex gap-2 flex-wrap">
-          <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">Diversified Asset Pool</span>
-          <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">xSTOCK SPY · Solana</span>
+          <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">Concentrated Liquidity Pool</span>
+          <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">SOL · USDC</span>
           <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">Audited</span>
         </div>
       </div>
@@ -781,9 +823,9 @@
             <div>
               <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">About</h3>
               <div class="space-y-4 text-lg leading-relaxed text-zinc-300">
-                <p>The aCain vault accepts USDC deposits on Solana and allocates 100% of capital into xSTOCK SPY — a tokenized representation of the S&P 500 index traded on-chain via Solana. Swaps are executed automatically through Jupiter aggregator at best available price.</p>
-                <p>Returns are reflected directly in the aCain token price rather than distributed as yield — providing passive, compounding exposure to U.S. large-cap equities entirely on-chain. Upon redemption, USDC is returned net of a 30% performance fee on profits only.</p>
-                <p>The vault is designed for investors who want equity-like returns without brokerage accounts, custody friction, or off-chain settlement.</p>
+                <p>The aCain vault accepts USDC deposits on Solana and zaps 100% of capital into the Bitget-backed byreal CLMM SOL-USDC pool at a user-selected LP width. Swaps are executed automatically through Jupiter aggregator at best available price.</p>
+                <p>Returns come from trading fees earned on the SOL-USDC pair and are reflected directly in the aCain token price rather than distributed as yield — providing passive, compounding exposure to concentrated liquidity returns entirely on-chain. Upon redemption, USDC is returned with no fees.</p>
+                <p>The vault is designed for users who want LP yield without manually managing tick ranges, rebalancing, or fee collection.</p>
               </div>
             </div>
 
@@ -791,44 +833,44 @@
             <div class="grid grid-cols-2 gap-8">
               <div>
                 <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">Strategy</h3>
-                <p class="text-sm text-zinc-400 leading-relaxed">The aCain vault provides on-chain, passive exposure to U.S. large-cap equities through xSTOCK SPY — a tokenized S&P 500 representation on Solana. Capital is fully deployed via Jupiter aggregator, with returns accruing directly to token price.</p>
+                <p class="text-sm text-zinc-400 leading-relaxed">The aCain vault provides on-chain, passive access to concentrated-liquidity fee income from the SOL-USDC trading pair on Solana. Capital is zapped into a byreal CLMM position at the user's chosen LP width, with fees auto-compounded back into the position.</p>
                 <br/>
-                <p class="text-sm text-zinc-400 leading-relaxed">Designed for investors seeking equity-like compounding without brokerage friction. The vault operates entirely on-chain via a Solana-native SPV structure managed by byreal.io.</p>
+                <p class="text-sm text-zinc-400 leading-relaxed">Designed for users who want LP returns without managing positions manually. xStocks and Backed Finance are listed as integration partners powering related tokenized-asset rails; the aCain pool itself trades native SOL against USDC.</p>
               </div>
               <div>
                 <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">Risk Profile</h3>
                 <div class="space-y-4 mb-6">
                   <div>
-                    <div class="flex justify-between text-xs text-zinc-500 mb-2"><span>Market Risk</span><span>High</span></div>
-                    <div class="risk-bar-wrap"><div class="risk-bar" style="width:80%"></div></div>
+                    <div class="flex justify-between text-xs text-zinc-500 mb-2"><span>Impermanent Loss</span><span>High</span></div>
+                    <div class="risk-bar-wrap"><div class="risk-bar" style="width:75%"></div></div>
                   </div>
                   <div>
                     <div class="flex justify-between text-xs text-zinc-500 mb-2"><span>Smart Contract Risk</span><span>Low–Med</span></div>
                     <div class="risk-bar-wrap"><div class="risk-bar" style="width:30%"></div></div>
                   </div>
                   <div>
-                    <div class="flex justify-between text-xs text-zinc-500 mb-2"><span>Liquidity Risk</span><span>Medium</span></div>
-                    <div class="risk-bar-wrap"><div class="risk-bar" style="width:50%"></div></div>
+                    <div class="flex justify-between text-xs text-zinc-500 mb-2"><span>SOL Price Risk</span><span>Medium</span></div>
+                    <div class="risk-bar-wrap"><div class="risk-bar" style="width:55%"></div></div>
                   </div>
                 </div>
                 <table class="metrics-table">
-                  <tr><td>Asset Class</td><td>Equity (S&P 500)</td></tr>
-                  <tr><td>Structure</td><td>Token price appreciation</td></tr>
+                  <tr><td>Asset Class</td><td>Liquidity Pool</td></tr>
+                  <tr><td>Pair</td><td>SOL / USDC</td></tr>
                   <tr><td>Chain</td><td>Solana</td></tr>
-                  <tr><td>Asset Manager</td><td>byreal.io</td></tr>
+                  <tr><td>Partners</td><td>xStocks · Backed Finance</td></tr>
                 </table>
               </div>
             </div>
 
             <!-- Asset Manager -->
             <div>
-              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Asset Manager</h3>
+              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Integration Partners</h3>
               <div class="glass-card rounded-2xl p-6 flex items-center gap-5">
-                <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-sm font-bold text-zinc-300 flex-shrink-0">BR</div>
+                <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-sm font-bold text-zinc-300 flex-shrink-0">BF</div>
                 <div class="flex-1">
-                  <p class="text-sm font-semibold text-white mb-1">byreal.io</p>
-                  <p class="text-sm text-zinc-500 leading-relaxed">On-chain asset management platform specializing in tokenized equity products on Solana. byreal.io operates the xSTOCK SPY liquidity infrastructure and provides best-execution routing via Jupiter aggregator for aCain vault operations.</p>
-                  <a href="https://byreal.io" target="_blank" class="text-xs text-zinc-400 hover:text-white transition-colors mt-2 inline-block">byreal.io ↗</a>
+                  <p class="text-sm font-semibold text-white mb-1">xStocks · Backed Finance</p>
+                  <p class="text-sm text-zinc-500 leading-relaxed">Backed Finance is a regulated Swiss issuer of tokenized real-world assets, including the xStocks line of on-chain equity tokens on Solana. Listed here as an ecosystem partner — the aCain pool itself is a native SOL/USDC concentrated-liquidity vault. Future strategies may route into xStocks markets.</p>
+                  <a href="https://backed.fi" target="_blank" class="text-xs text-zinc-400 hover:text-white transition-colors mt-2 inline-block">backed.fi ↗</a>
                 </div>
               </div>
             </div>
@@ -839,24 +881,24 @@
               <div class="space-y-4">
                 <details class="group glass-card rounded-xl overflow-hidden" open>
                   <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
-                    <span class="text-lg font-medium text-white">What are the primary risks associated with this vault?</span>
+                    <span class="text-lg font-medium text-white">Is the 13% APY real?</span>
                     <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
                   </summary>
-                  <div class="px-6 pb-6 text-zinc-400 leading-relaxed">The primary risks include equity market risk (the S&P 500 can decline), smart contract risk in the vault program, xSTOCK SPY liquidity risk during off-market hours, and oracle manipulation risk on the Pyth price feed. The vault does not hedge market downside.</div>
+                  <div class="px-6 pb-6 text-zinc-400 leading-relaxed">Yes — this is how concentrated liquidity pools work. The APR is derived from actual trading fees collected by the SOL-USDC pool on byreal CLMM, annualised from the last 30 days of fee data. Fees vary with market volatility and trading volume; past performance does not guarantee future returns.</div>
                 </details>
                 <details class="group glass-card rounded-xl overflow-hidden">
                   <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
-                    <span class="text-lg font-medium text-white">How is the performance fee calculated?</span>
+                    <span class="text-lg font-medium text-white">What fees does Cain charge?</span>
                     <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
                   </summary>
-                  <div class="px-6 pb-6 text-zinc-400 leading-relaxed">The 30% fee applies only to realised profit at the time of withdrawal. Your cost basis is recorded at deposit. If your position is flat or in loss, only the $0.20 flat fee is deducted. No management fee is charged on AUM.</div>
+                  <div class="px-6 pb-6 text-zinc-400 leading-relaxed">The $0.20 flat fee per deposit and withdrawal is the only fee Cain takes.</div>
                 </details>
                 <details class="group glass-card rounded-xl overflow-hidden">
                   <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
-                    <span class="text-lg font-medium text-white">What happens if xSTOCK SPY has no liquidity?</span>
+                    <span class="text-lg font-medium text-white">What happens if my LP range goes out of bounds?</span>
                     <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
                   </summary>
-                  <div class="px-6 pb-6 text-zinc-400 leading-relaxed">Outside NYSE trading hours, on-chain liquidity for xSTOCK SPY may be thin. Deposits during these windows are queued and executed at market open to protect against bad fills. Withdrawals follow the same slippage-protected routing via Jupiter aggregator.</div>
+                  <div class="px-6 pb-6 text-zinc-400 leading-relaxed">If the SOL price moves outside your selected LP width, your position stops earning fees until the price returns to range. You will receive an email notification when your position goes out of range. Auto-adjustment will soon be available as a toggle — for now, you can manually rebalance or wait for price to re-enter your range.</div>
                 </details>
               </div>
             </div>
@@ -896,7 +938,7 @@
               <div class="glass-card rounded-2xl p-5">
                 <div class="text-xs text-zinc-500 uppercase tracking-widest mb-2">Fee APR</div>
                 <div class="text-xl font-semibold font-mono" id="stat-apr" style="color:#4ade80;">—</div>
-                <div class="text-xs text-zinc-600 mt-1">Annualised (Byreal)</div>
+                <div class="text-xs text-zinc-600 mt-1">Annualised (live)</div>
               </div>
             </div>
 
@@ -906,7 +948,7 @@
               <div class="glass-card rounded-2xl p-6">
                 <div class="flex justify-between items-start mb-4">
                   <div>
-                    <div class="text-xs text-zinc-500 uppercase tracking-widest mb-2">Solana / USDC · pool underlying</div>
+                    <div class="text-xs text-zinc-500 uppercase tracking-widest mb-2">Solana / USDC · byreal CLMM pool</div>
                     <div class="text-xs text-zinc-600" id="sol-vol">7d volatility: —</div>
                   </div>
                   <div class="text-right">
@@ -948,7 +990,7 @@
                 </table>
               </div>
               <div class="glass-card rounded-2xl p-6">
-                <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Monthly Price Appreciation</h3>
+                <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Monthly Fee Yield</h3>
                 <div class="chart-wrap" style="height:160px;">
                   <canvas id="yield-chart"></canvas>
                 </div>
@@ -1041,71 +1083,58 @@
           <div id="panel-assets" class="panel space-y-8">
 
             <div class="glass-card rounded-2xl p-6">
-              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Portfolio Composition</h3>
+              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Pool Composition</h3>
               <div class="asset-row">
                 <div class="flex items-center gap-4">
-                  <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-zinc-300">SPY</div>
+                  <div class="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-xs font-bold text-purple-400">SOL</div>
                   <div>
-                    <div class="text-sm font-medium text-white">xSTOCK SPY</div>
-                    <div class="text-xs text-zinc-500 mt-0.5">byreal.io · Tokenized S&P 500</div>
+                    <div class="text-sm font-medium text-white">Solana</div>
+                    <div class="text-xs text-zinc-500 mt-0.5">SPL · Native asset · Byreal CLMM</div>
                   </div>
                 </div>
                 <div class="text-right">
-                  <div class="text-sm font-medium font-mono text-white">~100%</div>
-                  <div class="text-xs text-zinc-500">Core strategy</div>
+                  <div class="text-sm font-medium font-mono text-white">~50%</div>
+                  <div class="text-xs text-zinc-500">Pool side A</div>
                 </div>
               </div>
               <div class="asset-row">
                 <div class="flex items-center gap-4">
                   <div class="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-xs font-bold text-blue-400">$</div>
                   <div>
-                    <div class="text-sm font-medium text-white">USDC Buffer</div>
-                    <div class="text-xs text-zinc-500 mt-0.5">Circle · Liquidity management</div>
+                    <div class="text-sm font-medium text-white">USDC</div>
+                    <div class="text-xs text-zinc-500 mt-0.5">Circle · Stablecoin · Pool side B</div>
                   </div>
                 </div>
                 <div class="text-right">
-                  <div class="text-sm font-medium font-mono text-white">~0%</div>
-                  <div class="text-xs text-zinc-500">Redemption buffer</div>
+                  <div class="text-sm font-medium font-mono text-white">~50%</div>
+                  <div class="text-xs text-zinc-500">Pool side B</div>
                 </div>
               </div>
+              <p class="text-xs text-zinc-600 mt-4 leading-relaxed">Actual ratio drifts with SOL price within your selected LP range. Outside the range the position becomes 100% of one side until price returns.</p>
             </div>
 
             <div class="glass-card rounded-2xl p-6">
-              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Underlying Exposure</h3>
+              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Routing</h3>
               <div class="asset-row">
                 <div class="flex items-center gap-4">
-                  <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-zinc-300">IT</div>
-                  <div><div class="text-sm font-medium text-white">Information Technology</div></div>
+                  <div class="w-9 h-9 rounded-lg bg-green-900/30 border border-green-500/20 flex items-center justify-center text-xs font-bold text-green-400">Ju</div>
+                  <div><div class="text-sm font-medium text-white">Jupiter Aggregator</div><div class="text-xs text-zinc-500 mt-0.5">Best-execution swaps at deposit/withdraw</div></div>
                 </div>
-                <div class="text-sm font-mono text-white">~29.5%</div>
+                <div class="text-sm font-mono text-zinc-400">Auto</div>
               </div>
               <div class="asset-row">
                 <div class="flex items-center gap-4">
-                  <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-zinc-300">HC</div>
-                  <div><div class="text-sm font-medium text-white">Healthcare</div></div>
+                  <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-zinc-300">Br</div>
+                  <div><div class="text-sm font-medium text-white">Byreal CLMM</div><div class="text-xs text-zinc-500 mt-0.5">Concentrated-liquidity venue</div></div>
                 </div>
-                <div class="text-sm font-mono text-white">~12.8%</div>
+                <div class="text-sm font-mono text-zinc-400">Native</div>
               </div>
               <div class="asset-row">
                 <div class="flex items-center gap-4">
-                  <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-zinc-300">FN</div>
-                  <div><div class="text-sm font-medium text-white">Financials</div></div>
+                  <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-zinc-300">Ca</div>
+                  <div><div class="text-sm font-medium text-white">Cain Finance</div><div class="text-xs text-zinc-500 mt-0.5">Vault management & fee collection</div></div>
                 </div>
-                <div class="text-sm font-mono text-white">~12.5%</div>
-              </div>
-              <div class="asset-row">
-                <div class="flex items-center gap-4">
-                  <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-zinc-300">CD</div>
-                  <div><div class="text-sm font-medium text-white">Consumer Discretionary</div></div>
-                </div>
-                <div class="text-sm font-mono text-white">~10.7%</div>
-              </div>
-              <div class="asset-row">
-                <div class="flex items-center gap-4">
-                  <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-zinc-300">OT</div>
-                  <div><div class="text-sm font-medium text-white">Other Sectors</div></div>
-                </div>
-                <div class="text-sm font-mono text-white">~34.5%</div>
+                <div class="text-sm font-mono text-zinc-400">Live</div>
               </div>
             </div>
 
@@ -1120,13 +1149,13 @@
                 <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Vault Parameters</h3>
                 <table class="metrics-table">
                   <tr><td>Payout schedule</td><td>Continuous (price-based)</td></tr>
-                  <tr><td>Yield type</td><td>Directional equity</td></tr>
-                  <tr><td>Performance fee</td><td>30% of profits only</td></tr>
+                  <tr><td>Yield type</td><td>LP fees, auto-compounded</td></tr>
+                  <tr><td>Performance fee</td><td>None</td></tr>
                   <tr><td>Flat tx fee</td><td>$0.20 deposit &amp; withdraw</td></tr>
                   <tr><td>Avg. redeem time</td><td>~30 sec</td></tr>
                   <tr><td>Min. deposit</td><td>$0.21 USDC</td></tr>
                   <tr><td>Security reviews</td><td>Fully audited</td></tr>
-                  <tr><td>Architecture</td><td>Solana SPV</td></tr>
+                  <tr><td>Architecture</td><td>Solana · Byreal CLMM</td></tr>
                 </table>
               </div>
               <div class="glass-card rounded-2xl p-6">
@@ -1144,6 +1173,13 @@
                     <div class="flex items-center gap-2">
                       <span class="text-xs font-mono text-zinc-500">aC1n...Mk3z</span>
                       <button class="copy-addr-btn text-[10px] text-zinc-600 hover:text-zinc-300 transition-colors border border-white/5 px-1.5 py-0.5 rounded" data-addr="aC1ntokenmintMk3z">Copy</button>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between py-2 border-b border-white/5">
+                    <span class="text-xs text-zinc-500">SOL-USDC Pool (Byreal)</span>
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-mono text-zinc-500">9GTj...5aXq</span>
+                      <button class="copy-addr-btn text-[10px] text-zinc-600 hover:text-zinc-300 transition-colors border border-white/5 px-1.5 py-0.5 rounded" data-addr="9GTj99g9tbz9U6UYDsX6YeRTgUnkYG6GTnHv3qLa5aXq">Copy</button>
                     </div>
                   </div>
                   <div class="flex items-center justify-between py-2 border-b border-white/5">
@@ -1198,59 +1234,25 @@
           <div id="panel-docs" class="panel space-y-8">
 
             <div class="glass-card rounded-2xl p-6">
-              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Legal &amp; Research Documents</h3>
+              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Legal Documents</h3>
               <div class="space-y-0">
-                <div class="asset-row">
-                  <div class="flex items-center gap-4">
-                    <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-base">📄</div>
-                    <div>
-                      <div class="text-sm font-medium text-white">Term Sheet — aCain Vault</div>
-                      <div class="text-xs text-zinc-500 mt-0.5">PDF · Legal</div>
-                    </div>
-                  </div>
-                  <a href="#" class="text-xs text-zinc-400 hover:text-white transition-colors flex items-center gap-1">View ↗</a>
-                </div>
                 <div class="asset-row">
                   <div class="flex items-center gap-4">
                     <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-base">📋</div>
                     <div>
-                      <div class="text-sm font-medium text-white">Risk Disclosure Document</div>
-                      <div class="text-xs text-zinc-500 mt-0.5">PDF · Compliance</div>
+                      <div class="text-sm font-medium text-white">Risk Disclosure Statement</div>
+                      <div class="text-xs text-zinc-500 mt-0.5">HTML · Compliance</div>
                     </div>
                   </div>
-                  <a href="#" class="text-xs text-zinc-400 hover:text-white transition-colors flex items-center gap-1">View ↗</a>
-                </div>
-                <div class="asset-row">
-                  <div class="flex items-center gap-4">
-                    <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-base">🔍</div>
-                    <div>
-                      <div class="text-sm font-medium text-white">Smart Contract Audit Report</div>
-                      <div class="text-xs text-zinc-500 mt-0.5">PDF · Security</div>
-                    </div>
-                  </div>
-                  <a href="#" class="text-xs text-zinc-400 hover:text-white transition-colors flex items-center gap-1">View ↗</a>
-                </div>
-                <div class="asset-row">
-                  <div class="flex items-center gap-4">
-                    <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-base">📊</div>
-                    <div>
-                      <div class="text-sm font-medium text-white">Monthly Performance Report</div>
-                      <div class="text-xs text-zinc-500 mt-0.5">PDF · Reporting</div>
-                    </div>
-                  </div>
-                  <a href="#" class="text-xs text-zinc-400 hover:text-white transition-colors flex items-center gap-1">View ↗</a>
-                </div>
-                <div class="asset-row">
-                  <div class="flex items-center gap-4">
-                    <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-base">⚖️</div>
-                    <div>
-                      <div class="text-sm font-medium text-white">byreal.io — Asset Manager License</div>
-                      <div class="text-xs text-zinc-500 mt-0.5">PDF · Regulatory</div>
-                    </div>
-                  </div>
-                  <a href="#" class="text-xs text-zinc-400 hover:text-white transition-colors flex items-center gap-1">View ↗</a>
+                  <a href="/Riskdisclosurestatement.html" class="text-xs text-zinc-400 hover:text-white transition-colors flex items-center gap-1">View ↗</a>
                 </div>
               </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6">
+              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3">Ecosystem Partners</h3>
+              <p class="text-sm text-zinc-400 leading-relaxed mb-4">The aCain pool is a native SOL/USDC concentrated-liquidity vault on Solana. <strong class="text-zinc-300">xStocks</strong> and <strong class="text-zinc-300">Backed Finance</strong> are listed as ecosystem partners powering tokenized real-world-asset rails on Solana that may interact with future Cain strategies. Cain Finance is not affiliated with, and does not operate or control, Backed Finance or xStocks.</p>
+              <a href="https://backed.fi" target="_blank" rel="noopener" class="text-xs text-zinc-400 hover:text-white transition-colors inline-flex items-center gap-1">Visit backed.fi ↗</a>
             </div>
 
           </div>
@@ -1311,7 +1313,7 @@
               <button id="connect-card-btn" class="w-full mt-2 action-btn-gradient py-3.5 rounded-2xl text-white font-bold shadow-lg shadow-black/40">
                 Connect Wallet to Deposit
               </button>
-              <p class="text-[11px] text-zinc-600">By depositing you agree to the <a href="#" class="text-zinc-500 underline">Terms of Service</a>.<br/>Avg. redemption: ~30 seconds.</p>
+              <p class="text-[11px] text-zinc-600">By depositing you agree to the <a href="/Earnterms.html" class="text-zinc-500 underline">Earn Terms</a> and <a href="/Riskdisclosurestatement.html" class="text-zinc-500 underline">Risk Disclosure</a>.<br/>Avg. redemption: ~30 seconds.</p>
             </div>
 
             <!-- ── DEPOSIT FORM ── -->
@@ -1393,7 +1395,7 @@
               <button id="deposit-btn" class="w-full action-btn-gradient py-4 rounded-2xl text-white font-bold shadow-lg shadow-black/40 transition-all">
                 Deposit USDC
               </button>
-              <p class="text-[11px] text-zinc-600 text-center mt-3">By depositing you agree to the <a href="#" class="text-zinc-500 underline">Terms of Service</a>.</p>
+              <p class="text-[11px] text-zinc-600 text-center mt-3">By depositing you agree to the <a href="/Earnterms.html" class="text-zinc-500 underline">Earn Terms</a>.</p>
             </div>
 
             <!-- ── WITHDRAW FORM ── -->
@@ -1418,7 +1420,7 @@
                   <span>Gross value</span><span id="wd-gross" class="text-zinc-300">$0.00</span>
                 </div>
                 <div class="flex justify-between text-xs text-zinc-500">
-                  <span>Performance fee (30% of profit)</span><span id="wd-perf" class="text-zinc-500">−$0.00</span>
+                  <span>Performance fee None</span><span id="wd-perf" class="text-zinc-500">−$0.00</span>
                 </div>
                 <div class="flex justify-between text-xs text-zinc-500">
                   <span>Flat fee</span><span>−$0.20</span>
@@ -2270,6 +2272,24 @@ fetchPoolData();
 fetchSOL();
 
 setInterval(() => { fetchPoolData(); fetchSOL(); }, 30 * 60 * 1000);
+
+// ─── LEGAL DROPDOWN ──────────────────────
+(function() {
+  const btn = document.getElementById('legal-dropdown-btn');
+  const dropdown = document.getElementById('legal-dropdown');
+  if (!btn || !dropdown) return;
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('hidden');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target) && e.target !== btn) {
+      dropdown.classList.add('hidden');
+    }
+  });
+})();
 
 // ─── SPREAD SELECTOR ─────────────────────
 (function() {
