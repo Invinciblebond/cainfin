@@ -69,6 +69,29 @@ app.get('/api/positions', async (req, res) => {
   }
 });
 
+// ─── Wallet SOL balance (Helius getBalance) ──────────────────────────────────
+app.get('/api/balance', async (req, res) => {
+  const { address } = req.query;
+  if (!isAddress(address)) return res.status(400).json({ error: 'Valid address required' });
+  try {
+    const r = await fetch(HELIUS_RPC, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 1,
+        method: 'getBalance',
+        params: [address, { commitment: 'confirmed' }],
+      }),
+    });
+    const json = await r.json();
+    if (json.error) throw new Error(json.error.message);
+    const lamports = json.result?.value ?? 0;
+    res.json({ lamports, sol: lamports / 1e9 });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ─── Latest blockhash (proxied — Helius blocks browser CORS) ─────────────────
 app.get('/api/blockhash', async (req, res) => {
   try {

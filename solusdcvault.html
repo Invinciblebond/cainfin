@@ -1422,24 +1422,22 @@
                   </div>
                 </div>
                 <div class="flex justify-between text-xs text-zinc-500 mb-4">
-                  <span>Balance: 0.00 USDC</span>
+                  <span id="deposit-balance">Balance: 0.0000 SOL</span>
                   <span id="deposit-usd-val" class="text-zinc-500">$0.00</span>
                 </div>
               </div>
 
               <!-- LP range is controlled by the Spread selector above. -->
+              <div id="pool-range-display" class="text-[11px] text-zinc-500 mb-3">Pool price: — · Range: —</div>
 
-              <!-- Fee breakdown -->
+              <!-- Position breakdown -->
               <div class="bg-white/[0.03] border border-white/5 rounded-xl p-4 mb-5 space-y-2">
-                <div class="flex justify-between text-xs text-zinc-500">
-                  <span>Flat fee</span><span>−$0.20</span>
-                </div>
                 <div class="flex justify-between text-xs text-zinc-500">
                   <span>Invested in pool</span><span id="deposit-net" class="text-zinc-300">$0.00</span>
                 </div>
                 <div class="border-t border-white/5 pt-2 flex justify-between text-xs">
-                  <span class="text-zinc-500">aCain minted (est.)</span>
-                  <span id="deposit-acain" class="text-white font-medium">0.000 aC</span>
+                  <span class="text-zinc-500">Est. deposit split</span>
+                  <span id="deposit-split" class="text-white font-medium">—</span>
                 </div>
                 <div class="flex justify-between text-xs text-zinc-500">
                   <span>Range spread</span><span id="deposit-lp-width" class="text-zinc-300">1%</span>
@@ -1448,18 +1446,20 @@
 
               <!-- Receive row -->
               <div class="mb-5">
-                <label class="text-xs text-zinc-500 mb-2 block">You receive</label>
+                <label class="text-xs text-zinc-500 mb-2 block">You receive (LP position)</label>
                 <div class="token-input-wrap">
                   <div class="flex flex-col">
-                    <span id="receive-acain-val" class="text-2xl font-medium text-zinc-600">0.000</span>
+                    <span id="receive-acain-val" class="text-lg font-medium text-zinc-600">0.0000 SOL + 0.00 USDC</span>
                     <span id="receive-usd-val" class="text-xs text-zinc-500">$0.00</span>
                   </div>
                   <div class="token-badge">
-                    <div class="w-5 h-5 rounded-full bg-zinc-700 flex items-center justify-center text-[9px] font-bold">aC</div>
-                    aCain
+                    <div class="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center text-[9px] font-bold">LP</div>
+                    SOL/USDC
                   </div>
                 </div>
               </div>
+
+              <div id="byreal-load-status" class="text-[11px] text-zinc-600 text-center mb-3"></div>
 
               <button id="deposit-btn" class="w-full action-btn-gradient py-4 rounded-2xl text-white font-bold shadow-lg shadow-black/40 transition-all">
                 Deposit USDC
@@ -1479,7 +1479,7 @@
                   </div>
                 </div>
                 <div class="flex justify-between text-xs text-zinc-500 mb-4">
-                  <span>Balance: 0.000 aCain</span>
+                  <span id="withdraw-balance">In pool: $0.00</span>
                   <span id="withdraw-gross-val" class="text-zinc-500">$0.00 gross</span>
                 </div>
               </div>
@@ -1524,7 +1524,7 @@
 // ─── CONSTANTS ───────────────────────────
 const ACAIN_PRICE  = 1.140;
 const COST_BASIS   = 1.000;
-const FLAT_FEE     = 0.20;
+const FLAT_FEE     = 0;     // no flat fee for now
 const PERF_FEE_PCT = 0.30;
 
 // ─── BYREAL LP CONFIG ─────────────────────
@@ -1567,6 +1567,7 @@ document.querySelectorAll('.dep-token-pill').forEach(pill => {
     if (sym === 'SOL') { icon.textContent = '◎'; icon.className = 'w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center text-[9px] font-bold'; }
     else               { icon.textContent = '$'; icon.className = 'w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-[9px] font-bold'; }
     document.getElementById('deposit-btn').textContent = 'Deposit ' + sym;
+    updateDeposit();
   });
 });
 
@@ -1613,6 +1614,8 @@ let walletAddress = null;
 function onConnect(address) {
   walletAddress = address;
   showWalletForms();
+  loaded.balance = false; loaded.positions = false; loaded.announced = false;
+  loadByrealData();
 }
 
 function onDisconnect() {
@@ -1662,21 +1665,140 @@ async function connectViaProvider() {
   setTimeout(() => window.open('https://metamask.io/download/', '_blank'), 800);
 }
 
+// ─── BYREAL LIVE DATA (price, range, balance, invested split) ──────────
+let poolPriceUsdcPerSol = null;   // USDC per SOL
+let solUsd  = null;               // SOL price in USD
+let usdcUsd = null;               // USDC price in USD
+let solBalance = null;            // connected wallet SOL balance
+let investedUsd = 0;              // user's current liquidity in BYREAL_POOL (USD)
+const loaded = { price: false, balance: false, positions: false, announced: false };
+
+function maybeAllLoaded() {
+  const el = document.getElementById('byreal-load-status');
+  if (loaded.price && loaded.balance && loaded.positions) {
+    if (el) { el.textContent = '✓ All info loaded successfully'; el.style.color = '#4ade80'; }
+    if (!loaded.announced) { loaded.announced = true; showToast('All info loaded successfully', 'green'); }
+  } else if (el) {
+    el.textContent = 'Loading pool info…'; el.style.color = '';
+  }
+}
+
+function connectedPubkey() {
+  const w = window.cainWallet;
+  return (w && w.provider && w.provider.publicKey) ? w.provider.publicKey.toString() : (walletAddress || null);
+}
+
+// Estimated SOL/USDC split for a single-token deposit into the chosen range.
+// Uses the standard concentrated-liquidity value ratio for a symmetric range.
+function computeSplit() {
+  const amt = parseFloat(document.getElementById('deposit-amount').value) || 0;
+  if (!amt || poolPriceUsdcPerSol == null || !solUsd || !usdcUsd) return null;
+  const p = poolPriceUsdcPerSol, f = spreadFraction();
+  const pa = p * (1 - f), pb = p * (1 + f);
+  const sp = Math.sqrt(p), spa = Math.sqrt(pa), spb = Math.sqrt(pb);
+  // value(SOL) / value(USDC) for a position centred at current price
+  const R = (sp * (spb - sp)) / (spb * (sp - spa));
+  const totalUsd = amt * (depositBase === 'MintA' ? solUsd : usdcUsd);
+  const usdcVal  = totalUsd / (1 + R);
+  const solVal   = totalUsd - usdcVal;
+  return { solAmt: solVal / solUsd, usdcAmt: usdcVal / usdcUsd, totalUsd };
+}
+
+function updateRangeDisplay() {
+  const el = document.getElementById('pool-range-display');
+  if (!el) return;
+  if (poolPriceUsdcPerSol == null) { el.textContent = 'Pool price: — · Range: —'; return; }
+  const f = spreadFraction();
+  const lo = poolPriceUsdcPerSol * (1 - f), hi = poolPriceUsdcPerSol * (1 + f);
+  el.textContent = `Pool price: ${poolPriceUsdcPerSol.toFixed(2)} USDC/SOL · Range (${currentSpreadLabel()}): ${lo.toFixed(2)} – ${hi.toFixed(2)}`;
+}
+
+function updateSplitDisplay() {
+  const recvA   = document.getElementById('receive-acain-val');
+  const recvUsd = document.getElementById('receive-usd-val');
+  const splitEl = document.getElementById('deposit-split');
+  const usdEl   = document.getElementById('deposit-usd-val');
+  const s = computeSplit();
+  if (!s) {
+    if (recvA)   { recvA.textContent = '0.0000 SOL + 0.00 USDC'; recvA.className = 'text-lg font-medium text-zinc-600'; }
+    if (recvUsd) recvUsd.textContent = '$0.00';
+    if (splitEl) splitEl.textContent = '—';
+    if (usdEl)   usdEl.textContent = '$0.00';
+    return;
+  }
+  const label = `${s.solAmt.toFixed(4)} SOL + ${s.usdcAmt.toFixed(2)} USDC`;
+  if (recvA)   { recvA.textContent = label; recvA.className = 'text-lg font-medium text-white'; }
+  if (recvUsd) recvUsd.textContent = '$' + s.totalUsd.toFixed(2);
+  if (splitEl) splitEl.textContent = label;
+  if (usdEl)   usdEl.textContent = '$' + s.totalUsd.toFixed(2);
+}
+
+function updateInvestedDisplay() {
+  const dn = document.getElementById('deposit-net');
+  if (dn) dn.textContent = '$' + investedUsd.toFixed(2);
+  const wb = document.getElementById('withdraw-balance');
+  if (wb) wb.textContent = 'In pool: $' + investedUsd.toFixed(2);
+  const wg = document.getElementById('wd-gross');
+  if (wg) wg.textContent = '$' + investedUsd.toFixed(2);
+}
+
+async function fetchPoolPrice() {
+  try {
+    const pd   = await fetch(`${BYREAL_API}/api/pool-details?poolAddress=${encodeURIComponent(BYREAL_POOL)}`).then(r => r.json());
+    const data = pd?.result?.data;
+    const b = parseFloat(data?.baseMint?.price  || data?.mintA?.price || '0');
+    const q = parseFloat(data?.quoteMint?.price || data?.mintB?.price || '0');
+    if (b && q) {
+      solUsd = b; usdcUsd = q; poolPriceUsdcPerSol = b / q;
+      updateRangeDisplay(); updateSplitDisplay();
+      loaded.price = true; maybeAllLoaded();
+    }
+  } catch (e) { console.warn('[byreal] pool price fetch failed:', e); }
+}
+
+async function fetchWalletBalance() {
+  const pk = connectedPubkey();
+  if (!pk) return;
+  try {
+    const j = await fetch(`${BYREAL_API}/api/balance?address=${pk}`).then(r => r.json());
+    if (j.sol != null) {
+      solBalance = Number(j.sol);
+      const el = document.getElementById('deposit-balance');
+      if (el) el.textContent = 'Balance: ' + solBalance.toFixed(4) + ' SOL';
+      loaded.balance = true; maybeAllLoaded();
+    }
+  } catch (e) { console.warn('[byreal] balance fetch failed:', e); }
+}
+
+async function fetchInvested() {
+  const pk = connectedPubkey();
+  if (!pk) return;
+  try {
+    const body = await fetch(`${BYREAL_API}/api/positions?userAddress=${pk}`).then(r => r.json());
+    const positions = body?.result?.data?.positions ?? [];
+    const mine = positions.filter(p => p.poolAddress === BYREAL_POOL);
+    investedUsd = mine.reduce((sum, p) => sum + (parseFloat(p.liquidityUsd) || 0), 0);
+  } catch (e) {
+    console.warn('[byreal] positions fetch failed:', e);
+    investedUsd = 0;
+  }
+  updateInvestedDisplay();
+  loaded.positions = true; maybeAllLoaded();
+}
+
+function loadByrealData() {
+  fetchPoolPrice();
+  if (connectedPubkey()) { fetchWalletBalance(); fetchInvested(); }
+}
+
 // ─── DEPOSIT CALCULATOR ──────────────────
 document.getElementById('deposit-amount').addEventListener('input', updateDeposit);
 
 function updateDeposit() {
-  const gross = parseFloat(document.getElementById('deposit-amount').value) || 0;
-  const net   = Math.max(0, gross - FLAT_FEE);
-  const acain = net / ACAIN_PRICE;
-  document.getElementById('deposit-usd-val').textContent   = '$' + gross.toFixed(2);
-  document.getElementById('deposit-net').textContent       = '$' + net.toFixed(2);
-  document.getElementById('deposit-acain').textContent     = acain.toFixed(3) + ' aC';
-  document.getElementById('receive-acain-val').textContent = acain.toFixed(3);
-  document.getElementById('receive-usd-val').textContent   = '$' + (acain * ACAIN_PRICE).toFixed(2);
-  document.getElementById('receive-acain-val').className   = acain > 0 ? 'text-2xl font-medium text-white' : 'text-2xl font-medium text-zinc-600';
   const spreadEl = document.getElementById('deposit-lp-width');
   if (spreadEl) spreadEl.textContent = currentSpreadLabel();
+  updateRangeDisplay();
+  updateSplitDisplay();
 }
 
 // ─── WITHDRAW CALCULATOR ─────────────────
@@ -2312,6 +2434,7 @@ window.addEventListener('resize', () => {
 
 fetchPoolData();
 fetchSOL();
+loadByrealData();   // Byreal pool price (+ balance/positions once a wallet is connected)
 
 setInterval(() => { fetchPoolData(); fetchSOL(); }, 30 * 60 * 1000);
 
@@ -2347,6 +2470,7 @@ setInterval(() => { fetchPoolData(); fetchSOL(); }, 30 * 60 * 1000);
       badge.textContent = pill.dataset.spread;
       customInput.value = '';
       customInput.classList.remove('error');
+      if (typeof updateDeposit === 'function') updateDeposit();
     });
   });
 
@@ -2362,6 +2486,7 @@ setInterval(() => { fetchPoolData(); fetchSOL(); }, 30 * 60 * 1000);
     const label = (val % 1 === 0 ? val.toFixed(0) : val.toString().replace(/\.?0+$/, '')) + '%';
     badge.textContent = label;
     customInput.classList.remove('error');
+    if (typeof updateDeposit === 'function') updateDeposit();
   }
 
   customApply.addEventListener('click', applyCustom);
