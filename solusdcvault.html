@@ -453,6 +453,41 @@
     background: rgba(99,102,241,0.18);
     border-color: rgba(99,102,241,0.5);
   }
+  /* ── Open positions list ── */
+  .positions-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; max-height: 440px; overflow-y: auto; }
+  .positions-list .empty-state { text-align: center; color: #52525b; font-size: 13px; padding: 28px 8px; }
+  .position-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 14px;
+  }
+  .position-pair { font-size: 14px; font-weight: 600; color: #fff; }
+  .position-tvl  { font-size: 20px; font-weight: 600; color: #4ade80; margin-top: 2px; }
+  .position-meta { font-size: 11px; color: #a1a1aa; margin-top: 6px; line-height: 1.5; }
+  .position-nft  { font-size: 10px; color: #52525b; margin-top: 6px; word-break: break-all; font-family: ui-monospace, monospace; }
+  .position-close-btn {
+    margin-top: 12px; width: 100%; padding: 9px; border-radius: 10px;
+    background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.35);
+    color: #f87171; font-weight: 600; font-size: 12px; cursor: pointer; transition: all 0.12s;
+  }
+  .position-close-btn:hover:not(:disabled) { background: rgba(239,68,68,0.2); }
+  .position-close-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  /* ── Close-position modal ── */
+  .close-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; }
+  .close-modal { background: #12121a; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 24px; width: 90%; max-width: 380px; position: relative; }
+  .close-modal-x { position: absolute; top: 14px; right: 16px; background: none; border: none; color: #71717a; font-size: 16px; cursor: pointer; }
+  .close-modal-title { font-size: 16px; font-weight: 700; color: #fff; }
+  .close-modal-sub { font-size: 13px; color: #fb923c; font-weight: 600; margin: 2px 0 16px; }
+  .close-options { display: flex; flex-direction: column; gap: 10px; }
+  .close-options button {
+    text-align: left; padding: 13px 14px; border-radius: 12px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+    color: #fff; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.12s;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .close-options button:hover { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.5); }
+  .close-options .opt-sub { font-size: 11px; font-weight: 400; color: #a1a1aa; }
   .spread-pill {
     padding: 7px 4px;
     text-align: center;
@@ -1352,7 +1387,7 @@
             <!-- Deposit / Withdraw tabs -->
             <div class="dtab-wrap">
               <button class="dtab active" data-dtab="deposit">Deposit</button>
-              <button class="dtab" data-dtab="withdraw">Withdraw</button>
+              <button class="dtab" data-dtab="withdraw">My Positions</button>
             </div>
 
             <!-- APY + TVL highlight -->
@@ -1467,43 +1502,15 @@
               <p class="text-[11px] text-zinc-600 text-center mt-3">By depositing you agree to the <a href="/Earnterms.html" class="text-zinc-500 underline">Earn Terms</a>.</p>
             </div>
 
-            <!-- ── WITHDRAW FORM ── -->
+            <!-- ── OPEN POSITIONS (this pool) ── -->
             <div id="withdraw-form" class="hidden">
-              <div class="mb-4">
-                <label class="text-xs text-zinc-500 mb-2 block">aCain to withdraw</label>
-                <div class="token-input-wrap">
-                  <input id="withdraw-amount" class="token-input" placeholder="0.000" type="number" min="0" step="0.001">
-                  <div class="token-badge">
-                    <div class="w-5 h-5 rounded-full bg-zinc-700 flex items-center justify-center text-[9px] font-bold">aC</div>
-                    aCain
-                  </div>
-                </div>
-                <div class="flex justify-between text-xs text-zinc-500 mb-4">
-                  <span id="withdraw-balance">In pool: $0.00</span>
-                  <span id="withdraw-gross-val" class="text-zinc-500">$0.00 gross</span>
-                </div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs text-zinc-500">Your open positions in this pool</span>
+                <button id="positions-refresh" class="text-[11px] text-zinc-400 hover:text-white border border-white/10 rounded px-2 py-1 transition-colors">Refresh</button>
               </div>
-
-              <div class="bg-white/[0.03] border border-white/5 rounded-xl p-4 mb-5 space-y-2">
-                <div class="flex justify-between text-xs text-zinc-500">
-                  <span>Gross value</span><span id="wd-gross" class="text-zinc-300">$0.00</span>
-                </div>
-                <div class="flex justify-between text-xs text-zinc-500">
-                  <span>Performance fee None</span><span id="wd-perf" class="text-zinc-500">−$0.00</span>
-                </div>
-                <div class="flex justify-between text-xs text-zinc-500">
-                  <span>Flat fee</span><span>−$0.20</span>
-                </div>
-                <div class="border-t border-white/5 pt-2 flex justify-between text-xs">
-                  <span class="text-zinc-400">You receive</span>
-                  <span id="wd-net" class="text-white font-medium">$0.00 USDC</span>
-                </div>
-              </div>
-
-              <button id="withdraw-btn" class="w-full action-btn-gradient py-4 rounded-2xl text-white font-bold shadow-lg shadow-black/40">
-                Withdraw USDC
-              </button>
-              <p class="text-[11px] text-zinc-600 text-center mt-3">Avg. redemption: ~30 seconds.</p>
+              <ul id="positions-list" class="positions-list">
+                <li class="empty-state">Connect your wallet to view positions.</li>
+              </ul>
             </div>
 
           </div>
@@ -1515,6 +1522,16 @@
   </main>
   <!-- ══ END MAIN ══ -->
 
+</div>
+
+<!-- CLOSE-POSITION MODAL -->
+<div id="close-overlay" class="close-overlay">
+  <div class="close-modal">
+    <button class="close-modal-x" onclick="hideCloseOptions()">✕</button>
+    <div class="close-modal-title">Close position</div>
+    <div id="close-subtitle" class="close-modal-sub">—</div>
+    <div id="close-options" class="close-options"></div>
+  </div>
 </div>
 
 <!-- TOAST -->
@@ -1605,6 +1622,7 @@ document.querySelectorAll('.dtab').forEach(btn => {
       b.className = b.dataset.dtab === activeDepositTab ? 'dtab active' : 'dtab';
     });
     if (walletAddress) showWalletForms();
+    if (activeDepositTab === 'withdraw') loadPositions();
   });
 });
 
@@ -1736,10 +1754,6 @@ function updateSplitDisplay() {
 function updateInvestedDisplay() {
   const dn = document.getElementById('deposit-net');
   if (dn) dn.textContent = '$' + investedUsd.toFixed(2);
-  const wb = document.getElementById('withdraw-balance');
-  if (wb) wb.textContent = 'In pool: $' + investedUsd.toFixed(2);
-  const wg = document.getElementById('wd-gross');
-  if (wg) wg.textContent = '$' + investedUsd.toFixed(2);
 }
 
 async function fetchPoolPrice() {
@@ -1770,25 +1784,157 @@ async function fetchWalletBalance() {
   } catch (e) { console.warn('[byreal] balance fetch failed:', e); }
 }
 
-async function fetchInvested() {
-  const pk = connectedPubkey();
-  if (!pk) return;
+// ─── OPEN POSITIONS (byreal-style, filtered to this pool) ──────────────
+let positionsIndex  = {};
+let pendingCloseBtn = null;
+
+async function loadPositions() {
+  const list = document.getElementById('positions-list');
+  const pk   = connectedPubkey();
+  if (!pk) { if (list) list.innerHTML = '<li class="empty-state">Connect your wallet to view positions.</li>'; return; }
+  if (list) list.innerHTML = '<li class="empty-state">Loading…</li>';
   try {
     const body = await fetch(`${BYREAL_API}/api/positions?userAddress=${pk}`).then(r => r.json());
-    const positions = body?.result?.data?.positions ?? [];
-    const mine = positions.filter(p => p.poolAddress === BYREAL_POOL);
-    investedUsd = mine.reduce((sum, p) => sum + (parseFloat(p.liquidityUsd) || 0), 0);
+    const data    = body?.result?.data;
+    const poolMap = data?.poolMap ?? {};
+    // Only this page's pool
+    const positions = (data?.positions ?? []).filter(p => p.poolAddress === BYREAL_POOL);
+
+    positionsIndex = {};
+    investedUsd = positions.reduce((s, p) => s + (parseFloat(p.liquidityUsd) || 0), 0);
+    updateInvestedDisplay();
+    loaded.positions = true; maybeAllLoaded();
+
+    if (!positions.length) { if (list) list.innerHTML = '<li class="empty-state">No open positions in this pool.</li>'; return; }
+
+    if (list) list.innerHTML = positions.map(p => {
+      const pool = poolMap[p.poolAddress] || {};
+      const symA = pool.mintA?.symbol || pool.mintA?.mintInfo?.symbol || '?';
+      const symB = pool.mintB?.symbol || pool.mintB?.mintInfo?.symbol || '?';
+      const mintAddrA = pool.mintA?.mintInfo?.address || pool.mintA?.address || null;
+      const mintAddrB = pool.mintB?.mintInfo?.address || pool.mintB?.address || null;
+      const pair = `${symA}/${symB}`;
+      if (p.nftMintAddress) {
+        positionsIndex[p.nftMintAddress] = {
+          pair, mintA: { symbol: symA, address: mintAddrA }, mintB: { symbol: symB, address: mintAddrB },
+        };
+      }
+      const tvl    = p.liquidityUsd != null ? '$' + parseFloat(p.liquidityUsd).toFixed(2) : '—';
+      const apr    = p.apr          != null ? parseFloat(p.apr).toFixed(2) + '%'          : null;
+      const pnl    = p.pnlUsd       != null ? '$' + parseFloat(p.pnlUsd).toFixed(2)       : null;
+      const earned = p.earnedUsd    != null ? '$' + parseFloat(p.earnedUsd).toFixed(2)    : null;
+      const meta = [
+        `Ticks: ${p.lowerTick ?? '—'} → ${p.upperTick ?? '—'}`,
+        apr    && `APR: ${apr}`,
+        pnl    && `PnL: ${pnl}`,
+        earned && `Earned: ${earned}`,
+      ].filter(Boolean).join(' · ');
+      const closeBtn = p.nftMintAddress
+        ? `<button class="position-close-btn" onclick="openCloseOptions('${p.nftMintAddress}', this)">Close Position</button>`
+        : '';
+      return `<li class="position-item">
+        <div class="position-pair">${pair}</div>
+        <div class="position-tvl">${tvl}</div>
+        <div class="position-meta">${meta}</div>
+        <div class="position-nft">NFT: ${p.nftMintAddress ?? '—'}</div>
+        ${closeBtn}
+      </li>`;
+    }).join('');
   } catch (e) {
-    console.warn('[byreal] positions fetch failed:', e);
-    investedUsd = 0;
+    if (list) list.innerHTML = `<li class="empty-state" style="color:#f87171">Failed to load: ${e.message}</li>`;
   }
-  updateInvestedDisplay();
-  loaded.positions = true; maybeAllLoaded();
+}
+
+// Step 1: choose how to receive funds
+function openCloseOptions(nftMint, btnEl) {
+  if (!connectedPubkey()) { showToast('Connect your wallet first', 'red'); return; }
+  const info = positionsIndex[nftMint];
+  if (!info) { showToast('Position data not loaded — refresh', 'red'); return; }
+  pendingCloseBtn = btnEl || null;
+  document.getElementById('close-subtitle').textContent = info.pair;
+  const buttons = [];
+  buttons.push(`<button onclick="executeClose('${nftMint}', false, null, 'both tokens')">Receive both tokens<span class="opt-sub">Withdraw your ${info.pair} liquidity as-is (no swap)</span></button>`);
+  if (info.mintA.address) buttons.push(`<button onclick="executeClose('${nftMint}', true, '${info.mintA.address}', 'all ${info.mintA.symbol.replace(/'/g, '')}')">Receive all as ${info.mintA.symbol}<span class="opt-sub">Auto-swap the other side into ${info.mintA.symbol}</span></button>`);
+  if (info.mintB.address) buttons.push(`<button onclick="executeClose('${nftMint}', true, '${info.mintB.address}', 'all ${info.mintB.symbol.replace(/'/g, '')}')">Receive all as ${info.mintB.symbol}<span class="opt-sub">Auto-swap the other side into ${info.mintB.symbol}</span></button>`);
+  document.getElementById('close-options').innerHTML = buttons.join('');
+  document.getElementById('close-overlay').style.display = 'flex';
+}
+
+function hideCloseOptions() { document.getElementById('close-overlay').style.display = 'none'; }
+
+// Step 2: build → sign → simulate → submit
+async function executeClose(nftMint, autoSwap, outputMint, receiveLabel) {
+  hideCloseOptions();
+  if (!connectedPubkey()) { showToast('Connect your wallet first', 'red'); return; }
+  const info      = positionsIndex[nftMint] || {};
+  const pairLabel = info.pair || 'LP';
+  const btnEl     = pendingCloseBtn;
+  const origText  = btnEl?.textContent;
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Closing…'; }
+  try {
+    showToast('Building close transaction…');
+    const buildData = await fetch(`${BYREAL_API}/api/build-close-tx`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nftMint, walletAddress: connectedPubkey(), autoSwap, outputMint }),
+    }).then(r => r.json());
+    if (!buildData.unsignedTransactions?.length) throw new Error(buildData.error || 'Failed to build close transaction');
+    const { signature } = await signSimulateSubmitVerify(buildData.unsignedTransactions, 'close');
+    showToast(`Closed ${pairLabel} · ${signature.slice(0, 8)}… · received ${receiveLabel}`, 'green');
+    loadPositions();
+    fetchWalletBalance();
+  } catch (e) {
+    const rejected = e?.code === 4001 || /reject|denied|cancel/i.test(String(e?.message || e));
+    showToast(rejected ? 'Transaction cancelled' : ('Failed: ' + (e.message || e)), 'red');
+    if (btnEl) { btnEl.disabled = false; btnEl.textContent = origText || 'Close Position'; }
+  }
+}
+
+// Shared: deserialize → sign → simulate → submit. Returns { signature }.
+async function signSimulateSubmitVerify(unsignedTxsB64, verb) {
+  const web3     = window.solanaWeb3;
+  const provider = window.cainWallet?.provider;
+  if (!web3 || !provider) throw new Error('Wallet / web3 not ready');
+  const txs = unsignedTxsB64.map(b64 => web3.VersionedTransaction.deserialize(b64ToBytes(b64)));
+
+  showToast('Approve in wallet…');
+  let signed;
+  if (typeof provider.signAllTransactions === 'function') {
+    signed = await provider.signAllTransactions(txs);
+  } else {
+    signed = [];
+    for (const t of txs) signed.push(await provider.signTransaction(t));
+  }
+  const b64Txs = signed.map(tx => bytesToB64(tx.serialize()));
+
+  showToast('Simulating…');
+  for (const b64 of b64Txs) {
+    const sim = await fetch(`${BYREAL_API}/api/simulate-tx`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transaction: b64 }),
+    }).then(r => r.json());
+    if (sim.err) {
+      const insufficient = sim.logs?.find(l => l.includes('insufficient lamports'));
+      if (insufficient) throw new Error('Insufficient SOL for account rent — add a little SOL and retry.');
+      throw new Error('Simulation failed: ' + JSON.stringify(sim.err));
+    }
+  }
+
+  showToast('Submitting ' + verb + '…');
+  const sendData = await fetch(`${BYREAL_API}/api/send-tx`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ transactions: b64Txs }),
+  }).then(r => r.json());
+  let sig = sendData.signatures?.[sendData.signatures.length - 1];
+  if (!sig && sendData.error) {
+    try { const raw = JSON.parse(sendData.error); if (raw?.result?.data?.length) sig = raw.result.data[raw.result.data.length - 1]; } catch (_) {}
+  }
+  if (!sig) throw new Error(sendData.error || ('Failed to submit ' + verb + ' transaction'));
+  return { signature: sig };
 }
 
 function loadByrealData() {
   fetchPoolPrice();
-  if (connectedPubkey()) { fetchWalletBalance(); fetchInvested(); }
+  if (connectedPubkey()) { fetchWalletBalance(); loadPositions(); }
 }
 
 // ─── DEPOSIT CALCULATOR ──────────────────
@@ -1799,20 +1945,6 @@ function updateDeposit() {
   if (spreadEl) spreadEl.textContent = currentSpreadLabel();
   updateRangeDisplay();
   updateSplitDisplay();
-}
-
-// ─── WITHDRAW CALCULATOR ─────────────────
-document.getElementById('withdraw-amount').addEventListener('input', updateWithdraw);
-function updateWithdraw() {
-  const acain   = parseFloat(document.getElementById('withdraw-amount').value) || 0;
-  const gross   = acain * ACAIN_PRICE;
-  const profit  = Math.max(0, acain * ACAIN_PRICE - acain * COST_BASIS);
-  const perfFee = profit * PERF_FEE_PCT;
-  const net     = Math.max(0, gross - perfFee - FLAT_FEE);
-  document.getElementById('withdraw-gross-val').textContent = '$' + gross.toFixed(2) + ' gross';
-  document.getElementById('wd-gross').textContent           = '$' + gross.toFixed(2);
-  document.getElementById('wd-perf').textContent            = '−$' + perfFee.toFixed(2);
-  document.getElementById('wd-net').textContent             = '$' + net.toFixed(2) + ' USDC';
 }
 
 // Quick % buttons
@@ -1906,6 +2038,8 @@ async function realDeposit() {
     showToast('Position opened · ' + sig.slice(0, 8) + '… · spread ' + currentSpreadLabel(), 'green');
     document.getElementById('deposit-amount').value = '';
     updateDeposit();
+    loadPositions();
+    fetchWalletBalance();
   } catch (e) {
     const rejected = e?.code === 4001 || /reject|denied|cancel/i.test(String(e?.message || e));
     showToast(rejected ? 'Transaction cancelled' : ('Failed: ' + (e.message || e)), 'red');
@@ -1915,18 +2049,7 @@ async function realDeposit() {
 }
 
 document.getElementById('deposit-btn').addEventListener('click', realDeposit);
-
-document.getElementById('withdraw-btn').addEventListener('click', async () => {
-  const amt = parseFloat(document.getElementById('withdraw-amount').value);
-  if (!amt || amt <= 0) { showToast('Enter aCain amount to withdraw', 'red'); return; }
-  const btn = document.getElementById('withdraw-btn');
-  btn.disabled = true; btn.textContent = 'Building transaction…';
-  await new Promise(r => setTimeout(r, 1400));
-  showToast('Withdrawal submitted · tx: demo5678…', 'green');
-  document.getElementById('withdraw-amount').value = '';
-  updateWithdraw();
-  btn.disabled = false; btn.textContent = 'Withdraw USDC';
-});
+document.getElementById('positions-refresh').addEventListener('click', loadPositions);
 
 // ─── COPY ADDRESS BUTTONS ────────────────
 document.querySelectorAll('.copy-addr-btn').forEach(btn => {
