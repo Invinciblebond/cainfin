@@ -565,8 +565,8 @@
 <script>
 // ─── Config ───────────────────────────────────────────────────────────────────
 // Local dev hits the Node server on :3000. In production (served from Cloudflare),
-// point at the Railway backend URL. Replace BYREAL_API_URL after Railway gives you the HTTPS URL.
-const BYREAL_API_URL = 'https://REPLACE-ME.up.railway.app';
+// point at the Render backend URL.
+const BYREAL_API_URL = 'https://cainfin.onrender.com';
 const SERVER       = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
   ? 'http://localhost:3000'
   : BYREAL_API_URL;
