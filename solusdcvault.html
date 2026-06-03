@@ -11,6 +11,61 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+  <!-- ── Buffer polyfill + Solana web3.js (for Byreal LP deposits) ── -->
+  <script>
+    // Inline Buffer polyfill — web3.js internals need Buffer.from with hex/base64.
+    // Guarded so it won't clobber a Buffer the wallet widget may provide.
+    (function () {
+      if (typeof window.Buffer !== 'undefined' && typeof window.Buffer.from === 'function') return;
+      function Buffer(arg, encodingOrOffset) {
+        if (!(this instanceof Buffer)) return Buffer.from(arg, encodingOrOffset);
+        var u = typeof arg === 'number' ? new Uint8Array(arg) : Buffer.from(arg, encodingOrOffset);
+        Object.setPrototypeOf(u, Buffer.prototype);
+        return u;
+      }
+      Buffer.prototype = Object.create(Uint8Array.prototype);
+      Buffer.prototype._isBuffer = true;
+      Buffer.from = function (value, encoding) {
+        if (typeof value === 'string') {
+          var enc = (encoding || 'utf8').toLowerCase();
+          if (enc === 'hex') {
+            var bytes = new Uint8Array(value.length >>> 1);
+            for (var i = 0; i < bytes.length; i++) bytes[i] = parseInt(value.substr(i * 2, 2), 16);
+            return bytes;
+          }
+          if (enc === 'base64') {
+            var bin = atob(value.replace(/-/g, '+').replace(/_/g, '/'));
+            var out = new Uint8Array(bin.length);
+            for (var j = 0; j < bin.length; j++) out[j] = bin.charCodeAt(j);
+            return out;
+          }
+          return new TextEncoder().encode(value);
+        }
+        if (value instanceof ArrayBuffer) return new Uint8Array(value);
+        if (ArrayBuffer.isView(value)) return new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+        return new Uint8Array(value);
+      };
+      Buffer.alloc = function (size, fill) {
+        var b = new Uint8Array(size);
+        if (fill != null) b.fill(typeof fill === 'string' ? fill.charCodeAt(0) : fill);
+        return b;
+      };
+      Buffer.allocUnsafe = function (size) { return new Uint8Array(size); };
+      Buffer.allocUnsafeSlow = Buffer.allocUnsafe;
+      Buffer.isBuffer = function (o) { return o != null && (o._isBuffer === true || o instanceof Uint8Array); };
+      Buffer.concat = function (list, len) {
+        var total = len || list.reduce(function (a, b) { return a + b.length; }, 0);
+        var out = new Uint8Array(total), offset = 0;
+        list.forEach(function (b) { out.set(b, offset); offset += b.length; });
+        return out;
+      };
+      Buffer.byteLength = function (str, enc) { return Buffer.from(str, enc).length; };
+      window.Buffer = Buffer;
+      globalThis.Buffer = Buffer;
+    })();
+  </script>
+  <script src="https://unpkg.com/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
+
   <!-- ── GLOBAL WALLET ADAPTER STYLES (copied from index.html) ── -->
   <link rel="stylesheet" href="/wallet-widget/dist/wallet-widget.css">
 
@@ -371,6 +426,32 @@
     grid-template-columns: repeat(5, 1fr);
     gap: 5px;
     margin-bottom: 8px;
+  }
+  /* ── Deposit token selector (SOL / USDC) ── */
+  .dep-token-toggle {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .dep-token-pill {
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #71717a;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.12s;
+    font-family: 'Inter', sans-serif;
+  }
+  .dep-token-pill:hover { color: #d4d4d8; background: rgba(255,255,255,0.06); }
+  .dep-token-pill.active {
+    color: #fff;
+    background: rgba(99,102,241,0.18);
+    border-color: rgba(99,102,241,0.5);
   }
   .spread-pill {
     padding: 7px 4px;
@@ -1328,11 +1409,16 @@
                     <button class="quick-pct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10 transition-colors" data-pct="100">Max</button>
                   </div>
                 </div>
+                <!-- ── DEPOSIT TOKEN SELECTOR (SOL or USDC, auto-swapped into the pool) ── -->
+                <div class="dep-token-toggle">
+                  <button type="button" class="dep-token-pill active" data-token="USDC" data-base="MintB">USDC</button>
+                  <button type="button" class="dep-token-pill" data-token="SOL" data-base="MintA">SOL</button>
+                </div>
                 <div class="token-input-wrap">
                   <input id="deposit-amount" class="token-input" placeholder="0.00" type="number" min="0" step="0.01">
                   <div class="token-badge">
-                    <div class="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-[9px] font-bold">$</div>
-                    USDC
+                    <div id="deposit-token-icon" class="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-[9px] font-bold">$</div>
+                    <span id="deposit-token-badge-label">USDC</span>
                   </div>
                 </div>
                 <div class="flex justify-between text-xs text-zinc-500 mb-4">
@@ -1341,24 +1427,7 @@
                 </div>
               </div>
 
-              <!-- ── LP WIDTH SELECTOR (appears after entering a USDC amount) ── -->
-              <div id="lp-width-section">
-                <div class="lp-width-header">
-                  <span class="lp-width-title">Select your LP width</span>
-                  <span class="lp-width-badge" id="lp-width-badge">1%</span>
-                </div>
-                <div class="lp-pills">
-                  <button class="lp-pill active" data-lp="1%">1%</button>
-                  <button class="lp-pill" data-lp="5%">5%</button>
-                  <button class="lp-pill" data-lp="10%">10%</button>
-                  <button class="lp-pill" data-lp="20%">20%</button>
-                </div>
-                <div class="lp-custom-row">
-                  <input class="lp-custom-input" id="lp-custom-input" type="number" min="0.01" max="100" step="0.01" placeholder="Custom %">
-                  <button class="lp-custom-apply" id="lp-custom-apply">Apply</button>
-                </div>
-                <p class="lp-hint">Narrower ranges concentrate liquidity and earn more fees, but require more active management.</p>
-              </div>
+              <!-- LP range is controlled by the Spread selector above. -->
 
               <!-- Fee breakdown -->
               <div class="bg-white/[0.03] border border-white/5 rounded-xl p-4 mb-5 space-y-2">
@@ -1373,7 +1442,7 @@
                   <span id="deposit-acain" class="text-white font-medium">0.000 aC</span>
                 </div>
                 <div class="flex justify-between text-xs text-zinc-500">
-                  <span>LP width</span><span id="deposit-lp-width" class="text-zinc-300">1%</span>
+                  <span>Range spread</span><span id="deposit-lp-width" class="text-zinc-300">1%</span>
                 </div>
               </div>
 
@@ -1457,6 +1526,49 @@ const ACAIN_PRICE  = 1.140;
 const COST_BASIS   = 1.000;
 const FLAT_FEE     = 0.20;
 const PERF_FEE_PCT = 0.30;
+
+// ─── BYREAL LP CONFIG ─────────────────────
+// To repoint this page at a different pool, change BYREAL_POOL on this one line.
+const BYREAL_POOL = '9GTj99g9tbz9U6UYDsX6YeRTgUnkYG6GTnHv3qLa5aXq';
+const BYREAL_API  = 'https://cainfin.onrender.com';
+let   depositBase = 'MintB';   // MintB = USDC, MintA = SOL (single-token auto-swap)
+
+// base64 <-> bytes helpers (for (de)serializing unsigned transactions)
+function b64ToBytes(b64) {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+function bytesToB64(bytes) {
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+
+// Spread selector (the always-visible pills/badge) controls the LP range width.
+function currentSpreadLabel() {
+  return (document.getElementById('spread-badge').textContent || '1%').trim();
+}
+function spreadFraction() {
+  const v = parseFloat(currentSpreadLabel().replace('%', ''));
+  return (!isNaN(v) && v > 0) ? v / 100 : 0.01;
+}
+
+// Deposit token selector (SOL / USDC)
+document.querySelectorAll('.dep-token-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.dep-token-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    depositBase = pill.dataset.base;
+    const sym  = pill.dataset.token;
+    document.getElementById('deposit-token-badge-label').textContent = sym;
+    const icon = document.getElementById('deposit-token-icon');
+    if (sym === 'SOL') { icon.textContent = '◎'; icon.className = 'w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center text-[9px] font-bold'; }
+    else               { icon.textContent = '$'; icon.className = 'w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-[9px] font-bold'; }
+    document.getElementById('deposit-btn').textContent = 'Deposit ' + sym;
+  });
+});
 
 // ─── SIDEBAR (default: collapsed) ────────
 const sidebar = document.getElementById('sidebar');
@@ -1550,66 +1662,8 @@ async function connectViaProvider() {
   setTimeout(() => window.open('https://metamask.io/download/', '_blank'), 800);
 }
 
-// ─── LP WIDTH SELECTOR ────────────────────
-let currentLpWidth = '1%';
-
-(function() {
-  const lpPills      = document.querySelectorAll('.lp-pill');
-  const lpBadge      = document.getElementById('lp-width-badge');
-  const lpCustom     = document.getElementById('lp-custom-input');
-  const lpApply      = document.getElementById('lp-custom-apply');
-  const depositLpEl  = document.getElementById('deposit-lp-width');
-
-  function setLpWidth(val) {
-    currentLpWidth = val;
-    lpBadge.textContent = val;
-    if (depositLpEl) depositLpEl.textContent = val;
-  }
-
-  lpPills.forEach(pill => {
-    pill.addEventListener('click', () => {
-      lpPills.forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      lpCustom.value = '';
-      lpCustom.classList.remove('error');
-      setLpWidth(pill.dataset.lp);
-    });
-  });
-
-  function applyCustomLp() {
-    const raw = lpCustom.value.trim();
-    const val = parseFloat(raw);
-    if (!raw || isNaN(val) || val <= 0 || val > 100) {
-      lpCustom.classList.add('error');
-      setTimeout(() => lpCustom.classList.remove('error'), 1200);
-      return;
-    }
-    lpPills.forEach(p => p.classList.remove('active'));
-    const label = (val % 1 === 0 ? val.toFixed(0) : val.toString().replace(/\.?0+$/, '')) + '%';
-    setLpWidth(label);
-    lpCustom.classList.remove('error');
-  }
-
-  lpApply.addEventListener('click', applyCustomLp);
-  lpCustom.addEventListener('keydown', e => { if (e.key === 'Enter') applyCustomLp(); });
-  lpCustom.addEventListener('input', () => lpCustom.classList.remove('error'));
-})();
-
-function updateLpWidthVisibility() {
-  const amt = parseFloat(document.getElementById('deposit-amount').value) || 0;
-  const section = document.getElementById('lp-width-section');
-  if (amt > 0) {
-    section.classList.add('visible');
-  } else {
-    section.classList.remove('visible');
-  }
-}
-
 // ─── DEPOSIT CALCULATOR ──────────────────
-document.getElementById('deposit-amount').addEventListener('input', () => {
-  updateDeposit();
-  updateLpWidthVisibility();
-});
+document.getElementById('deposit-amount').addEventListener('input', updateDeposit);
 
 function updateDeposit() {
   const gross = parseFloat(document.getElementById('deposit-amount').value) || 0;
@@ -1621,6 +1675,8 @@ function updateDeposit() {
   document.getElementById('receive-acain-val').textContent = acain.toFixed(3);
   document.getElementById('receive-usd-val').textContent   = '$' + (acain * ACAIN_PRICE).toFixed(2);
   document.getElementById('receive-acain-val').className   = acain > 0 ? 'text-2xl font-medium text-white' : 'text-2xl font-medium text-zinc-600';
+  const spreadEl = document.getElementById('deposit-lp-width');
+  if (spreadEl) spreadEl.textContent = currentSpreadLabel();
 }
 
 // ─── WITHDRAW CALCULATOR ─────────────────
@@ -1643,108 +1699,94 @@ document.querySelectorAll('.quick-pct').forEach(btn => {
     const demo = 500;
     document.getElementById('deposit-amount').value = ((demo * parseInt(btn.dataset.pct)) / 100).toFixed(2);
     updateDeposit();
-    updateLpWidthVisibility();
   });
 });
 
-// ─── DEPOSIT / WITHDRAW ACTIONS ──────────
-function lpWidthFraction() {
-  const raw = (currentLpWidth || '1%').replace('%', '').trim();
-  const v = parseFloat(raw);
-  return (!isNaN(v) && v > 0) ? v / 100 : 0.01;
-}
-
-function deriveTicksFromWidth(pool, widthFrac) {
-  const decA = Number(pool.decimalsA ?? 9);
-  const decB = Number(pool.decimalsB ?? 6);
-  const spacing = Number(pool.tickSpacing ?? 1) || 1;
-  const cur = Number(pool.price);
-  const lo = cur * (1 - widthFrac);
-  const hi = cur * (1 + widthFrac);
-  const LOG = Math.log(1.0001);
-  const priceToTick = (p) => Math.log(p * 10 ** (decB - decA)) / LOG;
-  const snap = (t) => Math.round(t / spacing) * spacing;
-  let tickLower = snap(priceToTick(lo));
-  let tickUpper = snap(priceToTick(hi));
-  if (tickLower > tickUpper) { const t = tickLower; tickLower = tickUpper; tickUpper = t; }
-  return { tickLower, tickUpper };
-}
-
+// ─── DEPOSIT ACTION (Byreal LP via Render backend) ──────────
 async function realDeposit() {
   const btn = document.getElementById('deposit-btn');
+  const tokenSym = depositBase === 'MintA' ? 'SOL' : 'USDC';
   const amt = parseFloat(document.getElementById('deposit-amount').value);
-  if (!amt || amt < 0.21) { showToast('Minimum deposit is $0.21', 'red'); return; }
+  if (!amt || amt <= 0) { showToast('Enter an amount to deposit', 'red'); return; }
 
   const w = window.cainWallet;
   const publicKey = w && w.provider && w.provider.publicKey;
-  if (!publicKey) { if (window.connectWallet) window.connectWallet(); return; }
-  if (typeof window.cainBuildZap !== 'function') {
-    showToast('Deposit module not loaded — rebuild the wallet widget', 'red');
-    return;
-  }
+  if (!publicKey) { document.getElementById('connect-card-btn').click(); return; }
+  const owner = publicKey.toString();
+
+  const web3 = window.solanaWeb3;
+  if (!web3 || !web3.VersionedTransaction) { showToast('Solana web3 not loaded — refresh the page', 'red'); return; }
 
   const setBusy = (label) => { btn.disabled = true; btn.textContent = label; };
-  const setIdle = () => { btn.disabled = false; btn.textContent = 'Deposit USDC'; };
+  const setIdle = () => { btn.disabled = false; btn.textContent = 'Deposit ' + tokenSym; };
 
   try {
+    // 1. Current pool price → spread-based range bounds
     setBusy('Fetching pool…');
-    const poolRes = await fetch(`${WORKER_URL}/pool?id=${POOL_ID}`).then(r => r.json());
-    const pool = poolRes.pool;
-    if (!pool || pool.price == null || pool.tickSpacing == null) {
-      showToast('Pool range data unavailable', 'red'); setIdle(); return;
-    }
-    const { tickLower, tickUpper } = deriveTicksFromWidth(pool, lpWidthFraction());
-    const amountUnits = Math.round(amt * 1e6).toString();
+    const pd   = await fetch(`${BYREAL_API}/api/pool-details?poolAddress=${encodeURIComponent(BYREAL_POOL)}`).then(r => r.json());
+    const data = pd?.result?.data;
+    const baseMintPrice  = parseFloat(data?.baseMint?.price  || data?.mintA?.price  || '0');
+    const quoteMintPrice = parseFloat(data?.quoteMint?.price || data?.mintB?.price  || '0');
+    if (!baseMintPrice || !quoteMintPrice) { showToast('Pool price unavailable', 'red'); setIdle(); return; }
+    const currentPrice = baseMintPrice / quoteMintPrice;
+    const frac = spreadFraction();
+    const priceLower = (currentPrice * (1 - frac)).toFixed(6);
+    const priceUpper = (currentPrice * (1 + frac)).toFixed(6);
 
-    const attempt = async () => {
-      setBusy('Building transaction…');
-      const built = await window.cainBuildZap({
-        owner: publicKey.toString(),
-        asset: 'USDC',
-        amount: amountUnits,
-        poolId: POOL_ID,
-        tickLower, tickUpper,
-        slippageBps: '50',
-      });
-
-      setBusy('Approve in wallet…');
-      const signed = await w.provider.signTransaction(built.tx);
-
-      setBusy('Sending…');
-      const sig = await window.cainSendRaw(signed, built.blockhash, built.lastValidBlockHeight);
-
-      await fetch(`${WORKER_URL}/positions`, {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          owner: publicKey.toString(), poolId: POOL_ID,
-          positionMint: built.positionMint, tickLower, tickUpper,
-          sig, feeUsdcUnits: built.feeUsdcUnits, asset: 'USDC',
-          amount: amountUnits, ts: Date.now(),
-        }),
-      }).catch(() => {});
-      return sig;
-    };
-
-    const isExpired = (e) => e?.name === 'TransactionExpiredBlockheightExceededError'
-      || /block height exceeded|blockhash/i.test(String(e?.message || e));
-    const isRejected = (e) => e?.code === 4001 || e?.name === 'WalletSignTransactionError'
-      || /reject|denied|cancel/i.test(String(e?.message || e));
-
-    let sig;
-    try {
-      sig = await attempt();
-    } catch (e) {
-      if (isRejected(e)) { showToast('Transaction cancelled', 'red'); setIdle(); return; }
-      if (isExpired(e)) { showToast('Blockhash expired — retrying…'); sig = await attempt(); }
-      else throw e;
+    // 2. Build unsigned position tx (single-token auto-swap)
+    setBusy('Building transaction…');
+    const buildRes  = await fetch(`${BYREAL_API}/api/build-tx`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        poolAddress: BYREAL_POOL, priceLower, priceUpper, walletAddress: owner,
+        autoSwap: true, base: depositBase, amount: String(amt),
+      }),
+    });
+    const buildData = await buildRes.json();
+    if (!buildRes.ok || !buildData.unsignedTransactions?.length) {
+      const em = buildData.error || 'Failed to build transaction';
+      if (em.includes('40501') || /simulation failed/i.test(em)) {
+        throw new Error("You don't have enough tokens to complete this transaction, please try a smaller amount or deposit more tokens into your wallet.");
+      }
+      throw new Error(em);
     }
 
-    showToast('Position opened · ' + sig.slice(0, 8) + '… · LP width ' + currentLpWidth, 'green');
+    // 3. Deserialize + sign (single tx; NFT-mint signature is already embedded by the backend)
+    setBusy('Approve in wallet…');
+    const tx     = web3.VersionedTransaction.deserialize(b64ToBytes(buildData.unsignedTransactions[0]));
+    const signed = await w.provider.signTransaction(tx);
+    const b64    = bytesToB64(signed.serialize());
+
+    // 4. Simulate
+    setBusy('Simulating…');
+    const sim = await fetch(`${BYREAL_API}/api/simulate-tx`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transaction: b64 }),
+    }).then(r => r.json());
+    if (sim.err) {
+      const insufficient = sim.logs?.find(l => l.includes('insufficient lamports'));
+      if (insufficient) throw new Error('Insufficient SOL for account rent — add a little SOL and retry.');
+      throw new Error('Simulation failed: ' + JSON.stringify(sim.err));
+    }
+
+    // 5. Submit to Byreal
+    setBusy('Submitting…');
+    const sendData = await fetch(`${BYREAL_API}/api/send-tx`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transactions: [b64] }),
+    }).then(r => r.json());
+    let sig = sendData.signatures?.[sendData.signatures.length - 1];
+    if (!sig && sendData.error) {
+      try { const raw = JSON.parse(sendData.error); if (raw?.result?.data?.length) sig = raw.result.data[raw.result.data.length - 1]; } catch (_) {}
+    }
+    if (!sig) throw new Error(sendData.error || 'Failed to submit transaction');
+
+    showToast('Position opened · ' + sig.slice(0, 8) + '… · spread ' + currentSpreadLabel(), 'green');
     document.getElementById('deposit-amount').value = '';
-    document.getElementById('lp-width-section').classList.remove('visible');
     updateDeposit();
   } catch (e) {
-    showToast('Failed: ' + (e.message || e), 'red');
+    const rejected = e?.code === 4001 || /reject|denied|cancel/i.test(String(e?.message || e));
+    showToast(rejected ? 'Transaction cancelled' : ('Failed: ' + (e.message || e)), 'red');
   } finally {
     setIdle();
   }
@@ -1787,7 +1829,7 @@ function showToast(msg, type = '') {
 // PERFORMANCE DASHBOARD
 // ══════════════════════════════════════════════════════════
 
-const POOL_ID    = '9GTj99g9tbz9U6UYDsX6YeRTgUnkYG6GTnHv3qLa5aXq';
+const POOL_ID    = BYREAL_POOL;   // single source of truth — change BYREAL_POOL near the top
 const WORKER_URL = 'https://infofetchworker.doffecul.workers.dev';
 const SOL_WORKER = 'https://tikers.aboodgoudagad.workers.dev/';
 
