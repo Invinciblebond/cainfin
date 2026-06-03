@@ -46,7 +46,7 @@
 
   /* ── Sidebar ── */
   #sidebar {
-    width: 56px;
+    width: 220px;
     transition: width 0.25s ease;
     overflow: hidden;
     flex-shrink: 0;
@@ -55,13 +55,43 @@
     display: flex;
     flex-direction: column;
   }
-  #sidebar.expanded { width: 220px; }
-  #sidebar.expanded .sidebar-label    { display: inline; }
-  #sidebar.expanded .sidebar-wordmark { display: block; }
-  #sidebar.expanded #toggle-icon      { transform: rotate(0deg); }
-  .sidebar-label    { display: none; }
-  .sidebar-wordmark { display: none; }
-  #toggle-icon { transform: rotate(180deg); transition: transform 0.25s; }
+  #sidebar.collapsed { width: 56px; }
+
+  /* Keep every nav row on one line so nothing wraps while collapsing */
+  #sidebar nav a,
+  #sidebar nav button { white-space: nowrap; }
+
+  /* Labels: fade and clip rather than vanish instantly */
+  #sidebar .sidebar-label,
+  #sidebar .sidebar-wordmark {
+    transition: opacity 0.18s ease, max-width 0.25s ease;
+    opacity: 1;
+    max-width: 160px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  #sidebar.collapsed .sidebar-label,
+  #sidebar.collapsed .sidebar-wordmark {
+    opacity: 0;
+    max-width: 0;
+    pointer-events: none;
+  }
+
+  /* Collapsed layout: center the icons in the 56px rail */
+  #sidebar.collapsed .sidebar-inner-pad { padding-left: 0; padding-right: 0; }
+  #sidebar.collapsed nav a,
+  #sidebar.collapsed nav button,
+  #sidebar.collapsed #sidebar-toggle {
+    justify-content: center;
+    gap: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  #sidebar.collapsed .sidebar-inner-pad > .logo-row { justify-content: center; }
+
+  /* Chevron rotates to indicate state */
+  #collapse-icon { transition: transform 0.25s ease; }
+  #sidebar.collapsed #collapse-icon { transform: rotate(180deg); }
 
   /* ── Dropdown ── */
   .dropdown { position:relative; display:inline-block; }
@@ -194,6 +224,136 @@
   .slip-opt.active,.slip-opt:hover { background:rgba(255,255,255,0.1); color:#fff; border-color:rgba(255,255,255,0.18); }
 
   .pairs-label { font-size:10px; color:#333; text-transform:uppercase; letter-spacing:0.1em; margin-top:24px; margin-bottom:10px; width:440px; }
+
+  /* ── Wallet widget button (rendered by React widget into #cain-wallet-root) ── */
+  #wallet-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  #wallet-btn:hover { background: rgba(255,255,255,0.14); }
+
+  /* Connected address dropdown */
+  #wallet-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    min-width: 190px;
+    z-index: 200;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+  }
+  #wallet-dropdown.hidden { display: none; }
+  #wallet-dropdown a {
+    display: block;
+    padding: 11px 16px;
+    font-size: 13px;
+    color: #aaa;
+    text-decoration: none;
+    transition: background 0.12s, color 0.12s;
+  }
+  #wallet-dropdown a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+
+  /* ── Wallet Adapter modal theming ── */
+  .wallet-adapter-modal-overlay {
+    background: rgba(0,0,0,0.7) !important;
+    backdrop-filter: blur(6px);
+  }
+  .wallet-adapter-modal-wrapper {
+    background: #0f0f0f !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.7) !important;
+    font-family: 'Inter', sans-serif !important;
+    padding: 28px 24px 24px !important;
+    max-width: 400px !important;
+    width: calc(100% - 32px) !important;
+    box-sizing: border-box !important;
+  }
+  .wallet-adapter-modal-title {
+    color: #fff !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+    padding: 0 36px !important;
+    margin: 2px 0 22px !important;
+  }
+  .wallet-adapter-modal-list {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+  .wallet-adapter-modal-list li { margin: 0 !important; padding: 0 !important; }
+  .wallet-adapter-modal-list .wallet-adapter-button {
+    width: 100% !important;
+    height: 52px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    padding: 0 18px !important;
+    margin: 0 !important;
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    border-radius: 14px !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #f5f5f5 !important;
+    transition: background .15s, border-color .15s !important;
+  }
+  .wallet-adapter-modal-list .wallet-adapter-button:hover {
+    background: rgba(255,255,255,0.07) !important;
+    border-color: rgba(255,255,255,0.14) !important;
+  }
+  .wallet-adapter-modal-list .wallet-adapter-button-start-icon,
+  .wallet-adapter-modal-list .wallet-adapter-button-start-icon img,
+  .wallet-adapter-modal-list .wallet-adapter-button-start-icon svg {
+    width: 26px !important;
+    height: 26px !important;
+    margin: 0 !important;
+  }
+  .wallet-adapter-modal-list .wallet-adapter-button-end-icon,
+  .wallet-adapter-modal-list .wallet-adapter-button span:last-child:not(:first-child) {
+    margin-left: auto !important;
+  }
+  .wallet-adapter-modal-list-more {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    margin: 16px auto 0 !important;
+    color: #888 !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+  }
+  .wallet-adapter-modal-list-more svg { fill: #888 !important; }
+  .wallet-adapter-modal-button-close {
+    background: rgba(255,255,255,0.05) !important;
+    top: 18px !important;
+    right: 18px !important;
+    padding: 8px !important;
+    border-radius: 10px !important;
+    transition: background .15s !important;
+  }
+  .wallet-adapter-modal-button-close:hover { background: rgba(255,255,255,0.1) !important; }
 </style>
 </head>
 <body class="h-full font-sans">
@@ -217,48 +377,48 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
 <div class="app-shell">
 
 <!-- ══ SIDEBAR ══ -->
-<aside id="sidebar">
-  <div style="padding:16px; display:flex; flex-direction:column; height:100%;">
-    <!-- Logo + toggle row -->
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; min-height:32px;">
-      <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
-        <div style="width:32px; height:32px; background:white; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-          <div style="width:16px; height:16px; background:black; border-radius:4px;"></div>
-        </div>
-        <div class="sidebar-wordmark">
-          <div style="font-size:18px; font-weight:700; letter-spacing:-0.5px; line-height:1;">Cain</div>
-          <div style="font-size:9px; color:#555; text-transform:uppercase; letter-spacing:0.12em;">by Plume</div>
-        </div>
+<aside id="sidebar" style="border-right:1px solid rgba(255,255,255,0.1);">
+  <div class="sidebar-inner-pad" style="padding:16px; display:flex; flex-direction:column; height:100%;">
+    <!-- Logo -->
+    <div class="logo-row" style="display:flex; align-items:center; gap:8px; margin-bottom:40px; min-height:32px;">
+      <div style="width:32px; height:32px; background:white; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <div style="width:16px; height:16px; background:black; border-radius:4px;"></div>
       </div>
-      <button onclick="toggleSidebar()" style="background:none; border:none; cursor:pointer; color:#555; padding:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#555'">
-        <svg id="toggle-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3L5 8l5 5"/></svg>
-      </button>
+      <div class="sidebar-wordmark">
+        <div style="font-size:18px; font-weight:700; letter-spacing:-0.5px; line-height:1;">Cain</div>
+        <div style="font-size:9px; color:#555; text-transform:uppercase; letter-spacing:0.12em;">by Plume</div>
+      </div>
     </div>
 
     <!-- Nav -->
     <nav style="display:flex; flex-direction:column; gap:4px;">
-      <a href="/" style="display:flex; align-items:center; gap:12px; padding:8px; border-radius:10px; color:#555; text-decoration:none; transition:color 0.15s, background 0.15s; white-space:nowrap;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.color='#555'; this.style.background='transparent'">
+      <a href="/" style="display:flex; align-items:center; gap:12px; padding:8px 12px; border-radius:10px; color:#888; text-decoration:none; transition:color 0.15s, background 0.15s; white-space:nowrap;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.color='#888'; this.style.background='transparent'">
         <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
         <span class="sidebar-label">Earn</span>
       </a>
-      <a href="#" style="display:flex; align-items:center; gap:12px; padding:8px; border-radius:10px; background:rgba(255,255,255,0.06); color:#fff; text-decoration:none; white-space:nowrap;">
+      <a href="#" style="display:flex; align-items:center; gap:12px; padding:8px 12px; border-radius:10px; background:rgba(255,255,255,0.06); color:#fff; text-decoration:none; font-weight:500; white-space:nowrap;">
         <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-        <span class="sidebar-label" style="font-weight:600;">Swap</span>
+        <span class="sidebar-label">Swap</span>
       </a>
-      <a href="#" style="display:flex; align-items:center; gap:12px; padding:8px; border-radius:10px; color:#555; text-decoration:none; transition:color 0.15s, background 0.15s; white-space:nowrap;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.color='#555'; this.style.background='transparent'">
+      <a href="#" style="display:flex; align-items:center; gap:12px; padding:8px 12px; border-radius:10px; color:#888; text-decoration:none; transition:color 0.15s, background 0.15s; white-space:nowrap;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.color='#888'; this.style.background='transparent'">
         <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
         <span class="sidebar-label">Portfolio</span>
       </a>
-      <button style="display:flex; align-items:center; gap:12px; padding:8px; border-radius:10px; color:#555; background:none; border:none; cursor:pointer; transition:color 0.15s, background 0.15s; width:100%; text-align:left; font-family:'Inter',sans-serif; white-space:nowrap;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.color='#555'; this.style.background='transparent'">
+      <a href="/faucet" style="display:flex; align-items:center; gap:12px; padding:8px 12px; border-radius:10px; color:#888; text-decoration:none; transition:color 0.15s, background 0.15s; white-space:nowrap;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.color='#888'; this.style.background='transparent'">
+        <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        <span class="sidebar-label">Faucet</span>
+      </a>
+      <button style="display:flex; align-items:center; gap:12px; padding:8px 12px; border-radius:10px; color:#888; background:none; border:none; cursor:pointer; transition:color 0.15s, background 0.15s; width:100%; text-align:left; font-family:'Inter',sans-serif; white-space:nowrap;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.color='#888'; this.style.background='transparent'">
         <svg style="width:20px; height:20px; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
         <span class="sidebar-label">More</span>
       </button>
     </nav>
 
-    <!-- Bottom icon -->
+    <!-- Bottom: collapse toggle -->
     <div style="margin-top:auto; padding-top:16px; border-top:1px solid rgba(255,255,255,0.07);">
-      <button style="background:none; border:none; cursor:pointer; color:#444; padding:8px; display:flex;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#444'">
-        <svg style="width:20px; height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+      <button id="sidebar-toggle" onclick="toggleSidebar()" style="display:flex; align-items:center; gap:12px; padding:8px 12px; border-radius:10px; color:#888; background:none; border:none; cursor:pointer; transition:color 0.15s, background 0.15s; width:100%; font-family:'Inter',sans-serif; white-space:nowrap;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.color='#888'; this.style.background='transparent'">
+        <svg id="collapse-icon" style="width:20px; height:20px; flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        <span class="sidebar-label">Collapse</span>
       </button>
     </div>
   </div>
@@ -606,19 +766,15 @@ function toggleDrawer() {
   const open=d.classList.toggle('open'); b.classList.toggle('drawer-open',open);
 }
 
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('expanded'); }
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
 
 function toggleDropdown() { document.getElementById('community-dropdown').classList.toggle('open'); }
 document.addEventListener('click',e=>{
-  const d=document.querySelector('.dropdown');
-  if(d&&!d.contains(e.target)) document.getElementById('community-dropdown').classList.remove('open');
-  const w=document.querySelector('.wallet-dropdown');
-  if(w&&!w.contains(e.target)) document.getElementById('wallet-menu')?.classList.remove('open');
+  const dropdowns = document.querySelectorAll('.dropdown');
+  let insideCommunity = false;
+  dropdowns.forEach(d => { if(d.contains(e.target) && d.querySelector('#community-dropdown')) insideCommunity = true; });
+  if(!insideCommunity) { const cd = document.getElementById('community-dropdown'); if(cd) cd.classList.remove('open'); }
 });
-
-function toggleWalletMenu() { document.getElementById('wallet-menu').classList.toggle('open'); }
-function setTheme(t,btn) { document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); }
-function toggleAutoClaimUI() { document.getElementById('autoclaim-toggle').classList.toggle('on'); }
 
 updateTokenUI(); filterTokens('');
 </script>
