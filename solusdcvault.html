@@ -861,9 +861,19 @@
         <button class="p-2 text-zinc-400 hover:bg-white/5 rounded-lg transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
         </button>
-        <button class="p-2 text-zinc-400 hover:bg-white/5 rounded-lg transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-        </button>
+        <div class="relative" id="community-dropdown-container">
+          <button id="community-dropdown-btn" class="p-2 text-zinc-400 hover:bg-white/5 rounded-lg transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          </button>
+          <div id="community-dropdown" class="hidden absolute right-0 top-full mt-2 w-48 bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50">
+            <a href="https://github.com/Invinciblebond/cainfin" target="_blank" rel="noopener" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">GitHub</a>
+            <a href="https://discord.gg/FILL_IN" target="_blank" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">Discord</a>
+            <a href="https://reddit.com/r/FILL_IN" target="_blank" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">Reddit</a>
+            <a href="https://t.me/FILL_IN" target="_blank" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">Telegram</a>
+            <a href="https://FILL_IN.com/token" target="_blank" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">Cain Token</a>
+            <a href="mailto:contact@FILL_IN.com" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">Contact</a>
+          </div>
+        </div>
 
         <!-- ══ GLOBAL WALLET: React island (copied from index.html) ══ -->
         <div style="position:relative;">
@@ -951,7 +961,7 @@
                 <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">Strategy</h3>
                 <p class="text-sm text-zinc-400 leading-relaxed">The aCain vault provides on-chain, passive access to concentrated-liquidity fee income from the SOL-USDC trading pair on Solana. Capital is zapped into a byreal CLMM position at the user's chosen LP width, with fees auto-compounded back into the position.</p>
                 <br/>
-                <p class="text-sm text-zinc-400 leading-relaxed">Designed for users who want LP returns without managing positions manually. xStocks and Backed Finance are listed as integration partners powering related tokenized-asset rails; the aCain pool itself trades native SOL against USDC.</p>
+                <p class="text-sm text-zinc-400 leading-relaxed">Designed for users who want LP returns without managing positions manually. The pool is hosted on <a href="https://www.bitget.com" target="_blank" rel="noopener" class="text-zinc-300 hover:text-white transition-colors">Bitget's byreal.io</a> CLMM DEX; the aCain pool trades native SOL against USDC.</p>
               </div>
               <div>
                 <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">Risk Profile</h3>
@@ -973,7 +983,7 @@
                   <tr><td>Asset Class</td><td>Liquidity Pool</td></tr>
                   <tr><td>Pair</td><td>SOL / USDC</td></tr>
                   <tr><td>Chain</td><td>Solana</td></tr>
-                  <tr><td>Partners</td><td>xStocks · Backed Finance</td></tr>
+                  <tr><td>Partners</td><td><a href="https://www.bitget.com" target="_blank" rel="noopener" class="hover:text-white transition-colors">Bitget's byreal.io</a></td></tr>
                 </table>
               </div>
             </div>
@@ -982,11 +992,11 @@
             <div>
               <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Integration Partners</h3>
               <div class="glass-card rounded-2xl p-6 flex items-center gap-5">
-                <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-sm font-bold text-zinc-300 flex-shrink-0">BF</div>
+                <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-sm font-bold text-zinc-300 flex-shrink-0">BR</div>
                 <div class="flex-1">
-                  <p class="text-sm font-semibold text-white mb-1">xStocks · Backed Finance</p>
-                  <p class="text-sm text-zinc-500 leading-relaxed">Backed Finance is a regulated Swiss issuer of tokenized real-world assets, including the xStocks line of on-chain equity tokens on Solana. Listed here as an ecosystem partner — the aCain pool itself is a native SOL/USDC concentrated-liquidity vault. Future strategies may route into xStocks markets.</p>
-                  <a href="https://backed.fi" target="_blank" class="text-xs text-zinc-400 hover:text-white transition-colors mt-2 inline-block">backed.fi ↗</a>
+                  <p class="text-sm font-semibold text-white mb-1">Bitget's byreal.io</p>
+                  <p class="text-sm text-zinc-500 leading-relaxed">byreal.io is the Bitget-backed concentrated-liquidity DEX on Solana that hosts the SOL/USDC CLMM pool this vault deposits into. The aCain pool routes 100% of capital into a byreal CLMM position at your selected spread.</p>
+                  <a href="https://www.bitget.com" target="_blank" rel="noopener" class="text-xs text-zinc-400 hover:text-white transition-colors mt-2 inline-block">bitget.com ↗</a>
                 </div>
               </div>
             </div>
@@ -1367,8 +1377,8 @@
 
             <div class="glass-card rounded-2xl p-6">
               <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3">Ecosystem Partners</h3>
-              <p class="text-sm text-zinc-400 leading-relaxed mb-4">The aCain pool is a native SOL/USDC concentrated-liquidity vault on Solana. <strong class="text-zinc-300">xStocks</strong> and <strong class="text-zinc-300">Backed Finance</strong> are listed as ecosystem partners powering tokenized real-world-asset rails on Solana that may interact with future Cain strategies. Cain Finance is not affiliated with, and does not operate or control, Backed Finance or xStocks.</p>
-              <a href="https://backed.fi" target="_blank" rel="noopener" class="text-xs text-zinc-400 hover:text-white transition-colors inline-flex items-center gap-1">Visit backed.fi ↗</a>
+              <p class="text-sm text-zinc-400 leading-relaxed mb-4">The aCain pool is a native SOL/USDC concentrated-liquidity vault on Solana, built on top of <strong class="text-zinc-300">Bitget's byreal.io</strong> — the Bitget-backed CLMM DEX that hosts the underlying SOL/USDC pool. Cain Finance is not affiliated with, and does not operate or control, Bitget or byreal.io.</p>
+              <a href="https://www.bitget.com" target="_blank" rel="noopener" class="text-xs text-zinc-400 hover:text-white transition-colors inline-flex items-center gap-1">Visit bitget.com ↗</a>
             </div>
 
           </div>
@@ -2574,6 +2584,24 @@ setInterval(() => { fetchPoolData(); fetchSOL(); }, 30 * 60 * 1000);
 
   document.addEventListener('click', (e) => {
     if (!dropdown.contains(e.target) && e.target !== btn) {
+      dropdown.classList.add('hidden');
+    }
+  });
+})();
+
+// ─── COMMUNITY DROPDOWN ──────────────────
+(function() {
+  const btn = document.getElementById('community-dropdown-btn');
+  const dropdown = document.getElementById('community-dropdown');
+  if (!btn || !dropdown) return;
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('hidden');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
       dropdown.classList.add('hidden');
     }
   });
