@@ -8,15 +8,12 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- ══ Wallet + Swap deps (Step 5a) ══ -->
-<!-- ethers + WalletConnect provider (used by wallet.js for EVM) -->
-<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.17.0/dist/index.umd.js"></script>
+<!-- Wallet Adapter widget styles -->
+<link rel="stylesheet" href="/wallet-widget/dist/wallet-widget.css">
 <!-- @solana/web3.js — only for VersionedTransaction deserialize (no RPC) -->
 <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
 <script>window.solanaWeb3 = solanaWeb3;</script>
-<!-- Global wallet manager + swap engine -->
-<script src="/js/wallet.js" defer></script>
+<!-- Swap engine -->
 <script src="/js/swap.js" defer></script>
 
 <script>
@@ -302,57 +299,9 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
       </div>
       <div style="width:1px; height:32px; background:rgba(255,255,255,0.1);"></div>
 
-      <!-- Disconnected — now opens the real Cain wallet modal (Step 5d) -->
-      <div id="wallet-disconnected">
-        <button onclick="window.connectWallet()" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.1); padding:7px 14px; border-radius:12px; font-size:12px; font-weight:600; color:#ccc; cursor:pointer; display:flex; align-items:center; gap:8px; transition:background 0.15s; font-family:'Inter',sans-serif;" onmouseover="this.style.background='rgba(255,255,255,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
-          <svg width="14" height="14" viewBox="0 0 35 33" fill="none">
-            <path d="M32.958 1L19.174 11.03l2.52-5.958L32.958 1z" fill="#E17726" stroke="#E17726" stroke-width=".25"/>
-            <path d="M2.042 1l13.67 10.118-2.396-6.046L2.042 1z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
-            <path d="M28.147 23.533l-3.673 5.628 7.858 2.162 2.254-7.668-6.44-.122z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
-            <path d="M.42 23.655l2.24 7.668 7.845-2.162-3.66-5.628-6.425.122z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
-            <path d="M10.12 14.452l-2.19 3.313 7.806.354-.268-8.396-5.348 4.729z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
-            <path d="M24.88 14.452l-5.415-4.816-.178 8.483 7.793-.354-2.2-3.313z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
-            <path d="M10.505 29.161l4.694-2.285-4.048-3.154-.646 5.44z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
-            <path d="M19.8 26.876l4.707 2.285-.659-5.44-4.048 3.155z" fill="#E27625" stroke="#E27625" stroke-width=".25"/>
-          </svg>
-          Connect Wallet
-        </button>
-      </div>
-
-      <!-- Connected — populated live by swap-page-integration.js -->
-      <div id="wallet-connected" style="display:none;" class="wallet-dropdown">
-        <button class="connected-btn" onclick="toggleWalletMenu()">
-          <div class="wallet-dot"></div>
-          <span class="eth-badge">ETH</span>
-          <span style="font-family:monospace; font-size:12px;">0x0000...0000</span>
-          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#555" stroke-width="2"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>
-        </button>
-        <div id="wallet-menu" class="wallet-menu">
-          <div class="wallet-menu-body">
-            <div class="wallet-addr">0x0000...0000</div>
-            <div class="wallet-bal">—</div>
-            <div class="wallet-change">Live balance from your wallet</div>
-            <div class="wallet-actions">
-              <div class="wallet-action-btn" onclick="window.location.href='/'">Earn</div>
-              <div class="wallet-action-btn">Get USDC</div>
-            </div>
-          </div>
-          <div class="wallet-divider"></div>
-          <div class="wallet-setting-row">
-            <span>Theme</span>
-            <div class="theme-toggle">
-              <button class="theme-btn" onclick="setTheme('light',this)">☀</button>
-              <button class="theme-btn active" onclick="setTheme('dark',this)">☾</button>
-            </div>
-          </div>
-          <div class="wallet-divider"></div>
-          <div class="wallet-setting-row" style="cursor:pointer;" onclick="toggleAutoClaimUI()">
-            <span style="text-decoration:underline; text-decoration-color:#444; text-underline-offset:3px;">Auto-claim redemptions</span>
-            <div class="toggle-switch" id="autoclaim-toggle"><div class="toggle-knob"></div></div>
-          </div>
-          <div class="wallet-divider"></div>
-          <button class="wallet-logout" onclick="window.disconnectWallet()">Logout</button>
-        </div>
+      <!-- ══ WALLET: React (Wallet Adapter) island mounts here ══ -->
+      <div style="position:relative;">
+        <div id="cain-wallet-root"></div>
       </div>
     </div>
   </header>
@@ -674,7 +623,9 @@ function toggleAutoClaimUI() { document.getElementById('autoclaim-toggle').class
 updateTokenUI(); filterTokens('');
 </script>
 
-<!-- Swap integration layer — overrides onAmountChange + doSwap with real Jupiter calls (Step 5a) -->
+<!-- Swap integration layer — overrides onAmountChange + doSwap with real Jupiter calls -->
 <script src="/js/swap-page-integration.js" defer></script>
+<!-- ══ Global wallet manager — Solana Wallet Adapter (matches index.html) ══ -->
+<script src="/wallet-widget/dist/cain-wallet-widget.iife.js" defer></script>
 
 </body></html>.
