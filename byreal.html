@@ -501,7 +501,7 @@
   </div>
 
   <div id="fee-wallet-warn">
-    ⚠ FEE_WALLET is not configured. Replace <code>YOUR_FEE_WALLET_ADDRESS_HERE</code> in index.html before depositing.
+    ⚠ FEE_WALLET is not configured. Replace <code>YOUR_FEE_WALLET_ADDRESS_HERE</code> in byreal.html before depositing.
   </div>
 
   <button id="deposit-btn" disabled onclick="deposit()">Connect wallet to deposit</button>
@@ -704,7 +704,7 @@ function updateAmountLabel() {
 async function deposit() {
   if (!walletPubkey) return showStatus('Connect your wallet first.', 'error');
   if (FEE_WALLET === 'YOUR_FEE_WALLET_ADDRESS_HERE') {
-    return showStatus('FEE_WALLET is not configured in index.html.', 'error');
+    return showStatus('FEE_WALLET is not configured in byreal.html.', 'error');
   }
 
   const pool      = document.getElementById('pool-address').value.trim();
