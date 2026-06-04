@@ -1108,9 +1108,9 @@
               <div class="glass-card rounded-2xl p-6">
                 <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Historical Returns</h3>
                 <table class="metrics-table">
-                  <tr><td>7 Day Return</td><td id="ret-7d">+0.27%</td></tr>
-                  <tr><td>30 Day Return</td><td id="ret-30d">+1.16%</td></tr>
-                  <tr><td>90 Day Return</td><td id="ret-90d">+3.45%</td></tr>
+                  <tr><td>7 Day Return</td><td id="ret-7d">—</td></tr>
+                  <tr><td>30 Day Return</td><td id="ret-30d">—</td></tr>
+                  <tr><td>90 Day Return</td><td id="ret-90d">—</td></tr>
                   <tr><td>Since Inception</td><td id="ret-inception">—</td></tr>
                   <tr><td>Annualized APY</td><td id="ret-apy" style="color:#4ade80;">—</td></tr>
                 </table>
@@ -1274,12 +1274,12 @@
               <div class="glass-card rounded-2xl p-6">
                 <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Vault Parameters</h3>
                 <table class="metrics-table">
-                  <tr><td>Payout schedule</td><td>Continuous (price-based)</td></tr>
+                  <tr><td>Payout schedule</td><td>Immediate · streaming (paid as fees accrue)</td></tr>
                   <tr><td>Yield type</td><td>LP fees, auto-compounded</td></tr>
                   <tr><td>Performance fee</td><td>None</td></tr>
                   <tr><td>Flat tx fee</td><td>$0.20 deposit &amp; withdraw</td></tr>
-                  <tr><td>Avg. redeem time</td><td>~30 sec</td></tr>
-                  <tr><td>Min. deposit</td><td>$0.21 USDC</td></tr>
+                  <tr><td>Avg. redeem time</td><td>Instant</td></tr>
+                  <tr><td>Min. deposit</td><td>$1 USDC</td></tr>
                   <tr><td>Security reviews</td><td>Fully audited</td></tr>
                   <tr><td>Architecture</td><td>Solana · Byreal CLMM</td></tr>
                 </table>
@@ -1288,37 +1288,17 @@
                 <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Smart Contracts</h3>
                 <div class="space-y-4">
                   <div class="flex items-center justify-between py-2 border-b border-white/5">
-                    <span class="text-xs text-zinc-500">Vault Program (Solana)</span>
-                    <div class="flex items-center gap-2">
-                      <span class="text-xs font-mono text-zinc-500">CaiN...9aXp</span>
-                      <button class="copy-addr-btn text-[10px] text-zinc-600 hover:text-zinc-300 transition-colors border border-white/5 px-1.5 py-0.5 rounded" data-addr="CaiNvaultprogramaddress9aXp">Copy</button>
-                    </div>
-                  </div>
-                  <div class="flex items-center justify-between py-2 border-b border-white/5">
-                    <span class="text-xs text-zinc-500">aCain Token Mint</span>
-                    <div class="flex items-center gap-2">
-                      <span class="text-xs font-mono text-zinc-500">aC1n...Mk3z</span>
-                      <button class="copy-addr-btn text-[10px] text-zinc-600 hover:text-zinc-300 transition-colors border border-white/5 px-1.5 py-0.5 rounded" data-addr="aC1ntokenmintMk3z">Copy</button>
-                    </div>
-                  </div>
-                  <div class="flex items-center justify-between py-2 border-b border-white/5">
                     <span class="text-xs text-zinc-500">SOL-USDC Pool (Byreal)</span>
                     <div class="flex items-center gap-2">
                       <span class="text-xs font-mono text-zinc-500">9GTj...5aXq</span>
                       <button class="copy-addr-btn text-[10px] text-zinc-600 hover:text-zinc-300 transition-colors border border-white/5 px-1.5 py-0.5 rounded" data-addr="9GTj99g9tbz9U6UYDsX6YeRTgUnkYG6GTnHv3qLa5aXq">Copy</button>
                     </div>
                   </div>
-                  <div class="flex items-center justify-between py-2 border-b border-white/5">
-                    <span class="text-xs text-zinc-500">Jupiter Router</span>
-                    <div class="flex items-center gap-2">
-                      <span class="text-xs font-mono text-zinc-500">JUP6...AxBt</span>
-                      <button class="copy-addr-btn text-[10px] text-zinc-600 hover:text-zinc-300 transition-colors border border-white/5 px-1.5 py-0.5 rounded" data-addr="JUP6routerAxBt">Copy</button>
-                    </div>
-                  </div>
                   <div class="flex items-center justify-between py-2">
-                    <span class="text-xs text-zinc-500">Supported Chains</span>
-                    <div class="flex gap-1">
-                      <span class="text-[10px] border border-white/10 bg-white/5 px-2 py-0.5 rounded-full text-zinc-400">Solana</span>
+                    <span class="text-xs text-zinc-500">Cain Multisig Treasury</span>
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-mono text-zinc-500">Kd3R...xHwZ</span>
+                      <button class="copy-addr-btn text-[10px] text-zinc-600 hover:text-zinc-300 transition-colors border border-white/5 px-1.5 py-0.5 rounded" data-addr="Kd3Rfno1ja3ABNhWEFDBmb2FEzXPBSiUooopm98xHwZ">Copy</button>
                     </div>
                   </div>
                 </div>
@@ -1551,7 +1531,9 @@
 // ─── CONSTANTS ───────────────────────────
 const ACAIN_PRICE  = 1.140;
 const COST_BASIS   = 1.000;
-const FLAT_FEE     = 0;     // no flat fee for now
+const FLAT_FEE     = 0.20;
+const FEE_WALLET   = 'Kd3Rfno1ja3ABNhWEFDBmb2FEzXPBSiUooopm98xHwZ';
+const FEE_LAMPORTS = 2000000; // 0.002 SOL — matches byreal.html
 const PERF_FEE_PCT = 0.30;
 
 // ─── BYREAL LP CONFIG ─────────────────────
@@ -2015,13 +1997,48 @@ async function realDeposit() {
       throw new Error(em);
     }
 
-    // 3. Deserialize + sign (single tx; NFT-mint signature is already embedded by the backend)
-    setBusy('Approve in wallet…');
-    const tx     = web3.VersionedTransaction.deserialize(b64ToBytes(buildData.unsignedTransactions[0]));
-    const signed = await w.provider.signTransaction(tx);
-    const b64    = bytesToB64(signed.serialize());
+    // 3. Fetch recent blockhash for fee tx
+    setBusy('Fetching blockhash…');
+    const bhData = await fetch(`${BYREAL_API}/api/blockhash`).then(r => r.json());
+    if (!bhData.blockhash) throw new Error(bhData.error || 'Failed to fetch blockhash');
 
-    // 4. Simulate
+    // 4. Build fee transfer VersionedTransaction (0.002 SOL → Cain multisig)
+    const { VersionedTransaction, TransactionMessage, SystemProgram, PublicKey } = web3;
+    const feePayer = new PublicKey(owner);
+    const feeMsg = new TransactionMessage({
+      payerKey:        feePayer,
+      recentBlockhash: bhData.blockhash,
+      instructions: [SystemProgram.transfer({
+        fromPubkey: feePayer,
+        toPubkey:   new PublicKey(FEE_WALLET),
+        lamports:   FEE_LAMPORTS,
+      })],
+    }).compileToV0Message();
+    const feeTx = new VersionedTransaction(feeMsg);
+
+    // 5. Deserialize position tx and sign both with one wallet prompt
+    setBusy('Approve in wallet…');
+    const positionTx = web3.VersionedTransaction.deserialize(b64ToBytes(buildData.unsignedTransactions[0]));
+    let signedFee, signedPosition;
+    if (typeof w.provider.signAllTransactions === 'function') {
+      const signed = await w.provider.signAllTransactions([feeTx, positionTx]);
+      signedFee = signed[0]; signedPosition = signed[1];
+    } else {
+      signedFee      = await w.provider.signTransaction(feeTx);
+      signedPosition = await w.provider.signTransaction(positionTx);
+    }
+    const b64Fee = bytesToB64(signedFee.serialize());
+    const b64    = bytesToB64(signedPosition.serialize());
+
+    // 6. Submit fee tx
+    setBusy('Submitting fee…');
+    const feeRes = await fetch(`${BYREAL_API}/api/send-fee-tx`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transaction: b64Fee }),
+    }).then(r => r.json());
+    if (!feeRes.signature) throw new Error(feeRes.error || 'Failed to submit fee transaction');
+
+    // 7. Simulate position tx
     setBusy('Simulating…');
     const sim = await fetch(`${BYREAL_API}/api/simulate-tx`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -2033,7 +2050,7 @@ async function realDeposit() {
       throw new Error('Simulation failed: ' + JSON.stringify(sim.err));
     }
 
-    // 5. Submit to Byreal
+    // 8. Submit position tx to Byreal
     setBusy('Submitting…');
     const sendData = await fetch(`${BYREAL_API}/api/send-tx`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -2128,6 +2145,24 @@ function applyPoolToUI() {
     document.getElementById('ret-apy'),
   ];
   aprEl.forEach(el => { if (el) { el.textContent = aprDisplay; el.style.color = p.apr ? '#4ade80' : ''; } });
+
+  // Historical returns derived from live APR (daily compounding)
+  const aprNum = p.apr ? Number(p.apr) / 100 : null;
+  const ret = (days) => {
+    if (aprNum == null) return '—';
+    const v = (Math.pow(1 + aprNum / 365, days) - 1) * 100;
+    return (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+  };
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('ret-7d',  ret(7));
+  set('ret-30d', ret(30));
+  set('ret-90d', ret(90));
+  if (aprNum != null) {
+    const apy = (Math.pow(1 + aprNum / 365, 365) - 1) * 100;
+    set('ret-apy', '+' + apy.toFixed(2) + '%');
+    const apyEl = document.getElementById('ret-apy');
+    if (apyEl) apyEl.style.color = '#4ade80';
+  }
 
   const tvlDisplay = fmtUSD(p.tvl);
   [document.getElementById('overview-tvl'), document.getElementById('deposit-tvl')]
