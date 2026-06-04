@@ -1704,7 +1704,7 @@ const loaded = { price: false, balance: false, positions: false, announced: fals
 function maybeAllLoaded() {
   const el = document.getElementById('byreal-load-status');
   if (loaded.price && loaded.balance && loaded.positions) {
-    if (el) { el.textContent = '✓ All info loaded successfully'; el.style.color = '#4ade80'; }
+    if (el) { el.textContent = 'Live info'; el.style.color = '#4ade80'; }
     if (!loaded.announced) { loaded.announced = true; showToast('All info loaded successfully', 'green'); }
   } else if (el) {
     el.textContent = 'Loading pool info…'; el.style.color = '';
