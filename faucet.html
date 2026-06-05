@@ -1628,5 +1628,71 @@ setInterval(syncWalletUI, 800);
      and the connect flow is identical to index.html. -->
 <script src="/wallet-widget/dist/cain-wallet-widget.iife.js" defer></script>
 
+<!-- ── Custom cursor (dot + lagging ring), matches potentialnewlandingpage ── -->
+<style>
+  @media (hover: hover) and (pointer: fine) {
+    body { cursor: none; }
+    body a, body button, body input, body [onclick], body .nav-link { cursor: none; }
+    #cain-cursor {
+      position: fixed; top: 0; left: 0; width: 8px; height: 8px;
+      background: #e4d4a8; border-radius: 50%;
+      pointer-events: none; z-index: 99999;
+      transform: translate(-50%, -50%);
+      transition: width .2s, height .2s, background .2s;
+      mix-blend-mode: screen;
+    }
+    #cain-cursor-ring {
+      position: fixed; top: 0; left: 0; width: 34px; height: 34px;
+      border: 1px solid rgba(200,182,138,0.45); border-radius: 50%;
+      pointer-events: none; z-index: 99998;
+      transform: translate(-50%, -50%);
+      transition: width .3s, height .3s, border-color .3s, background .3s;
+    }
+  }
+  @media (hover: none), (pointer: coarse) { #cain-cursor, #cain-cursor-ring { display: none; } }
+</style>
+<div id="cain-cursor"></div>
+<div id="cain-cursor-ring"></div>
+<script>
+(function () {
+  if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  var dot = document.getElementById('cain-cursor');
+  var ring = document.getElementById('cain-cursor-ring');
+  var mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+  addEventListener('mousemove', function (e) {
+    mx = e.clientX; my = e.clientY;
+    dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+  });
+  (function ring_anim() {
+    rx += (mx - rx) * 0.14; ry += (my - ry) * 0.14;
+    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    requestAnimationFrame(ring_anim);
+  })();
+  function bind(el) {
+    el.addEventListener('mouseenter', function () {
+      dot.style.width = '14px'; dot.style.height = '14px';
+      ring.style.width = '50px'; ring.style.height = '50px';
+      ring.style.borderColor = 'rgba(200,182,138,0.8)';
+      ring.style.background = 'rgba(200,182,138,0.06)';
+    });
+    el.addEventListener('mouseleave', function () {
+      dot.style.width = '8px'; dot.style.height = '8px';
+      ring.style.width = '34px'; ring.style.height = '34px';
+      ring.style.borderColor = 'rgba(200,182,138,0.45)';
+      ring.style.background = 'transparent';
+    });
+  }
+  document.querySelectorAll('a, button, input, [onclick]').forEach(bind);
+  new MutationObserver(function (muts) {
+    muts.forEach(function (m) {
+      m.addedNodes.forEach(function (n) {
+        if (n.nodeType !== 1) return;
+        if (n.matches && n.matches('a, button, input, [onclick]')) bind(n);
+        if (n.querySelectorAll) n.querySelectorAll('a, button, input, [onclick]').forEach(bind);
+      });
+    });
+  }).observe(document.body, { childList: true, subtree: true });
+})();
+</script>
 </body>
 </html>
