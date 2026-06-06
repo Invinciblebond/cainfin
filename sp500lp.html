@@ -949,7 +949,7 @@
             <div>
               <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">About</h3>
               <div class="space-y-4 text-lg leading-relaxed text-zinc-300">
-                <p>The S&amp;P500 LP vault accepts USDC deposits on Solana and zaps 100% of capital into the Bitget-backed byreal CLMM SPYx-USDC pool at a user-selected LP width. Swaps are executed automatically through Jupiter aggregator at best available price.</p>
+                <p>The S&amp;P500 LP vault accepts USDC deposits on Solana and zaps 100% of capital into the Bitget-backed byreal CLMM SPYx-USDC pool at a user-selected LP width.</p>
                 <p>Returns come from trading fees earned on the SPYx-USDC pair and are reflected directly in the S&amp;P500 LP token price rather than distributed as yield — providing passive, compounding exposure to concentrated liquidity returns entirely on-chain. Upon redemption, USDC is returned with no fees.</p>
                 <p>The vault is designed for users who want LP yield without manually managing tick ranges, rebalancing, or fee collection.</p>
               </div>
@@ -995,7 +995,7 @@
                 <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-sm font-bold text-zinc-300 flex-shrink-0">BR</div>
                 <div class="flex-1">
                   <p class="text-sm font-semibold text-white mb-1">Bitget's byreal.io</p>
-                  <p class="text-sm text-zinc-500 leading-relaxed">byreal.io is the Bitget-backed concentrated-liquidity DEX on Solana that hosts the SPYx/USDC CLMM pool this vault deposits into. The S&amp;P500 LP pool routes 100% of capital into a byreal CLMM position at your selected spread.</p>
+                  <p class="text-sm text-zinc-500 leading-relaxed">byreal.io is the Bitget-backed concentrated-liquidity DEX on Solana that hosts the SPYx/USDC CLMM pool this vault deposits into. The S&amp;P500 LP pool routes 100% of capital into a byreal CLMM position at your selected range.</p>
                   <a href="https://www.bitget.com" target="_blank" rel="noopener" class="text-xs text-zinc-400 hover:text-white transition-colors mt-2 inline-block">bitget.com ↗</a>
                 </div>
               </div>
@@ -1079,7 +1079,6 @@
                   </div>
                   <div class="text-right">
                     <div class="text-2xl font-medium text-white" id="sol-price-display">$—</div>
-                    <div class="text-xs mt-1" id="sol-change-display">—</div>
                   </div>
                 </div>
                 <!-- Legend — updated to include fee accrual line -->
@@ -1395,7 +1394,7 @@
             <!-- ── SPREAD SELECTOR (always visible) ── -->
             <div class="spread-section">
               <div class="spread-label-row">
-                <span class="spread-label">Spread</span>
+                <span class="spread-label">Range</span>
                 <span class="spread-selected-badge" id="spread-badge">1%</span>
               </div>
               <div class="spread-pills">
@@ -1427,17 +1426,6 @@
               <div class="mb-4">
                 <div class="flex justify-between items-center mb-2">
                   <label class="text-xs text-zinc-500">You deposit</label>
-                  <div class="flex gap-1">
-                    <button class="quick-pct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10 transition-colors" data-pct="25">25%</button>
-                    <button class="quick-pct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10 transition-colors" data-pct="50">50%</button>
-                    <button class="quick-pct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10 transition-colors" data-pct="75">75%</button>
-                    <button class="quick-pct px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-zinc-400 hover:bg-white/10 transition-colors" data-pct="100">Max</button>
-                  </div>
-                </div>
-                <!-- ── DEPOSIT TOKEN SELECTOR (SOL or USDC, auto-swapped into the pool) ── -->
-                <div class="dep-token-toggle">
-                  <button type="button" class="dep-token-pill active" data-token="USDC" data-base="MintB">USDC</button>
-                  <button type="button" class="dep-token-pill" data-token="SOL" data-base="MintA">SOL</button>
                 </div>
                 <div class="token-input-wrap">
                   <input id="deposit-amount" class="token-input" placeholder="0.00" type="number" min="0" step="0.01">
@@ -1447,12 +1435,12 @@
                   </div>
                 </div>
                 <div class="flex justify-between text-xs text-zinc-500 mb-4">
-                  <span id="deposit-balance">Balance: 0.0000 SOL</span>
+                  <span id="deposit-balance">Balance: 0.00 USDC</span>
                   <span id="deposit-usd-val" class="text-zinc-500">$0.00</span>
                 </div>
               </div>
 
-              <!-- LP range is controlled by the Spread selector above. -->
+              <!-- LP range is controlled by the Range selector above. -->
               <div id="pool-range-display" class="text-[11px] text-zinc-500 mb-3">Pool price: — · Range: —</div>
 
               <!-- Position breakdown -->
@@ -1465,7 +1453,7 @@
                   <span id="deposit-split" class="text-white font-medium">—</span>
                 </div>
                 <div class="flex justify-between text-xs text-zinc-500">
-                  <span>Range spread</span><span id="deposit-lp-width" class="text-zinc-300">1%</span>
+                  <span>Range width</span><span id="deposit-lp-width" class="text-zinc-300">1%</span>
                 </div>
               </div>
 
@@ -1474,7 +1462,7 @@
                 <label class="text-xs text-zinc-500 mb-2 block">You receive (LP position)</label>
                 <div class="token-input-wrap">
                   <div class="flex flex-col">
-                    <span id="receive-acain-val" class="text-lg font-medium text-zinc-600">0.0000 SOL + 0.00 USDC</span>
+                    <span id="receive-acain-val" class="text-lg font-medium text-zinc-600">0.0000 SPYx + 0.00 USDC</span>
                     <span id="receive-usd-val" class="text-xs text-zinc-500">$0.00</span>
                   </div>
                   <div class="token-badge">
@@ -1543,7 +1531,7 @@ const PERF_FEE_PCT = 0.30;
 // To repoint this page at a different pool, change BYREAL_POOL on this one line.
 const BYREAL_POOL = '27x6aSxcAm6SoazoxmmTtFg6fWMQuNmdKJmHagq1DUZy';
 const BYREAL_API  = 'https://cainfin.onrender.com';
-let   depositBase = 'MintB';   // MintB = USDC, MintA = SOL (single-token auto-swap)
+const depositBase = 'MintB';   // SPYx/USDC pool — USDC deposits only
 
 // base64 <-> bytes helpers (for (de)serializing unsigned transactions)
 function b64ToBytes(b64) {
@@ -1567,21 +1555,7 @@ function spreadFraction() {
   return (!isNaN(v) && v > 0) ? v / 100 : 0.01;
 }
 
-// Deposit token selector (SOL / USDC)
-document.querySelectorAll('.dep-token-pill').forEach(pill => {
-  pill.addEventListener('click', () => {
-    document.querySelectorAll('.dep-token-pill').forEach(p => p.classList.remove('active'));
-    pill.classList.add('active');
-    depositBase = pill.dataset.base;
-    const sym  = pill.dataset.token;
-    document.getElementById('deposit-token-badge-label').textContent = sym;
-    const icon = document.getElementById('deposit-token-icon');
-    if (sym === 'SOL') { icon.textContent = '◎'; icon.className = 'w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center text-[9px] font-bold'; }
-    else               { icon.textContent = '$'; icon.className = 'w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-[9px] font-bold'; }
-    document.getElementById('deposit-btn').textContent = 'Deposit ' + sym;
-    updateDeposit();
-  });
-});
+// SPYx/USDC pool — USDC-only deposits, no token selector needed.
 
 // ─── SIDEBAR (default: collapsed) ────────
 const sidebar = document.getElementById('sidebar');
@@ -1942,19 +1916,11 @@ function updateDeposit() {
   updateSplitDisplay();
 }
 
-// Quick % buttons
-document.querySelectorAll('.quick-pct').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const demo = 500;
-    document.getElementById('deposit-amount').value = ((demo * parseInt(btn.dataset.pct)) / 100).toFixed(2);
-    updateDeposit();
-  });
-});
 
 // ─── DEPOSIT ACTION (Byreal LP via Render backend) ──────────
 async function realDeposit() {
   const btn = document.getElementById('deposit-btn');
-  const tokenSym = depositBase === 'MintA' ? 'SOL' : 'USDC';
+  const tokenSym = 'USDC'; // SPYx/USDC pool — USDC only
   const amt = parseFloat(document.getElementById('deposit-amount').value);
   if (!amt || amt <= 0) { showToast('Enter an amount to deposit', 'red'); return; }
 
@@ -2190,14 +2156,8 @@ async function fetchSOL() {
       const last  = _solData[_solData.length - 1];
       const first = _solData[0];
       const priceEl  = document.getElementById('sol-price-display');
-      const changeEl = document.getElementById('sol-change-display');
       const volEl    = document.getElementById('sol-vol');
       if (priceEl) priceEl.textContent = '$' + Number(last.close).toFixed(2);
-      if (changeEl) {
-        const pct = ((last.close - first.close) / first.close) * 100;
-        changeEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '% over window';
-        changeEl.style.color = pct >= 0 ? '#4ade80' : '#f87171';
-      }
       if (volEl && json.volatility_7d_annualised != null) {
         volEl.textContent = `7d volatility (annualised): ${Number(json.volatility_7d_annualised).toFixed(1)}%`;
       }

@@ -1211,6 +1211,23 @@
 
 <!-- ── Custom cursor (dot + lagging ring), matches potentialnewlandingpage ── -->
 <style>
+  /* ── PAGE LOADER ── */
+  #pageLoader {
+    position: fixed; inset: 0; z-index: 10000;
+    background: radial-gradient(ellipse at 50% 40%, rgba(0,255,163,0.07), #060606);
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity .45s ease;
+  }
+  #pageLoader .loader-ring {
+    width: 28px; height: 28px;
+    border: 2px solid rgba(0,255,163,0.15);
+    border-top: 2px solid #00ffa3;
+    border-radius: 50%;
+    animation: loaderSpin .7s linear infinite;
+  }
+  #pageLoader .loader-logo { position: absolute; }
+  @keyframes loaderSpin { to { transform: rotate(360deg); } }
+
   @media (hover: hover) and (pointer: fine) {
     body { cursor: none; }
     body a, body button, body input, body [onclick], body .cursor-pointer { cursor: none; }
@@ -1275,5 +1292,18 @@
     });
   }).observe(document.body, { childList: true, subtree: true });
 })();
+</script>
+
+<div id="pageLoader">
+  <div class="loader-ring"></div>
+  <svg class="loader-logo" viewBox="0 0 16 16" width="18" height="18" style="opacity:.5"><path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" fill="#00ffa3"/></svg>
+</div>
+<script>
+  setTimeout(function () {
+    var l = document.getElementById('pageLoader');
+    if (!l) return;
+    l.style.opacity = '0';
+    setTimeout(function () { l.remove(); }, 450);
+  }, 500);
 </script>
 </body></html>

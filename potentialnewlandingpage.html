@@ -345,6 +345,67 @@
   .feat-name { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 12px; color: var(--text); }
   .feat-desc { font-size: 14px; line-height: 1.7; color: var(--text-2); font-weight: 300; }
 
+  /* ─── DEX ROUTING ─── */
+  .dex-highlight-grid {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: 16px; margin-top: 56px;
+  }
+  .dex-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 38px 30px; text-align: center;
+    transition: border-color .35s, transform .35s;
+  }
+  .dex-card:hover { border-color: rgba(200,182,138,0.3); transform: translateY(-4px); }
+  .dex-metric {
+    font-family: var(--font); font-size: clamp(32px,3.5vw,48px); font-weight: 700;
+    color: var(--gold); letter-spacing: -0.03em; line-height: 1;
+  }
+  .dex-label {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-2); margin: 14px 0 16px;
+  }
+  .dex-detail { font-size: 14px; line-height: 1.7; color: var(--text-3); font-weight: 300; }
+
+  /* ─── MULTI-CHAIN ─── */
+  .multichain-section { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: rgba(10,10,10,0.5); }
+  .multichain-banner {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 24px;
+  }
+  .multichain-live { display: flex; align-items: center; gap: 14px; }
+  .multichain-now { font-family: var(--mono); font-size: 12px; color: var(--green); letter-spacing: 0.1em; text-transform: uppercase; }
+  .multichain-divider { color: var(--text-3); font-size: 18px; }
+  .multichain-coming { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .multichain-coming-label { font-family: var(--mono); font-size: 11px; color: var(--text-3); letter-spacing: 0.1em; text-transform: uppercase; margin-right: 4px; }
+  .chain-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 500; color: var(--text-2);
+    background: var(--bg-pill); border: 1px solid var(--border);
+    padding: 8px 16px; border-radius: 10px;
+    transition: border-color .25s;
+  }
+  .chain-badge:hover { border-color: var(--border-bright); }
+  .chain-sol { color: var(--text); border-color: rgba(20,241,149,0.3); }
+  .chain-live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 8px var(--green); animation: pulse 2s ease-in-out infinite;
+  }
+  .multichain-more { font-size: 13px; color: var(--text-3); font-style: italic; }
+
+  /* ─── FAUCET ─── */
+  .faucet-section { background: linear-gradient(180deg, transparent, rgba(200,182,138,0.03), transparent); }
+  .faucet-chains {
+    display: flex; justify-content: center; gap: 20px; margin-top: 48px; flex-wrap: wrap;
+  }
+  .faucet-chain {
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 28px 36px; min-width: 120px;
+    font-size: 13px; font-weight: 500; color: var(--text-2);
+    transition: border-color .3s, transform .3s;
+  }
+  .faucet-chain:hover { border-color: rgba(200,182,138,0.3); transform: translateY(-3px); }
+
   /* ─── ASSET CLASSES ─── */
   .assets-section { background: linear-gradient(180deg, transparent, rgba(10,10,10,0.4), transparent); }
   .assets-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-top: 56px; }
@@ -486,7 +547,7 @@
   .reveal-3 { transition-delay: .24s; } .reveal-4 { transition-delay: .32s; }
 
   @media (max-width: 1024px) {
-    .features-grid { grid-template-columns: repeat(2,1fr); }
+    .features-grid, .dex-highlight-grid { grid-template-columns: repeat(2,1fr); }
     .assets-grid { grid-template-columns: repeat(2,1fr); }
     .steps-grid { grid-template-columns: repeat(2,1fr); gap: 40px; }
     .steps-grid::before { display: none; }
@@ -498,7 +559,9 @@
     .stats-bar { grid-template-columns: 1fr 1fr; gap: 36px 0; }
     .stat-item:nth-child(2) { border-right: none; }
     .section-inner { padding: 80px 22px; }
-    .features-grid, .assets-grid, .steps-grid { grid-template-columns: 1fr; }
+    .features-grid, .assets-grid, .steps-grid, .dex-highlight-grid { grid-template-columns: 1fr; }
+    .multichain-banner { flex-direction: column; align-items: flex-start; }
+    .faucet-chains { gap: 12px; }
     .footer-grid { grid-template-columns: 1fr 1fr; }
     .nav-sub { display: none; }
     .pool-table thead { display: none; }
@@ -554,18 +617,19 @@
 
 <!-- HERO -->
 <section class="hero" id="hero">
-  <div class="hero-eyebrow"><span class="eyebrow-dot"></span>Real-World Yield · Built on Solana</div>
   <h1 class="hero-title">
     The <span class="grad">Yield Layer</span> for Real-World Assets
   </h1>
+  <p class="hero-subtitle" style="font-family:var(--mono);font-size:clamp(12px,1.4vw,15px);letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;opacity:0;animation:fadeUp .85s .38s forwards;">
+    Liquidity Pool Yield Aggregator for Solana
+  </p>
   <p class="hero-desc">
-    Cain Finance routes capital into <strong>tokenized treasuries, private credit, and on-chain liquidity</strong> — auto-compounding institutional-grade yield, settled at Solana speed.
+    Cain Finance routes capital into <strong>tokenized treasuries, private credit, and on-chain liquidity</strong> auto-compounding institutional-grade yield, settled at Solana speed.
   </p>
   <div class="hero-actions">
     <a href="/index.html" class="btn-primary">Launch App <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     <a href="/solusdcvault.html" class="btn-outline">Explore Vaults</a>
   </div>
-  <div class="hero-trust"><span class="dot"></span>Live on Solana mainnet · Powered by byreal.io CLMM</div>
 </section>
 
 <!-- MARQUEE -->
@@ -646,6 +710,93 @@
         <div class="feat-name">Institutional Rails</div>
         <p class="feat-desc">Built on regulated, audited real-world asset infrastructure — private credit, treasuries and prime-brokerage lending, made composable on-chain.</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEX AGGREGATION -->
+<section id="dex-routing">
+  <div class="section-inner">
+    <div class="section-label reveal">Swap Infrastructure</div>
+    <h2 class="section-title reveal reveal-1">Precision <em>Routing</em> Across 50+ DEXs</h2>
+    <p class="section-sub reveal reveal-2">Cain's intelligent swap engine splits and routes orders across 50+ decentralized exchanges simultaneously — engineered to achieve slippage as low as 0.01%, regardless of trade size.</p>
+
+    <div class="dex-highlight-grid">
+      <div class="dex-card reveal reveal-1">
+        <div class="dex-metric">50+</div>
+        <div class="dex-label">Integrated DEX Sources</div>
+        <p class="dex-detail">Raydium, Orca, Meteora, Jupiter, Lifinity, and more — every major Solana venue in a single route.</p>
+      </div>
+      <div class="dex-card reveal reveal-2">
+        <div class="dex-metric">≤0.01%</div>
+        <div class="dex-label">Target Slippage</div>
+        <p class="dex-detail">Multi-path order splitting minimizes price impact on trades of any size — from micro-swaps to institutional volume.</p>
+      </div>
+      <div class="dex-card reveal reveal-3">
+        <div class="dex-metric">&lt;400ms</div>
+        <div class="dex-label">Execution Latency</div>
+        <p class="dex-detail">Optimized on-chain routing delivers best-price execution at Solana speed — no RFQ delays, no off-chain settlement.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MULTI-CHAIN EXPANSION -->
+<section id="multichain" class="multichain-section">
+  <div class="section-inner" style="padding-top:70px;padding-bottom:70px;">
+    <div class="multichain-banner reveal reveal-1">
+      <div class="multichain-live">
+        <div class="chain-badge chain-sol">
+          <svg viewBox="0 0 397.7 311.7" width="22" height="22" fill="none"><defs><linearGradient id="sol-a" x1="360.88" y1="351.46" x2="141.21" y2="-69.29" gradientUnits="userSpaceOnUse"><stop stop-color="#00FFA3"/><stop offset="1" stop-color="#DC1FFF"/></linearGradient><linearGradient id="sol-b" x1="264.83" y1="401.6" x2="45.16" y2="-19.15" gradientUnits="userSpaceOnUse"><stop stop-color="#00FFA3"/><stop offset="1" stop-color="#DC1FFF"/></linearGradient><linearGradient id="sol-c" x1="312.55" y1="376.69" x2="92.88" y2="-44.06" gradientUnits="userSpaceOnUse"><stop stop-color="#00FFA3"/><stop offset="1" stop-color="#DC1FFF"/></linearGradient></defs><path d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1z" fill="url(#sol-a)"/><path d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1z" fill="url(#sol-b)"/><path d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1z" fill="url(#sol-c)"/></svg>
+          <span>Solana</span>
+          <span class="chain-live-dot"></span>
+        </div>
+        <span class="multichain-divider">·</span>
+        <span class="multichain-now">Live Now</span>
+      </div>
+      <div class="multichain-coming">
+        <span class="multichain-coming-label">Expanding to</span>
+        <div class="chain-badge chain-eth">
+          <svg viewBox="0 0 256 417" width="16" height="16"><path fill="#888882" d="M127.96 0l-2.8 9.5v275.2l2.8 2.8 127.96-75.6z"/><path fill="#aaa" d="M127.96 0L0 211.9l127.96 75.6V0z"/><path fill="#888882" d="M127.96 311.7l-1.6 1.9v98.2l1.6 4.6L256 236.1z"/><path fill="#aaa" d="M127.96 416.4V311.7L0 236.1z"/></svg>
+          <span>Ethereum</span>
+        </div>
+        <div class="chain-badge chain-poly">
+          <svg viewBox="0 0 38.4 33.5" width="16" height="16"><path fill="#8247E5" d="M29 10.2c-.7-.4-1.6-.4-2.4 0l-5.6 3.3-3.8 2.1-5.5 3.3c-.7.4-1.6.4-2.4 0l-4.3-2.6c-.7-.4-1.2-1.2-1.2-2.1v-5c0-.8.4-1.6 1.2-2.1l4.3-2.5c.7-.4 1.6-.4 2.4 0l4.3 2.6c.7.4 1.2 1.2 1.2 2.1v3.3l3.8-2.2V7c0-.8-.4-1.6-1.2-2.1L13.9.3c-.7-.4-1.6-.4-2.4 0L5.2 5C4.4 5.4 4 6.2 4 7v9.7c0 .8.4 1.6 1.2 2.1l6.3 3.7c.7.4 1.6.4 2.4 0l5.5-3.2 3.8-2.2 5.5-3.2c.7-.4 1.6-.4 2.4 0l4.3 2.5c.7.4 1.2 1.2 1.2 2.1v5c0 .8-.4 1.6-1.2 2.1l-4.2 2.5c-.7.4-1.6.4-2.4 0l-4.3-2.5c-.7-.4-1.2-1.2-1.2-2.1v-3.2l-3.8 2.2v3.3c0 .8.4 1.6 1.2 2.1l6.3 3.7c.7.4 1.6.4 2.4 0l6.3-3.7c.7-.4 1.2-1.2 1.2-2.1v-9.8c0-.8-.4-1.6-1.2-2.1z"/></svg>
+          <span>Polygon</span>
+        </div>
+        <span class="multichain-more">& more</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAUCET -->
+<section id="faucet-feature" class="faucet-section">
+  <div class="section-inner" style="padding-top:70px;padding-bottom:90px;">
+    <div class="section-label reveal">Onboarding</div>
+    <h2 class="section-title reveal reveal-1">Start With <em>Zero</em> Risk</h2>
+    <p class="section-sub reveal reveal-2">New to DeFi or just exploring? Claim your complimentary $0.01 daily faucet and test every feature with real tokens — no purchase required.</p>
+
+    <div class="faucet-chains reveal reveal-2">
+      <div class="faucet-chain">
+        <svg viewBox="0 0 397.7 311.7" width="28" height="28" fill="none"><path d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1z" fill="#14F195"/><path d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1z" fill="#9945FF"/><path d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1z" fill="#14F195"/></svg>
+        <span>Solana</span>
+      </div>
+      <div class="faucet-chain">
+        <svg viewBox="0 0 256 417" width="28" height="28"><path fill="#627EEA" d="M127.96 0l-2.8 9.5v275.2l2.8 2.8 127.96-75.6z"/><path fill="#8C9FEA" d="M127.96 0L0 211.9l127.96 75.6V0z"/><path fill="#627EEA" d="M127.96 311.7l-1.6 1.9v98.2l1.6 4.6L256 236.1z"/><path fill="#8C9FEA" d="M127.96 416.4V311.7L0 236.1z"/></svg>
+        <span>Ethereum</span>
+      </div>
+      <div class="faucet-chain">
+        <svg viewBox="0 0 38.4 33.5" width="28" height="28"><path fill="#8247E5" d="M29 10.2c-.7-.4-1.6-.4-2.4 0l-5.6 3.3-3.8 2.1-5.5 3.3c-.7.4-1.6.4-2.4 0l-4.3-2.6c-.7-.4-1.2-1.2-1.2-2.1v-5c0-.8.4-1.6 1.2-2.1l4.3-2.5c.7-.4 1.6-.4 2.4 0l4.3 2.6c.7.4 1.2 1.2 1.2 2.1v3.3l3.8-2.2V7c0-.8-.4-1.6-1.2-2.1L13.9.3c-.7-.4-1.6-.4-2.4 0L5.2 5C4.4 5.4 4 6.2 4 7v9.7c0 .8.4 1.6 1.2 2.1l6.3 3.7c.7.4 1.6.4 2.4 0l5.5-3.2 3.8-2.2 5.5-3.2c.7-.4 1.6-.4 2.4 0l4.3 2.5c.7.4 1.2 1.2 1.2 2.1v5c0 .8-.4 1.6-1.2 2.1l-4.2 2.5c-.7.4-1.6.4-2.4 0l-4.3-2.5c-.7-.4-1.2-1.2-1.2-2.1v-3.2l-3.8 2.2v3.3c0 .8.4 1.6 1.2 2.1l6.3 3.7c.7.4 1.6.4 2.4 0l6.3-3.7c.7-.4 1.2-1.2 1.2-2.1v-9.8c0-.8-.4-1.6-1.2-2.1z"/></svg>
+        <span>Polygon</span>
+      </div>
+      <div class="faucet-chain">
+        <svg viewBox="0 0 200 200" width="28" height="28"><circle cx="100" cy="100" r="100" fill="#000"/><path d="M100 20L60 100l40 20 40-20L100 20zm0 120l-40-20v30l40 50 40-50v-30l-40 20z" fill="#fff"/></svg>
+        <span>Algorand</span>
+      </div>
+    </div>
+    <div class="reveal reveal-3" style="text-align:center;margin-top:36px;">
+      <a href="/faucet.html" class="btn-primary">Claim Daily Faucet <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </div>
   </div>
 </section>
@@ -1018,6 +1169,42 @@ const statsObs = new IntersectionObserver(entries => {
   }
 }, { threshold: 0.5 });
 statsObs.observe(statsBar);
+
+// ─── Page Transition (legal pages) ───
+const transOverlay = document.createElement('div');
+transOverlay.id = 'pageTransition';
+Object.assign(transOverlay.style, {
+  position:'fixed',inset:'0',zIndex:'10000',pointerEvents:'none',
+  background:'radial-gradient(ellipse at 50% 40%, rgba(200,182,138,0.12), #060606)',
+  opacity:'0',transition:'opacity 0.45s ease'
+});
+const spinner = document.createElement('div');
+Object.assign(spinner.style, {
+  position:'absolute',top:'50%',left:'50%',width:'28px',height:'28px',
+  margin:'-14px 0 0 -14px',border:'2px solid rgba(200,182,138,0.15)',
+  borderTop:'2px solid #c8b68a',borderRadius:'50%',
+  animation:'transSpin .7s linear infinite'
+});
+transOverlay.appendChild(spinner);
+const logo = document.createElement('div');
+logo.innerHTML = '<svg viewBox="0 0 16 16" width="18" height="18" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.6"><path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" fill="#c8b68a"/></svg>';
+transOverlay.appendChild(logo.firstChild);
+document.body.appendChild(transOverlay);
+const ss = document.createElement('style');
+ss.textContent = '@keyframes transSpin{to{transform:rotate(360deg)}}';
+document.head.appendChild(ss);
+
+const legalPaths = ['/termsofservice','/termsandconditions','/Riskdisclosurestatement','/BorrowTerms','/Earnterms'];
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href]');
+  if (!a) return;
+  const href = a.getAttribute('href');
+  if (!legalPaths.some(p => href.includes(p))) return;
+  e.preventDefault();
+  transOverlay.style.pointerEvents = 'all';
+  transOverlay.style.opacity = '1';
+  setTimeout(() => { window.location.href = href; }, 450);
+});
 </script>
 </body>
 </html>

@@ -1079,7 +1079,6 @@
                   </div>
                   <div class="text-right">
                     <div class="text-2xl font-medium text-white" id="sol-price-display">$—</div>
-                    <div class="text-xs mt-1" id="sol-change-display">—</div>
                   </div>
                 </div>
                 <!-- Legend — updated to include fee accrual line -->
@@ -2198,14 +2197,8 @@ async function fetchSOL() {
       const last  = _solData[_solData.length - 1];
       const first = _solData[0];
       const priceEl  = document.getElementById('sol-price-display');
-      const changeEl = document.getElementById('sol-change-display');
       const volEl    = document.getElementById('sol-vol');
       if (priceEl) priceEl.textContent = '$' + Number(last.close).toFixed(2);
-      if (changeEl) {
-        const pct = ((last.close - first.close) / first.close) * 100;
-        changeEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '% over window';
-        changeEl.style.color = pct >= 0 ? '#4ade80' : '#f87171';
-      }
       if (volEl && json.volatility_7d_annualised != null) {
         volEl.textContent = `7d volatility (annualised): ${Number(json.volatility_7d_annualised).toFixed(1)}%`;
       }

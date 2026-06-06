@@ -64,6 +64,18 @@
     .footer-bottom-links { display:flex; gap:16px; }
     .footer-bottom-links a { font-size:12px; color:var(--label); text-decoration:none; transition:color .15s; }
     .footer-bottom-links a:hover { color:var(--muted); }
+      #pageLoader{position:fixed;inset:0;z-index:10000;background:radial-gradient(ellipse at 50% 40%,rgba(200,182,138,0.12),#060606);display:flex;align-items:center;justify-content:center;transition:opacity .45s ease;}
+    #pageLoader .loader-ring{width:28px;height:28px;border:2px solid rgba(200,182,138,0.15);border-top:2px solid #c8b68a;border-radius:50%;animation:loaderSpin .7s linear infinite;}
+    @keyframes loaderSpin{to{transform:rotate(360deg);}}
+    #pageLoader .loader-logo{position:absolute;}
+    body{cursor:none;}
+    .cursor{position:fixed;width:8px;height:8px;background:#e4d4a8;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s;mix-blend-mode:screen;}
+    .cursor-ring{position:fixed;width:34px;height:34px;border:1px solid rgba(200,182,138,0.45);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .08s ease,width .3s,height .3s,border-color .3s,background .3s;}
+    @media (hover:none){body{cursor:auto;}.cursor,.cursor-ring{display:none;}}
+    .logo-mark{background:linear-gradient(135deg,#e4d4a8,#c8b68a)!important;box-shadow:0 0 18px rgba(200,182,138,0.35);}
+    .logo-mark-inner{background:#0a0a0a!important;}
+    a{transition:color .2s;}
+    ::selection{background:rgba(200,182,138,0.25);color:#f0ede6;}
   </style>
 </head>
 <body>
@@ -257,5 +269,22 @@
       </div>
     </div>
   </footer>
+
+<div id="pageLoader"><div class="loader-ring"></div><svg class="loader-logo" viewBox="0 0 16 16" width="18" height="18" style="opacity:.6"><path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" fill="#c8b68a"/></svg></div>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<script>
+// Entrance loader
+setTimeout(()=>{const l=document.getElementById("pageLoader");l.style.opacity="0";setTimeout(()=>l.remove(),450);},550);
+// Custom cursor
+const cur=document.getElementById("cursor"),ring=document.getElementById("cursorRing");
+let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my;
+addEventListener("mousemove",e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+"px";cur.style.top=my+"px";});
+(function r(){rx+=(mx-rx)*.14;ry+=(my-ry)*.14;ring.style.left=rx+"px";ring.style.top=ry+"px";requestAnimationFrame(r);})();
+document.querySelectorAll("a,button").forEach(el=>{
+  el.addEventListener("mouseenter",()=>{cur.style.width="14px";cur.style.height="14px";ring.style.width="50px";ring.style.height="50px";ring.style.borderColor="rgba(200,182,138,0.8)";ring.style.background="rgba(200,182,138,0.06)";});
+  el.addEventListener("mouseleave",()=>{cur.style.width="8px";cur.style.height="8px";ring.style.width="34px";ring.style.height="34px";ring.style.borderColor="rgba(200,182,138,0.45)";ring.style.background="transparent";});
+});
+</script>
 </body>
 </html>
