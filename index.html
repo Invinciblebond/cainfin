@@ -562,8 +562,10 @@
     <!-- Logo (toggle moved to the bottom container) -->
     <div class="flex items-center mb-10" style="min-height:32px;">
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-          <div class="w-4 h-4 bg-black rounded-sm"></div>
+        <div class="w-8 h-8 bg-[#c9b87a] rounded-lg flex items-center justify-center flex-shrink-0 cursor-pointer">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" style="transition:transform 0.6s cubic-bezier(0.4,0,0.2,1);" onmouseenter="this.style.transform='rotate(180deg)'" onmouseleave="this.style.transform='rotate(0)'">
+            <polygon points="50,7 89,28.5 89,71.5 50,93 11,71.5 11,28.5" fill="#1a1610"/>
+          </svg>
         </div>
         <div class="sidebar-wordmark">
           <h1 class="text-xl font-bold tracking-tight leading-none">Cain</h1>
@@ -704,31 +706,44 @@
   </header>
 
   <!-- Hero & Metrics -->
-  <section class="cain-content px-8 pt-10 pb-12">
-    <div class="mb-10">
-      <div class="flex items-center gap-1 text-cain-gray-text text-sm mb-2 cursor-pointer select-none">
+  <section class="cain-content px-8 pt-6 pb-8">
+    <div class="mb-6">
+      <div class="flex items-center gap-1 text-cain-gray-text text-xs mb-1 cursor-pointer select-none">
         Your balance
         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
       </div>
-      <h2 id="hero-balance" style="font-size:56px; font-weight:700; letter-spacing:-1.5px; line-height:1; margin-bottom:8px;">$0.00</h2>
-      <p class="text-cain-green text-sm font-medium">+$0.00 (0.00%) in the Last 1M</p>
+      <h2 style="font-size:38px; font-weight:700; letter-spacing:-1px; line-height:1; margin-bottom:4px; display:flex; align-items:center; gap:10px;">
+        <span id="hero-balance">$0.00</span>
+        <span id="balance-spinner" style="display:none; width:16px; height:16px; border:2px solid rgba(255,255,255,0.1); border-top-color:#00ffa3; border-radius:50%; animation:balSpin 0.6s linear infinite;"></span>
+      </h2>
+      <p class="text-cain-green text-xs font-medium">+$0.00 (0.00%) in the Last 1M</p>
     </div>
-    <div class="grid grid-cols-4 gap-8 mb-10 border-t border-white/5 pt-8">
-      <div class="space-y-2">
-        <p style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:0.07em; border-bottom:1px dashed rgba(255,255,255,0.12); padding-bottom:4px; width:fit-content;">Current APY</p>
-        <p class="text-2xl font-semibold">0.00%</p>
+    <div class="grid grid-cols-4 gap-6 mb-6 border-t border-white/5 pt-5">
+      <div class="space-y-1">
+        <p style="font-size:10px; color:#666; text-transform:uppercase; letter-spacing:0.07em; border-bottom:1px dashed rgba(255,255,255,0.12); padding-bottom:3px; width:fit-content;">Current APY</p>
+        <p class="text-lg font-semibold">0.00%</p>
       </div>
-      <div class="space-y-2">
-        <p style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:0.07em; border-bottom:1px dashed rgba(255,255,255,0.12); padding-bottom:4px; width:fit-content;">Total earnings</p>
-        <p class="text-2xl font-semibold">$0.00</p>
+      <div class="space-y-1">
+        <p style="font-size:10px; color:#666; text-transform:uppercase; letter-spacing:0.07em; border-bottom:1px dashed rgba(255,255,255,0.12); padding-bottom:3px; width:fit-content;">Total earnings</p>
+        <p class="text-lg font-semibold">$0.00</p>
       </div>
-      <div class="space-y-2">
-        <p style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:0.07em; border-bottom:1px dashed rgba(255,255,255,0.12); padding-bottom:4px; width:fit-content;">Active redemptions</p>
-        <p class="text-2xl font-semibold">$0.00</p>
+      <div class="space-y-1">
+        <p style="font-size:10px; color:#666; text-transform:uppercase; letter-spacing:0.07em; border-bottom:1px dashed rgba(255,255,255,0.12); padding-bottom:3px; width:fit-content;">Active redemptions</p>
+        <p class="text-lg font-semibold">$0.00</p>
       </div>
-      <div class="space-y-2">
-        <p style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:0.07em; border-bottom:1px dashed rgba(255,255,255,0.12); padding-bottom:4px; width:fit-content;">Available to invest</p>
-        <p id="available-balance" class="text-2xl font-semibold">$0.00</p>
+      <div class="space-y-1" style="position:relative;">
+        <p style="font-size:10px; color:#666; text-transform:uppercase; letter-spacing:0.07em; border-bottom:1px dashed rgba(255,255,255,0.12); padding-bottom:3px; width:fit-content;">Available to invest</p>
+        <p id="available-balance" class="text-lg font-semibold" style="cursor:default;">$0.00</p>
+        <!-- Hover tooltip: stablecoin breakdown -->
+        <div id="invest-tooltip" style="display:none; position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%); background:#1a1a1a; border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px 20px; min-width:260px; z-index:100; box-shadow:0 12px 40px rgba(0,0,0,0.7);">
+          <p style="font-size:13px; color:#999; line-height:1.6;" id="invest-tooltip-text">Stablecoin balance in your wallet that you can invest in Cain vaults.</p>
+          <div id="invest-tooltip-loader" style="display:none; margin-top:10px;">
+            <div style="width:100%; height:2px; background:rgba(255,255,255,0.08); border-radius:1px; overflow:hidden;">
+              <div style="width:40%; height:100%; background:#00ffa3; border-radius:1px; animation:tooltipLoad 0.8s ease-in-out infinite alternate;"></div>
+            </div>
+          </div>
+          <div id="invest-tooltip-tokens" style="margin-top:10px;"></div>
+        </div>
       </div>
     </div>
     <div class="flex items-center gap-3">
@@ -1030,33 +1045,107 @@
 (function () {
   var SOLANA_RPC_URL = window.CAIN_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
 
-  window.fetchSolanaBalance = async function (address) {
-    if (!address) return;
-    try {
-      var res = await fetch(SOLANA_RPC_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getBalance', params: [address] }),
-      });
-      var data = await res.json();
-      var lamports = (data && data.result && data.result.value) || 0;
-      var sol = (lamports / 1e9).toFixed(4);
-      if (window.cainWallet) window.cainWallet.balance = sol;
-      var heroEl = document.getElementById('hero-balance');
-      var availEl = document.getElementById('available-balance');
-      if (heroEl) heroEl.textContent = sol + ' SOL';
-      if (availEl) availEl.textContent = sol + ' SOL';
-    } catch (e) {
-      console.warn('[CainWallet] Solana balance fetch failed:', e);
-    }
-  };
+  // Balance fetching is now handled by fetchWalletTokens via WalletConnect RPC
+  // (parallel SOL + token fetch). This stub keeps the widget call harmless.
+  window.fetchSolanaBalance = function () {};
 
   window.resetCainBalanceUI = function () {
     var heroEl = document.getElementById('hero-balance');
     var availEl = document.getElementById('available-balance');
     if (heroEl) heroEl.textContent = '$0.00';
     if (availEl) availEl.textContent = '$0.00';
+    var tokensEl = document.getElementById('invest-tooltip-tokens');
+    if (tokensEl) tokensEl.innerHTML = '';
+    var sp = document.getElementById('balance-spinner');
+    if (sp) sp.style.display = 'none';
   };
+
+  var WC_RPC = 'https://rpc.walletconnect.org/v1/?chainId=solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp&projectId=1b446d8bfbc011456375ba38db461186';
+  var STABLECOIN_MINTS = {
+    'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v': 'USDC',
+    'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB': 'USDT',
+    'USDH1SM1ojwWUga67PGrgFWUHibbjqMvuMaDkRJTgkX':  'USDH',
+    'USDSwr9ApdHk5bvJKMjzff41FfuEfGVxP2qqAp2Vfsk':  'USDS',
+  };
+
+  function rpcCall(method, params) {
+    return fetch(WC_RPC, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: method, params: params }),
+    }).then(function (r) { return r.json(); });
+  }
+
+  function applyTokenUI(sol, tokens, stableTotal) {
+    if (window.cainWallet) window.cainWallet.balance = sol.toFixed(4);
+    var heroEl = document.getElementById('hero-balance');
+    if (heroEl) heroEl.textContent = sol.toFixed(4) + ' SOL';
+    var availEl = document.getElementById('available-balance');
+    if (availEl) availEl.textContent = '$' + stableTotal.toFixed(2);
+
+    var tokensEl = document.getElementById('invest-tooltip-tokens');
+    if (tokensEl) {
+      if (tokens.length === 0) {
+        tokensEl.innerHTML = '<p style="font-size:12px;color:#555;">No tokens found</p>';
+      } else {
+        tokensEl.innerHTML = tokens.map(function (t) {
+          var val = t.isSol ? t.amount.toFixed(4) + ' SOL' : t.isStable ? '$' + t.amount.toFixed(2) : t.amount.toFixed(4);
+          return '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.05);"><span style="color:#aaa;">' + t.name + '</span><span style="color:#fff;font-weight:600;">' + val + '</span></div>';
+        }).join('');
+      }
+    }
+  }
+
+  window.fetchWalletTokens = async function (address) {
+    if (!address) return;
+    var spinner = document.getElementById('balance-spinner');
+    if (spinner) spinner.style.display = 'inline-block';
+    try {
+      var [balData, tokenData] = await Promise.all([
+        rpcCall('getBalance', [address]),
+        rpcCall('getTokenAccountsByOwner', [address, { programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA' }, { encoding: 'jsonParsed' }]),
+      ]);
+
+      var lamports = (balData && balData.result && balData.result.value) || 0;
+      var sol = lamports / 1e9;
+
+      var accounts = (tokenData && tokenData.result && tokenData.result.value) || [];
+      var tokens = [];
+      if (sol > 0) tokens.push({ name: 'SOL', amount: sol, isSol: true });
+      var stableTotal = 0;
+      accounts.forEach(function (a) {
+        var info = a.account.data.parsed.info;
+        var amt = info.tokenAmount.uiAmount || 0;
+        if (amt <= 0) return;
+        var name = STABLECOIN_MINTS[info.mint] || info.mint.slice(0, 4) + '…' + info.mint.slice(-4);
+        var isStable = !!STABLECOIN_MINTS[info.mint];
+        if (isStable) stableTotal += amt;
+        tokens.push({ name: name, amount: amt, isStable: isStable });
+      });
+
+      applyTokenUI(sol, tokens, stableTotal);
+    } catch (e) {
+      console.warn('[CainWallet] Token fetch failed:', e);
+    } finally {
+      if (spinner) spinner.style.display = 'none';
+    }
+  };
+
+  // Hover tooltip for "Available to invest"
+  (function () {
+    var wrapper = document.getElementById('available-balance');
+    var tooltip = document.getElementById('invest-tooltip');
+    if (!wrapper || !tooltip) return;
+    var parent = wrapper.parentElement;
+    parent.addEventListener('mouseenter', function () { tooltip.style.display = 'block'; });
+    parent.addEventListener('mouseleave', function () { tooltip.style.display = 'none'; });
+  })();
+
+  // Fetch token balances on wallet connect
+  window.addEventListener('cain:connected', function () {
+    var addr = window.cainWallet && window.cainWallet.address;
+    if (addr) window.fetchWalletTokens(addr);
+  });
 
   // Reset the balance UI when the widget reports a disconnect.
   window.addEventListener('cain:disconnected', window.resetCainBalanceUI);
@@ -1248,6 +1337,8 @@
     }
   }
   @media (hover: none), (pointer: coarse) { #cain-cursor, #cain-cursor-ring { display: none; } }
+  @keyframes tooltipLoad { from { transform: translateX(0); } to { transform: translateX(150%); } }
+  @keyframes balSpin { to { transform: rotate(360deg); } }
 </style>
 <div id="cain-cursor"></div>
 <div id="cain-cursor-ring"></div>

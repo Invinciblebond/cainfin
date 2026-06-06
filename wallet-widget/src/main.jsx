@@ -7,7 +7,7 @@
 //      Backpack, OKX, Coinbase, Trust, MetaMask-Solana, etc. via Wallet Standard).
 //   3. Bridge connection state into window.cainWallet so swap.js,
 //      swap-page-integration.js, and the balance fetch keep working unchanged.
-//   4. Log the connected pubkey to the address-logger Worker (once per browser).
+//   4. (Removed — address logger was non-functional.)
 //
 // Build:
 //   npm run build  →  dist/cain-wallet-widget.iife.js + .css
@@ -28,24 +28,9 @@ import '@solana/wallet-adapter-react-ui/styles.css';
 
 // ─── Config ──────────────────────────────────────────────────────────────
 const RPC = window.CAIN_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
-const LOGGER_URL = 'https://address-logger-worker.doffecul.workers.dev/';
-
 // ─── Helpers ───────────────────────────────────────────────────────────────
 function short(addr) {
   return addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '';
-}
-
-// Fire the connected pubkey at the logger Worker exactly once per browser.
-function logAddressOnce(address, walletName) {
-  const key = 'cain_logged_' + address;
-  if (localStorage.getItem(key)) return;
-  fetch(LOGGER_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ address, wallet: walletName || 'unknown' }),
-  })
-    .then(() => localStorage.setItem(key, '1'))
-    .catch(() => {}); // never block UX on logging
 }
 
 // ─── Bridge: push Adapter state into window.cainWallet ─────────────────────
@@ -81,9 +66,6 @@ function useCainBridge() {
 
       // Existing RPC balance fetch (lives in index.html, unchanged logic).
       window.fetchSolanaBalance && window.fetchSolanaBalance(address);
-
-      // Log to Discord via Worker (deduped per browser).
-      logAddressOnce(address, wallet && wallet.adapter && wallet.adapter.name);
 
       window.dispatchEvent(new CustomEvent('cain:connected', { detail: { address } }));
     } else {
