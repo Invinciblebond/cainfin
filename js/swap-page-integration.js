@@ -20,6 +20,80 @@
     else document.addEventListener('DOMContentLoaded', fn);
   }
 
+  // ─── Patch fetchOrder ─────────────────────────────────────────────────
+  // swap.js's fetchOrder has two problems this fixes:
+  // 1. It uses SOLANA_TOKENS (only USDC+SOL) — live registry tokens fail silently.
+  // 2. It treats data.error as fatal, discarding valid outAmount data.
+  //    Jupiter returns error:"Insufficient funds" on valid 200 quotes when
+  //    taker balance is low — the price is real, only the tx build failed.
+  function patchFetchOrder() {
+    const PROXY = 'https://cain-jupiter-proxy.doffecul.workers.dev';
+    let _seq = 0;
+
+    window.cainSwap.fetchOrder = async function(fromSym, toSym, uiAmount, slippagePct) {
+      const fromT = window.fromToken;
+      const toT   = window.toToken;
+
+      if (!fromT?.address || !toT?.address) {
+        return { error: 'unconfigured', message: 'Token missing mint address' };
+      }
+      if (!uiAmount || Number(uiAmount) <= 0) return { error: 'empty' };
+
+      let amount;
+      try {
+        amount = window.cainSwap.toBaseUnits(String(uiAmount), fromT.decimals);
+      } catch(e) {
+        return { error: 'amount', message: String(e.message) };
+      }
+
+      const wallet = window.cainWallet;
+      const taker = (wallet?.ready && wallet.chain === 'solana') ? wallet.address : null;
+
+      const params = new URLSearchParams({
+        inputMint: fromT.address,
+        outputMint: toT.address,
+        amount,
+      });
+      if (taker) params.set('taker', taker);
+      if (slippagePct != null) params.set('slippageBps', String(Math.round(slippagePct * 100)));
+
+      const seq = ++_seq;
+      try {
+        const res = await fetch(PROXY + '/order?' + params);
+        const data = await res.json();
+
+        if (seq !== _seq) return { error: 'stale' };
+
+        if (!data.outAmount) {
+          return { error: 'api', message: data.error || 'No route found' };
+        }
+
+        const outAmount = window.cainSwap.fromBaseUnits(data.outAmount, toT.decimals);
+
+        // Store executable order so execute() can be patched later to use it
+        window.cainSwap._pendingOrder = (data.transaction && data.requestId) ? {
+          transaction: data.transaction,
+          requestId:   data.requestId,
+          fetchedAt:   Date.now(),
+        } : null;
+
+        return {
+          ok:             true,
+          hasTransaction: !!(data.transaction && data.transaction.length > 0),
+          outAmount,
+          router:         data.router,
+          mode:           data.mode,
+          feeBps:         data.feeBps,
+          softError:      data.error || null,
+          raw:            data,
+        };
+      } catch(e) {
+        if (seq !== _seq) return { error: 'stale' };
+        return { error: 'network', message: String(e) };
+      }
+    };
+  }
+
   // ─── Real order-driven amount handler ──────────────────────────────────
   async function onAmountChange() {
     const fromInput = document.getElementById('from-input');
@@ -53,10 +127,8 @@
     cta.textContent = 'Fetching best price…';
     cta.className = 'swap-btn swap-btn-disabled';
 
-    // Debounce typing
     clearTimeout(window.__quoteTimer);
     window.__quoteTimer = setTimeout(async () => {
-      // Pass slippage only if user changed it from default, to keep "ultra" routing
       const slip = (window.slippage != null && window.slippage !== 0.5) ? window.slippage : null;
       const q = await window.cainSwap.fetchOrder(fromSym, toSym, val, slip);
 
@@ -82,31 +154,40 @@
       // Fill output + details
       const out = parseFloat(q.outAmount);
       toInput.value = out.toFixed(4);
-      document.getElementById('to-usd').textContent =
-        '$' + out.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const outUsd = q.raw?.outUsdValue;
+      document.getElementById('to-usd').textContent = outUsd != null
+        ? '$' + outUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : '';
+      const inUsd = q.raw?.inUsdValue;
+      if (inUsd != null) {
+        document.getElementById('from-usd').textContent =
+          '$' + inUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
       document.getElementById('d-rate').textContent =
-        `1 ${fromSym} = ${(out / val).toFixed(4)} ${toSym}`;
-      // Jupiter v2 /order doesn't return priceImpactPct directly; show fee instead
+        '1 ' + fromSym + ' = ' + (out / val).toFixed(4) + ' ' + toSym;
       const impactEl = document.getElementById('d-impact');
       if (impactEl) {
-        impactEl.textContent = q.feeBps != null ? `${(q.feeBps / 100).toFixed(2)}% fee` : '—';
+        impactEl.textContent = q.feeBps != null ? (q.feeBps / 100).toFixed(2) + '% fee' : '—';
         impactEl.style.color = '#4ade80';
       }
       const minEl = document.getElementById('d-min');
-      if (minEl) minEl.textContent = `${out.toFixed(4)} ${toSym}`;
+      if (minEl) minEl.textContent = out.toFixed(4) + ' ' + toSym;
       det.style.display = 'block';
 
       renderRoute(q.router, out);
 
-      // CTA state depends on wallet + whether we got an executable transaction
+      // CTA: wallet state takes priority, then soft errors, then ready-to-swap
       if (!window.cainWallet?.ready || window.cainWallet.chain !== 'solana') {
         cta.textContent = 'Connect wallet to swap';
+        cta.className = 'swap-btn swap-btn-disabled';
+      } else if (q.softError) {
+        cta.textContent = q.softError;
         cta.className = 'swap-btn swap-btn-disabled';
       } else if (!q.hasTransaction) {
         cta.textContent = 'Preparing transaction…';
         cta.className = 'swap-btn swap-btn-disabled';
       } else {
-        cta.textContent = `Swap ${fromSym} → ${toSym}`;
+        cta.textContent = 'Swap ' + fromSym + ' → ' + toSym;
         cta.className = 'swap-btn swap-btn-active';
       }
 
@@ -252,6 +333,8 @@
 
   // ─── Wire overrides ────────────────────────────────────────────────────
   ready(() => {
+    patchFetchOrder();
+
     window.onAmountChange = onAmountChange;
     window.doSwap = doSwap;
 
@@ -262,12 +345,9 @@
     renderHistory();
     syncSwapWalletUI();
 
-    // Re-fetch order periodically so a connected wallet upgrades a price-only
-    // quote into an executable one, and to keep quotes + wallet UI fresh.
+    // Keep wallet UI in sync — does NOT re-fetch prices (only fetches on input change).
     window.__cainSwapObs = setInterval(() => {
       syncSwapWalletUI();
-      const v = document.getElementById('from-input')?.value;
-      if (v && parseFloat(v) > 0) onAmountChange();
     }, 3000);
   });
 })();

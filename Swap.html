@@ -221,6 +221,28 @@
   .tl-full { font-size:11px; color:#555; margin-top:2px; }
 
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Coming soon toast ── */
+  #coming-toast {
+    position: fixed; top: 76px; right: 20px; z-index: 999;
+    background: rgba(18,18,18,0.97); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 11px 16px 14px; min-width: 240px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    animation: toastIn .3s ease;
+    transition: opacity .4s ease, transform .4s ease;
+  }
+  #coming-toast.hide { opacity: 0; transform: translateY(-6px); pointer-events: none; }
+  #coming-toast-text { font-size: 12px; font-weight: 500; color: #e2e2e2; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  #coming-toast-text span.pill {
+    font-size: 9px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
+    background: rgba(200,182,138,0.15); color: #c8b68a; border: 1px solid rgba(200,182,138,0.25);
+    padding: 2px 7px; border-radius: 100px;
+  }
+  #coming-toast-bar-track { height: 2px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
+  #coming-toast-bar { height: 100%; width: 100%; background: linear-gradient(90deg, #c8b68a, #e4d4a8); border-radius: 2px; transform-origin: left; animation: toastBar 7s linear forwards; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes toastBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
   .slip-opt { padding:5px 12px; border-radius:8px; font-size:12px; cursor:pointer; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:#777; transition:all 0.12s; font-family:'Inter',sans-serif; }
   .slip-opt.active,.slip-opt:hover { background:rgba(255,255,255,0.1); color:#fff; border-color:rgba(255,255,255,0.18); }
 
@@ -654,6 +676,15 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
   </div>
 </div>
 
+<!-- Coming soon toast -->
+<div id="coming-toast">
+  <div id="coming-toast-text">
+    <span class="pill">June</span>
+    Cross-chain swaps coming this June!
+  </div>
+  <div id="coming-toast-bar-track"><div id="coming-toast-bar"></div></div>
+</div>
+
 <!-- Token modal -->
 <div class="token-modal" id="token-modal" onclick="if(event.target===this)closeModal()">
   <div class="token-modal-inner">
@@ -678,65 +709,36 @@ const PINNED_TOKENS = [
   { symbol:'SOL',  name:'Solana',   address:'So11111111111111111111111111111111111111112',  decimals:9, bg:'#9945ff', fg:'#fff', letter:'◎' },
 ];
 
-// ── Live token registry — loaded from Jupiter token list API ──
-let LIVE_REGISTRY = [];   // populated on load
-let registryReady = false;
+// ── On-demand token search via Jupiter Search API ──
+const SEARCH_PROXY = 'https://cain-jupiter-proxy.doffecul.workers.dev';
+// Cache search results by query string for this page session
+const _searchCache = new Map();
+// All tokens returned by search this session — used by findToken()
+const _searchSeen = new Map(); // address → token object
 
-const REGISTRY_CACHE_KEY = 'cain_token_registry_v1';
-const REGISTRY_CACHE_TTL = 10 * 60 * 1000; // 10 min
+let _searchTimer = null;
+let _searchSeq = 0;
 
-async function loadTokenRegistry() {
-  const statusEl = document.getElementById('token-registry-status');
-  try {
-    const cached = sessionStorage.getItem(REGISTRY_CACHE_KEY);
-    if (cached) {
-      const { ts, data } = JSON.parse(cached);
-      if (Date.now() - ts < REGISTRY_CACHE_TTL) {
-        LIVE_REGISTRY = data;
-        registryReady = true;
-        if (statusEl) statusEl.style.display = 'none';
-        return;
-      }
-    }
-  } catch(_) {}
-
-  try {
-    if (statusEl) { statusEl.style.display = 'flex'; statusEl.textContent = 'Loading token list…'; }
-    const res = await fetch('https://tokens.jup.ag/tokens?tags=verified');
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    LIVE_REGISTRY = data;
-    registryReady = true;
-    try { sessionStorage.setItem(REGISTRY_CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch(_) {}
-    if (statusEl) statusEl.style.display = 'none';
-  } catch(e) {
-    LIVE_REGISTRY = [];
-    registryReady = true;
-    if (statusEl) { statusEl.textContent = 'Token list unavailable — showing defaults'; }
-    console.warn('[cain] token registry fetch failed:', e);
-  }
+function _normaliseToken(t) {
+  // Jupiter Search API uses `id` for mint and `icon` for logo
+  return {
+    symbol:   t.symbol || '',
+    name:     t.name || t.symbol || '',
+    address:  t.id || t.address || '',
+    decimals: t.decimals ?? 6,
+    logoURI:  t.icon || t.logoURI || '',
+  };
 }
 
-// Merge pinned + live, pinned always first, no duplicates by symbol
-function getTokenList(query) {
-  const q = (query || '').toLowerCase().trim();
-  const pinnedSymbols = new Set(PINNED_TOKENS.map(t => t.symbol.toLowerCase()));
-
-  // Filter pinned
-  const pinned = q
-    ? PINNED_TOKENS.filter(t => t.symbol.toLowerCase().includes(q) || t.name.toLowerCase().includes(q))
-    : PINNED_TOKENS;
-
-  // Filter live (exclude symbols already in pinned)
-  const live = LIVE_REGISTRY
-    .filter(t => {
-      if (pinnedSymbols.has(t.symbol.toLowerCase())) return false;
-      if (!q) return true;
-      return t.symbol.toLowerCase().includes(q) || t.name.toLowerCase().includes(q);
-    })
-    .slice(0, 80); // cap at 80 to keep DOM lean
-
-  return { pinned, live };
+async function _fetchSearch(query) {
+  if (_searchCache.has(query)) return _searchCache.get(query);
+  const res = await fetch(`${SEARCH_PROXY}/search?query=${encodeURIComponent(query)}`);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const raw = await res.json();
+  const tokens = (Array.isArray(raw) ? raw : (raw.tokens || [])).map(_normaliseToken).slice(0, 20);
+  tokens.forEach(t => { if (t.address) _searchSeen.set(t.address, t); });
+  _searchCache.set(query, tokens);
+  return tokens;
 }
 
 // ── Render a token icon: real logo if available, letter fallback ──
@@ -862,17 +864,15 @@ function renderTokenRow(t) {
   </div>`;
 }
 
-function filterTokens(q) {
+function _renderTokenList(pinned, live, q) {
   const list = document.getElementById('token-list');
-  const { pinned, live } = getTokenList(q);
-
   let html = '';
   if (pinned.length) {
-    if (!q) html += `<div style="font-size:10px;color:#333;text-transform:uppercase;letter-spacing:0.1em;padding:6px 12px 4px;">Cain Tokens</div>`;
+    if (!q) html += `<div style="font-size:10px;color:#333;text-transform:uppercase;letter-spacing:0.1em;padding:6px 12px 4px;">Popular</div>`;
     html += pinned.map(renderTokenRow).join('');
   }
   if (live.length) {
-    if (!q && pinned.length) html += `<div style="font-size:10px;color:#333;text-transform:uppercase;letter-spacing:0.1em;padding:10px 12px 4px;">All Tokens</div>`;
+    if (pinned.length) html += `<div style="font-size:10px;color:#333;text-transform:uppercase;letter-spacing:0.1em;padding:10px 12px 4px;">Results</div>`;
     html += live.map(renderTokenRow).join('');
   }
   if (!pinned.length && !live.length) {
@@ -881,12 +881,52 @@ function filterTokens(q) {
   list.innerHTML = html;
 }
 
-// Token lookup by address or symbol (handles both pinned and live)
+function filterTokens(q) {
+  const query = (q || '').trim();
+  const statusEl = document.getElementById('token-registry-status');
+  clearTimeout(_searchTimer);
+
+  if (!query) {
+    if (statusEl) statusEl.style.display = 'none';
+    _renderTokenList(PINNED_TOKENS, [], '');
+    return;
+  }
+
+  // Show pinned matches immediately while waiting for network
+  const pinnedMatch = PINNED_TOKENS.filter(t =>
+    t.symbol.toLowerCase().includes(query.toLowerCase()) ||
+    t.name.toLowerCase().includes(query.toLowerCase())
+  );
+  _renderTokenList(pinnedMatch, [], query);
+
+  if (statusEl) { statusEl.style.display = 'flex'; statusEl.querySelector('span:last-child').textContent = 'Searching…'; }
+
+  const seq = ++_searchSeq;
+  _searchTimer = setTimeout(async () => {
+    try {
+      const results = await _fetchSearch(query);
+      if (seq !== _searchSeq) return;
+      const pinnedAddrs = new Set(PINNED_TOKENS.map(t => t.address));
+      const live = results.filter(t => !pinnedAddrs.has(t.address));
+      if (statusEl) statusEl.style.display = 'none';
+      _renderTokenList(pinnedMatch, live, query);
+    } catch(e) {
+      if (seq !== _searchSeq) return;
+      if (statusEl) statusEl.style.display = 'none';
+      console.warn('[cain] token search failed:', e);
+    }
+  }, 300);
+}
+
 function findToken(addrOrSym) {
   const pinned = PINNED_TOKENS.find(t => t.address === addrOrSym || t.symbol === addrOrSym);
   if (pinned) return pinned;
-  const live = LIVE_REGISTRY.find(t => t.address === addrOrSym || t.symbol === addrOrSym);
-  return live || null;
+  // Check all tokens seen via search this session
+  if (_searchSeen.has(addrOrSym)) return _searchSeen.get(addrOrSym);
+  for (const t of _searchSeen.values()) {
+    if (t.symbol === addrOrSym) return t;
+  }
+  return null;
 }
 
 function selectToken(addrOrSym) {
@@ -918,7 +958,16 @@ document.addEventListener('click',e=>{
 });
 
 updateTokenUI();
-loadTokenRegistry().then(() => filterTokens(''));
+filterTokens('');
+
+// Coming soon toast — dismiss after 2s
+setTimeout(() => {
+  const t = document.getElementById('coming-toast');
+  if (t) {
+    t.classList.add('hide');
+    setTimeout(() => t.remove(), 400);
+  }
+}, 7000);
 </script>
 
 <!-- Swap integration layer — overrides onAmountChange + doSwap with real Jupiter calls -->
