@@ -220,6 +220,7 @@
   .tl-name { font-size:14px; font-weight:600; color:#e2e2e2; }
   .tl-full { font-size:11px; color:#555; margin-top:2px; }
 
+  @keyframes spin { to { transform: rotate(360deg); } }
   .slip-opt { padding:5px 12px; border-radius:8px; font-size:12px; cursor:pointer; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:#777; transition:all 0.12s; font-family:'Inter',sans-serif; }
   .slip-opt.active,.slip-opt:hover { background:rgba(255,255,255,0.1); color:#fff; border-color:rgba(255,255,255,0.18); }
 
@@ -661,26 +662,124 @@ referrerPolicy="no-referrer-when-downgrade"></a></div></noscript>
       <button onclick="closeModal()" style="color:#555; background:none; border:none; cursor:pointer; font-size:20px; line-height:1;">✕</button>
     </div>
     <input class="token-search" id="token-search" placeholder="Search name or symbol…" oninput="filterTokens(this.value)">
+    <div id="token-registry-status" style="display:none;align-items:center;gap:8px;font-size:11px;color:#555;padding:4px 2px;">
+      <span style="display:inline-block;width:10px;height:10px;border:1px solid #444;border-top-color:#888;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;"></span>
+      <span>Loading token list…</span>
+    </div>
     <div class="token-list" id="token-list"></div>
   </div>
 </div>
 
 <script>
-const TOKENS = [
-  { symbol:'USDC',    name:'USD Coin',                         bg:'#2563eb', fg:'#fff',    letter:'U' },
-  { symbol:'SOL',     name:'Solana',                           bg:'#9945ff', fg:'#fff',    letter:'◎' },
-  { symbol:'nALPHA',  name:'Alpha — Diversified Index',        bg:'#132040', fg:'#5b9bd5', letter:'α' },
-  { symbol:'nOPAL',   name:'BlackOpal LiquidStone II',         bg:'#252525', fg:'#999',    letter:'◈' },
-  { symbol:'nBASIS',  name:'Basis — Crypto Basis',             bg:'#16184a', fg:'#818cf8', letter:'B' },
-  { symbol:'nTBILL',  name:'Treasury — US Treasuries',         bg:'#122212', fg:'#4ade80', letter:'T' },
-  { symbol:'nWISDOM', name:'WisdomTree CRDYX',                 bg:'#0c2233', fg:'#38bdf8', letter:'W' },
-  { symbol:'nCREDIT', name:'Credit — Private Credit',          bg:'#2a1212', fg:'#f87171', letter:'C' },
-  { symbol:'nFALCON', name:'FalconX Overcollateralized Loans', bg:'#10103a', fg:'#a78bfa', letter:'X' },
-  { symbol:'nACRDX',  name:'ACRDX — Private Credit',           bg:'#122212', fg:'#4ade80', letter:'A' },
+// ── Pinned tokens — always pinned at top of list regardless of search ──
+// Vault tokens (nALPHA, nOPAL, etc.) removed until real mints are available.
+const PINNED_TOKENS = [
+  { symbol:'USDC', name:'USD Coin', address:'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', decimals:6, bg:'#2563eb', fg:'#fff', letter:'U' },
+  { symbol:'SOL',  name:'Solana',   address:'So11111111111111111111111111111111111111112',  decimals:9, bg:'#9945ff', fg:'#fff', letter:'◎' },
 ];
 
-// State (Step 5b: mirrored onto window so swap-page-integration.js can read it)
-let fromToken = TOKENS[0], toToken = TOKENS[2], modalTarget = 'from', slippage = 0.5;
+// ── Live token registry — loaded from Jupiter token list API ──
+let LIVE_REGISTRY = [];   // populated on load
+let registryReady = false;
+
+const REGISTRY_CACHE_KEY = 'cain_token_registry_v1';
+const REGISTRY_CACHE_TTL = 10 * 60 * 1000; // 10 min
+
+async function loadTokenRegistry() {
+  const statusEl = document.getElementById('token-registry-status');
+  try {
+    const cached = sessionStorage.getItem(REGISTRY_CACHE_KEY);
+    if (cached) {
+      const { ts, data } = JSON.parse(cached);
+      if (Date.now() - ts < REGISTRY_CACHE_TTL) {
+        LIVE_REGISTRY = data;
+        registryReady = true;
+        if (statusEl) statusEl.style.display = 'none';
+        return;
+      }
+    }
+  } catch(_) {}
+
+  try {
+    if (statusEl) { statusEl.style.display = 'flex'; statusEl.textContent = 'Loading token list…'; }
+    const res = await fetch('https://tokens.jup.ag/tokens?tags=verified');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    LIVE_REGISTRY = data;
+    registryReady = true;
+    try { sessionStorage.setItem(REGISTRY_CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch(_) {}
+    if (statusEl) statusEl.style.display = 'none';
+  } catch(e) {
+    LIVE_REGISTRY = [];
+    registryReady = true;
+    if (statusEl) { statusEl.textContent = 'Token list unavailable — showing defaults'; }
+    console.warn('[cain] token registry fetch failed:', e);
+  }
+}
+
+// Merge pinned + live, pinned always first, no duplicates by symbol
+function getTokenList(query) {
+  const q = (query || '').toLowerCase().trim();
+  const pinnedSymbols = new Set(PINNED_TOKENS.map(t => t.symbol.toLowerCase()));
+
+  // Filter pinned
+  const pinned = q
+    ? PINNED_TOKENS.filter(t => t.symbol.toLowerCase().includes(q) || t.name.toLowerCase().includes(q))
+    : PINNED_TOKENS;
+
+  // Filter live (exclude symbols already in pinned)
+  const live = LIVE_REGISTRY
+    .filter(t => {
+      if (pinnedSymbols.has(t.symbol.toLowerCase())) return false;
+      if (!q) return true;
+      return t.symbol.toLowerCase().includes(q) || t.name.toLowerCase().includes(q);
+    })
+    .slice(0, 80); // cap at 80 to keep DOM lean
+
+  return { pinned, live };
+}
+
+// ── Render a token icon: real logo if available, letter fallback ──
+function tokenIconHTML(t, size = 36) {
+  const s = size + 'px';
+  const letter = t.letter || (t.symbol ? t.symbol[0].toUpperCase() : '?');
+  const bg = t.bg || '#1a1a1a';
+  const fg = t.fg || '#888';
+  const fs = Math.round(size * 0.36) + 'px';
+  const common = `width:${s};height:${s};border-radius:50%;flex-shrink:0;`;
+
+  if (t.logoURI) {
+    return `
+      <span style="position:relative;display:inline-flex;align-items:center;justify-content:center;${common}">
+        <img src="${t.logoURI}"
+             style="position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover;"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+             loading="lazy">
+        <span style="display:none;align-items:center;justify-content:center;${common}background:${bg};color:${fg};font-size:${fs};font-weight:700;">${letter}</span>
+      </span>`;
+  }
+  return `<span style="display:inline-flex;align-items:center;justify-content:center;${common}background:${bg};color:${fg};font-size:${fs};font-weight:700;">${letter}</span>`;
+}
+
+// Update the selector button icons in the swap card
+function updateSelectorIcon(iconEl, t) {
+  const letter = t.letter || (t.symbol ? t.symbol[0].toUpperCase() : '?');
+  const bg = t.bg || '#1a1a1a';
+  const fg = t.fg || '#888';
+  if (t.logoURI) {
+    iconEl.innerHTML = `<img src="${t.logoURI}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.style.display='none';this.parentElement.textContent='${letter}';this.parentElement.style.background='${bg}';this.parentElement.style.color='${fg}';" loading="lazy">`;
+    iconEl.style.background = 'transparent';
+    iconEl.style.color = 'transparent';
+    iconEl.style.padding = '0';
+  } else {
+    iconEl.innerHTML = letter;
+    iconEl.style.background = bg;
+    iconEl.style.color = fg;
+  }
+}
+
+// ── State ──
+let fromToken = PINNED_TOKENS[0], toToken = PINNED_TOKENS[1], modalTarget = 'from', slippage = 0.5;
 window.fromToken = fromToken; window.toToken = toToken; window.slippage = slippage;
 function syncState() { window.fromToken = fromToken; window.toToken = toToken; window.slippage = slippage; }
 
@@ -688,19 +787,19 @@ function fmt(n) { return n.toLocaleString('en-US',{minimumFractionDigits:2,maxim
 function fmtUSD(n) { return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
 function updateTokenUI() {
-  const fi=document.getElementById('from-icon');
-  fi.style.background=fromToken.bg; fi.style.color=fromToken.fg; fi.textContent=fromToken.letter;
-  document.getElementById('from-name').textContent=fromToken.symbol;
-  const ti=document.getElementById('to-icon');
-  ti.style.background=toToken.bg; ti.style.color=toToken.fg; ti.textContent=toToken.letter;
-  document.getElementById('to-name').textContent=toToken.symbol;
+  const fi = document.getElementById('from-icon');
+  updateSelectorIcon(fi, fromToken);
+  document.getElementById('from-name').textContent = fromToken.symbol;
+  const ti = document.getElementById('to-icon');
+  updateSelectorIcon(ti, toToken);
+  document.getElementById('to-name').textContent = toToken.symbol;
   ['route-0-from','route-1-from'].forEach(id=>{
     const el=document.getElementById(id);
-    el.style.background=fromToken.bg+'44'; el.style.color=fromToken.fg; el.textContent=fromToken.symbol;
+    el.style.background=(fromToken.bg||'#1a1a1a')+'44'; el.style.color=fromToken.fg||'#888'; el.textContent=fromToken.symbol;
   });
   ['route-0-to','route-1-to'].forEach(id=>{
     const el=document.getElementById(id);
-    el.style.background=toToken.bg+'55'; el.style.color=toToken.fg; el.textContent=toToken.symbol;
+    el.style.background=(toToken.bg||'#1a1a1a')+'55'; el.style.color=toToken.fg||'#888'; el.textContent=toToken.symbol;
   });
   syncState();
 }
@@ -717,9 +816,9 @@ function setPct(pct) {
   document.getElementById('from-input').value=((10000*pct)/100).toFixed(2);
   window.onAmountChange && window.onAmountChange();
 }
-function selectPair(from,to) {
-  fromToken=TOKENS.find(t=>t.symbol===from)||fromToken;
-  toToken=TOKENS.find(t=>t.symbol===to)||toToken;
+function selectPair(from, to) {
+  fromToken = findToken(from) || fromToken;
+  toToken   = findToken(to)   || toToken;
   updateTokenUI(); window.onAmountChange && window.onAmountChange();
 }
 function selectRoute(el,idx) {
@@ -743,21 +842,63 @@ function setSlipCustom(val) {
 }
 
 function openModal(target) {
-  modalTarget=target; filterTokens('');
-  document.getElementById('token-search').value='';
+  modalTarget = target;
+  document.getElementById('token-search').value = '';
   document.getElementById('token-modal').classList.add('open');
-  setTimeout(()=>document.getElementById('token-search').focus(),50);
+  filterTokens('');
+  setTimeout(() => document.getElementById('token-search').focus(), 50);
 }
 function closeModal() { document.getElementById('token-modal').classList.remove('open'); }
-function filterTokens(q) {
-  const list=document.getElementById('token-list');
-  const f=TOKENS.filter(t=>t.symbol.toLowerCase().includes(q.toLowerCase())||t.name.toLowerCase().includes(q.toLowerCase()));
-  list.innerHTML=f.map(t=>`<div class="token-list-item" onclick="selectToken('${t.symbol}')"><div class="token-icon" style="width:36px;height:36px;font-size:13px;background:${t.bg};color:${t.fg};">${t.letter}</div><div><div class="tl-name">${t.symbol}</div><div class="tl-full">${t.name}</div></div></div>`).join('');
+
+function renderTokenRow(t) {
+  // escape quotes in address/symbol for inline onclick
+  const addr = (t.address || t.symbol).replace(/'/g, "\\'");
+  return `<div class="token-list-item" onclick="selectToken('${addr}')">
+    ${tokenIconHTML(t, 36)}
+    <div>
+      <div class="tl-name">${t.symbol}</div>
+      <div class="tl-full">${t.name}</div>
+    </div>
+  </div>`;
 }
-function selectToken(sym) {
-  const t=TOKENS.find(x=>x.symbol===sym); if(!t) return;
-  if(modalTarget==='from'){if(t.symbol===toToken.symbol)toToken=fromToken;fromToken=t;}
-  else{if(t.symbol===fromToken.symbol)fromToken=toToken;toToken=t;}
+
+function filterTokens(q) {
+  const list = document.getElementById('token-list');
+  const { pinned, live } = getTokenList(q);
+
+  let html = '';
+  if (pinned.length) {
+    if (!q) html += `<div style="font-size:10px;color:#333;text-transform:uppercase;letter-spacing:0.1em;padding:6px 12px 4px;">Cain Tokens</div>`;
+    html += pinned.map(renderTokenRow).join('');
+  }
+  if (live.length) {
+    if (!q && pinned.length) html += `<div style="font-size:10px;color:#333;text-transform:uppercase;letter-spacing:0.1em;padding:10px 12px 4px;">All Tokens</div>`;
+    html += live.map(renderTokenRow).join('');
+  }
+  if (!pinned.length && !live.length) {
+    html = `<div style="padding:24px;text-align:center;font-size:13px;color:#444;">No tokens found</div>`;
+  }
+  list.innerHTML = html;
+}
+
+// Token lookup by address or symbol (handles both pinned and live)
+function findToken(addrOrSym) {
+  const pinned = PINNED_TOKENS.find(t => t.address === addrOrSym || t.symbol === addrOrSym);
+  if (pinned) return pinned;
+  const live = LIVE_REGISTRY.find(t => t.address === addrOrSym || t.symbol === addrOrSym);
+  return live || null;
+}
+
+function selectToken(addrOrSym) {
+  const t = findToken(addrOrSym);
+  if (!t) return;
+  if (modalTarget === 'from') {
+    if (t.symbol === toToken.symbol) toToken = fromToken;
+    fromToken = t;
+  } else {
+    if (t.symbol === fromToken.symbol) fromToken = toToken;
+    toToken = t;
+  }
   closeModal(); updateTokenUI(); window.onAmountChange && window.onAmountChange();
 }
 
@@ -776,7 +917,8 @@ document.addEventListener('click',e=>{
   if(!insideCommunity) { const cd = document.getElementById('community-dropdown'); if(cd) cd.classList.remove('open'); }
 });
 
-updateTokenUI(); filterTokens('');
+updateTokenUI();
+loadTokenRegistry().then(() => filterTokens(''));
 </script>
 
 <!-- Swap integration layer — overrides onAmountChange + doSwap with real Jupiter calls -->
