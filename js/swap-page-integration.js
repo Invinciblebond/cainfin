@@ -96,6 +96,67 @@
     };
   }
 
+  // ─── Patch execute ────────────────────────────────────────────────────
+  // swap.js's executeJupiterSwap reads module-scoped `currentOrder` which
+  // never gets set by our patched fetchOrder. We patch execute to use
+  // window.cainSwap._pendingOrder instead.
+  function patchExecute() {
+    const PROXY = 'https://cain-jupiter-proxy.doffecul.workers.dev';
+    const QUOTE_TTL_MS = 30_000;
+
+    window.cainSwap.execute = async function() {
+      const wallet = window.cainWallet;
+      if (!wallet?.ready || wallet.chain !== 'solana') {
+        throw new Error('Connect a Solana wallet first');
+      }
+      const order = window.cainSwap._pendingOrder;
+      if (!order?.transaction || !order?.requestId) {
+        throw new Error('No executable order — get a fresh quote');
+      }
+      if (Date.now() - order.fetchedAt > QUOTE_TTL_MS) {
+        window.cainSwap._pendingOrder = null;
+        throw new Error('Quote expired — please refresh and try again');
+      }
+
+      const { VersionedTransaction } = window.solanaWeb3;
+      const txBytes = Uint8Array.from(atob(order.transaction), c => c.charCodeAt(0));
+      const tx = VersionedTransaction.deserialize(txBytes);
+
+      const signed = await wallet.provider.signTransaction(tx);
+
+      function toWireBytes(s) {
+        if (!s) throw new Error('Signing returned nothing');
+        if (typeof s.serialize === 'function') return s.serialize();
+        const c = s.signedTransaction ?? s;
+        if (c instanceof Uint8Array) return c;
+        if (Array.isArray(c)) return Uint8Array.from(c);
+        if (c instanceof ArrayBuffer) return new Uint8Array(c);
+        if (typeof c === 'string') return Uint8Array.from(atob(c), x => x.charCodeAt(0));
+        if (typeof c.serialize === 'function') return c.serialize();
+        throw new Error('Unrecognized signed-transaction shape');
+      }
+      const wireBytes = toWireBytes(signed);
+      let bin = '';
+      for (let i = 0; i < wireBytes.length; i++) bin += String.fromCharCode(wireBytes[i]);
+      const signedB64 = btoa(bin);
+
+      const res = await fetch(`${PROXY}/execute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signedTransaction: signedB64, requestId: order.requestId }),
+      });
+      const result = await res.json();
+      window.cainSwap._pendingOrder = null;
+
+      if (!res.ok) throw new Error(result.error || `Execute failed (${res.status})`);
+      if (result.status !== 'Success') {
+        const codes = {'-1':'Order expired','-2':'Invalid transaction','-3':'Invalid message','-1000':'Failed to land — try again','-2003':'Quote expired','-2004':'Swap rejected'};
+        throw new Error(codes[String(result.code)] || result.error || 'Swap failed to land');
+      }
+      return { signature: result.signature, inputAmountResult: result.inputAmountResult, outputAmountResult: result.outputAmountResult };
+    };
+  }
+
   // ─── Real order-driven amount handler ──────────────────────────────────
   async function onAmountChange() {
     const fromInput = document.getElementById('from-input');
@@ -336,6 +397,7 @@
   // ─── Wire overrides ────────────────────────────────────────────────────
   ready(() => {
     patchFetchOrder();
+    patchExecute();
 
     window.onAmountChange = onAmountChange;
     window.doSwap = doSwap;
