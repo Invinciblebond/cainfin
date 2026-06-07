@@ -1,0 +1,96 @@
+{
+  "lastUpdated": "2026-06-07",
+  "annualBenchmarks": {
+    "sp500": {
+      "label": "S&P 500",
+      "expectedReturn": null,
+      "ytdReturn": null,
+      "avg10yr": null,
+      "note": ""
+    },
+    "btc": {
+      "label": "Bitcoin",
+      "expectedReturn": null,
+      "ytdReturn": null,
+      "avg5yr": null,
+      "note": ""
+    },
+    "eth": {
+      "label": "Ethereum",
+      "expectedReturn": null,
+      "ytdReturn": null,
+      "avg5yr": null,
+      "note": ""
+    },
+    "sol": {
+      "label": "Solana",
+      "expectedReturn": null,
+      "ytdReturn": null,
+      "avg3yr": null,
+      "note": ""
+    },
+    "bnb": {
+      "label": "BNB",
+      "expectedReturn": null,
+      "ytdReturn": null,
+      "avg3yr": null,
+      "note": ""
+    },
+    "xrp": {
+      "label": "XRP",
+      "expectedReturn": null,
+      "ytdReturn": null,
+      "avg3yr": null,
+      "note": ""
+    },
+    "ada": {
+      "label": "Cardano",
+      "expectedReturn": null,
+      "ytdReturn": null,
+      "avg3yr": null,
+      "note": ""
+    },
+    "avax": {
+      "label": "Avalanche",
+      "expectedReturn": null,
+      "ytdReturn": null,
+      "avg3yr": null,
+      "note": ""
+    },
+    "doge": {
+      "label": "Dogecoin",
+      "expectedReturn": null,
+      "ytdReturn": null,
+      "avg3yr": null,
+      "note": ""
+    },
+    "link": {
+      "label": "Chainlink",
+      "expectedReturn": null,
+      "ytdReturn": null,
+      "avg3yr": null,
+      "note": ""
+    },
+    "dot": {
+      "label": "Polkadot",
+      "expectedReturn": null,
+      "ytdReturn": null,
+      "avg3yr": null,
+      "note": ""
+    },
+    "matic": {
+      "label": "Polygon",
+      "expectedReturn": null,
+      "ytdReturn": null,
+      "avg3yr": null,
+      "note": ""
+    },
+    "totalCryptoMarket": {
+      "label": "Total Crypto Market",
+      "expectedReturn": null,
+      "ytdReturn": null,
+      "avg3yr": null,
+      "note": ""
+    }
+  }
+}

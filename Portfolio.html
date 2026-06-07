@@ -343,7 +343,7 @@
     background: linear-gradient(90deg, rgba(0,255,136,0.4), rgba(0,255,136,0.7));
   }
   .range-fill.out-fill {
-    background: linear-gradient(90deg, rgba(255,77,77,0.4), rgba(255,77,77,0.6));
+    background: linear-gradient(90deg, rgba(0,255,136,0.4), rgba(0,255,136,0.7));
   }
   .range-needle {
     position: absolute; top: 50%; transform: translate(-50%, -50%);
@@ -974,7 +974,6 @@ function buildPositionCard(p, poolMap, poolDetailMap, poolAprMap, idx) {
       </div>
       <div class="range-prices-row">
         <span>Min: ${minPrice != null ? minPrice.toFixed(4) : '—'}</span>
-        <span style="color:#fff;font-size:10px;">▲ ${curPrice != null ? curPrice.toFixed(4) : '—'}</span>
         <span>Max: ${maxPrice != null ? maxPrice.toFixed(4) : '—'}</span>
       </div>
     </div>
