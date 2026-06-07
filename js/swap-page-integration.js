@@ -53,6 +53,8 @@
         inputMint: fromT.address,
         outputMint: toT.address,
         amount,
+        referralAccount: 'Ck32dSfvG7JGam2QrrWLeF1qu8vw71Szh1knM8rnrPRx',
+        referralFee: '50',
       });
       if (taker) params.set('taker', taker);
       if (slippagePct != null) params.set('slippageBps', String(Math.round(slippagePct * 100)));
