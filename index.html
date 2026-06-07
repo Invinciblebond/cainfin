@@ -839,7 +839,7 @@
 
     <!-- Featured Cards -->
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
-      <a class="featured-card" id="pool-card-0" href="https://www.byreal.io/en/create-position?id=HGxMfonx2vMRGVpHNvj6JbVM5JUjN8xYFS1UGXMYeaAo" target="_blank" rel="noopener" style="text-decoration:none; color:inherit; display:block;">
+      <a class="featured-card" id="pool-card-0" href="/solusdcvault.html" style="text-decoration:none; color:inherit; display:block;">
         <div class="liquidGlass-effect"></div>
         <div class="liquidGlass-tint"></div>
         <div class="liquidGlass-shine"></div>
@@ -855,14 +855,17 @@
         </div>
         <div class="vault-desc">Investment grade short-duration payment receivables. Designed for consistent, risk-adjusted income.</div>
         <div class="vault-stats">
-          <div class="vs-item"><label>Fee tier</label><div class="vs-val green" id="pool-0-fee">—</div></div>
+          <div class="vs-item"><label>APR</label><div class="vs-val green" id="pool-0-apr">—</div></div>
           <div class="vs-item"><label>TVL</label><div class="vs-val" id="pool-0-tvl">—</div></div>
-          <div class="vs-item"><label>Volume 24h</label><div class="vs-val" id="pool-0-vol" style="font-size:18px;">—</div></div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:10px;padding-top:8px;">
+          <span style="font-size:11px;color:#555;">Fees 7d: <span id="pool-0-fee7d" style="color:#999;">—</span></span>
+          <span style="font-size:11px;color:#555;">Vol 24h: <span id="pool-0-vol" style="color:#999;">—</span></span>
         </div>
         <div id="pool-0-meta" style="font-size:10px;color:#3a3a3a;margin-top:14px;letter-spacing:0.04em;">Loading live data…</div>
         </div>
       </a>
-      <a class="featured-card" id="pool-card-1" href="https://www.byreal.io/en/create-position?id=6FQQyf7UcyU86TZC1cmAcfC4a18SJyDggEKtQfTJWmfs" target="_blank" rel="noopener" style="text-decoration:none; color:inherit; display:block;">
+      <a class="featured-card" id="pool-card-1" href="/sp500lp.html" style="text-decoration:none; color:inherit; display:block;">
         <div class="liquidGlass-effect"></div>
         <div class="liquidGlass-tint"></div>
         <div class="liquidGlass-shine"></div>
@@ -878,9 +881,12 @@
         </div>
         <div class="vault-desc">Cain's flagship real-world yield vault, providing passive exposure to a diversified portfolio of Cain's top yield-generating assets</div>
         <div class="vault-stats">
-          <div class="vs-item"><label>Fee tier</label><div class="vs-val green" id="pool-1-fee">—</div></div>
+          <div class="vs-item"><label>APR</label><div class="vs-val green" id="pool-1-apr">—</div></div>
           <div class="vs-item"><label>TVL</label><div class="vs-val" id="pool-1-tvl">—</div></div>
-          <div class="vs-item"><label>Volume 24h</label><div class="vs-val" id="pool-1-vol" style="font-size:18px;">—</div></div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:10px;padding-top:8px;">
+          <span style="font-size:11px;color:#555;">Fees 7d: <span id="pool-1-fee7d" style="color:#999;">—</span></span>
+          <span style="font-size:11px;color:#555;">Vol 24h: <span id="pool-1-vol" style="color:#999;">—</span></span>
         </div>
         <div id="pool-1-meta" style="font-size:10px;color:#3a3a3a;margin-top:14px;letter-spacing:0.04em;">Loading live data…</div>
         </div>
@@ -1078,6 +1084,18 @@
     'USDSwr9ApdHk5bvJKMjzff41FfuEfGVxP2qqAp2Vfsk':  'USDS',
   };
 
+  var _tokenMetaCache = {};
+  async function resolveTokenNames(mints) {
+    var unknown = mints.filter(function (m) { return !_tokenMetaCache[m] && !STABLECOIN_MINTS[m]; });
+    if (unknown.length > 0) {
+      try {
+        var resp = await fetch('https://tokens.jup.ag/tokens?tags=verified,community&ids=' + unknown.join(','));
+        var list = await resp.json();
+        list.forEach(function (t) { _tokenMetaCache[t.address] = t.symbol || t.name; });
+      } catch (e) { console.warn('[CainWallet] Token metadata fetch failed:', e); }
+    }
+  }
+
   function rpcCall(method, params) {
     return fetch(WC_RPC, {
       method: 'POST',
@@ -1120,6 +1138,9 @@
       var sol = lamports / 1e9;
 
       var accounts = (tokenData && tokenData.result && tokenData.result.value) || [];
+      var mints = accounts.map(function (a) { return a.account.data.parsed.info.mint; }).filter(function (m) { return !STABLECOIN_MINTS[m]; });
+      await resolveTokenNames(mints);
+
       var tokens = [];
       if (sol > 0) tokens.push({ name: 'SOL', amount: sol, isSol: true });
       var stableTotal = 0;
@@ -1127,8 +1148,9 @@
         var info = a.account.data.parsed.info;
         var amt = info.tokenAmount.uiAmount || 0;
         if (amt <= 0) return;
-        var name = STABLECOIN_MINTS[info.mint] || info.mint.slice(0, 4) + '…' + info.mint.slice(-4);
-        var isStable = !!STABLECOIN_MINTS[info.mint];
+        var mint = info.mint;
+        var name = STABLECOIN_MINTS[mint] || _tokenMetaCache[mint] || mint.slice(0, 4) + '…' + mint.slice(-4);
+        var isStable = !!STABLECOIN_MINTS[mint];
         if (isStable) stableTotal += amt;
         tokens.push({ name: name, amount: amt, isStable: isStable });
       });
@@ -1178,10 +1200,14 @@
 (function () {
   var POOLS_PROXY = 'https://infofetchworker.doffecul.workers.dev';
 
-  // Order matters: [0],[1] = featured cards; [2]..[9] = table rows top→bottom.
+  // Featured cards — fetched separately via /pool?id= (same as vault pages)
+  var FEATURED_POOLS = [
+    { id: '9GTj99g9tbz9U6UYDsX6YeRTgUnkYG6GTnHv3qLa5aXq', card: 0 }, // solusdcvault
+    { id: '27x6aSxcAm6SoazoxmmTtFg6fWMQuNmdKJmHagq1DUZy', card: 1 }, // sp500lp
+  ];
+
+  // Table rows [2]..[9] — fetched via /pools?ids= batch endpoint
   var POOL_IDS = [
-    'HGxMfonx2vMRGVpHNvj6JbVM5JUjN8xYFS1UGXMYeaAo', // card 0
-    '6FQQyf7UcyU86TZC1cmAcfC4a18SJyDggEKtQfTJWmfs', // card 1
     'DmHek82VP6HtBmSz56wDrfr4nJysmtGQhpY7D5HVkGnX', // row 2
     'Hv44BZaqT5URrrAtGk6jvfbWKL2PytWA4ur2r1QnvtQa', // row 3
     '2AsusAS7VM9L1PV8QEJJk74eM667HH7NPq4rNr1Fde8y', // row 4
@@ -1224,14 +1250,14 @@
       setText('pool-' + i + '-meta', 'Live data unavailable · check console');
       return;
     }
-    if (pool.feeTier) setText('pool-' + i + '-fee', pool.feeTier);
+    setText('pool-' + i + '-apr', pool.apr ? pool.apr + '%' : '—');
     var tvl = fmtUSD(pool.tvl);
-    var vol = fmtUSD(pool.volume24h);
     if (tvl) setText('pool-' + i + '-tvl', tvl);
-    setText('pool-' + i + '-vol', vol || '—');
+    setText('pool-' + i + '-fee7d', fmtUSD(pool.fee7d) || '—');
+    setText('pool-' + i + '-vol', fmtUSD(pool.volume24h) || '—');
     var pair = pairOf(pool);
     setText('pool-' + i + '-meta',
-      (pair ? pair + ' · ' : '') + 'Live data via Byreal · click to open pool');
+      (pair ? pair + ' · ' : '') + 'Live data via Byreal · click to open vault');
   }
 
   // ── Vault-table rows (index 2–9) ──
@@ -1260,35 +1286,38 @@
     setText('row-' + i + '-tvl', tvl || '—');
   }
 
-  function apply(i, pool) {
-    if (i <= 1) applyCard(i, pool);
-    else        applyRow(i, pool);
+  // ── Load featured cards from /pool?id= (same endpoint as vault pages) ──
+  function loadFeaturedCards() {
+    FEATURED_POOLS.forEach(function (fp) {
+      fetch(POOLS_PROXY + '/pool?id=' + fp.id)
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (json) {
+          var pool = json && json.pool;
+          applyCard(fp.card, pool);
+        })
+        .catch(function (err) {
+          console.error('[CainPools] card ' + fp.card + ' fetch failed:', err);
+          setText('pool-' + fp.card + '-meta', 'Live data unavailable · ' + err.message);
+        });
+    });
   }
 
-  function load() {
+  // ── Load table rows from /pools?ids= batch endpoint ──
+  function loadTableRows() {
     var url = POOLS_PROXY + '/pools?ids=' + POOL_IDS.join(',');
-    console.log('[CainPools] fetching', url);
-
     fetch(url)
-      .then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function (data) {
-        console.log('[CainPools] response', data);
         var pools = (data && data.pools) || [];
         POOL_IDS.forEach(function (id, i) {
-          // Match by id first; fall back to positional for robustness.
           var p = pools.find(function (x) {
             return x && (x.id === id || x.requestId === id);
           }) || pools[i];
-          apply(i, p);
+          applyRow(i + 2, p);
         });
       })
       .catch(function (err) {
-        console.error('[CainPools] fetch failed:', err);
-        setText('pool-0-meta', 'Live data unavailable · ' + err.message);
-        setText('pool-1-meta', 'Live data unavailable · ' + err.message);
+        console.error('[CainPools] table fetch failed:', err);
         for (var i = 2; i <= 9; i++) {
           setText('row-' + i + '-apy', 'N/A');
           setText('row-' + i + '-tvl', 'N/A');
@@ -1296,10 +1325,10 @@
       });
   }
 
-  // Fire immediately — no DOMContentLoaded guard needed since this script is
-  // at the bottom of the body and the target elements are already in the DOM.
-  load();
-  setInterval(load, 30 * 60 * 1000); // Refresh every 30 minutes 
+  loadFeaturedCards();
+  loadTableRows();
+  setInterval(loadFeaturedCards, 30 * 60 * 1000);
+  setInterval(loadTableRows, 30 * 60 * 1000);
 })();
 </script>
 
