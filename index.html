@@ -1376,6 +1376,14 @@
     }
   }
   @media (hover: none), (pointer: coarse) { #cain-cursor, #cain-cursor-ring { display: none; } }
+  @media (max-width: 768px) {
+    #sidebar { width: 56px; }
+    #sidebar .sidebar-label, #sidebar .sidebar-wordmark { opacity:0; max-width:0; pointer-events:none; }
+    #sidebar .p-4 { padding-left:0; padding-right:0; }
+    #sidebar nav a, #sidebar nav button, #sidebar #sidebar-toggle { justify-content:center; gap:0; padding-left:0; padding-right:0; }
+    #sidebar .p-4 > .flex.items-center { justify-content:center; }
+    #sidebar #collapse-icon { transform:rotate(180deg); }
+  }
   @keyframes tooltipLoad { from { transform: translateX(0); } to { transform: translateX(150%); } }
   @keyframes balSpin { to { transform: rotate(360deg); } }
 </style>
