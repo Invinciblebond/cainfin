@@ -17,7 +17,6 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<!-- Wallet Adapter widget styles (built by Vite from main.jsx; includes adapter modal CSS) -->
 <link rel="stylesheet" href="/wallet-widget/dist/wallet-widget.css">
 
 <script>
@@ -49,13 +48,7 @@
     border: 1px solid rgba(255,255,255,0.08);
   }
 
-  /* ── Centered content container ───────────────────────────────────────
-     The page used to stretch edge-to-edge at any zoom / viewport width,
-     which felt cramped against the corners. We now cap the inner content
-     of <main> to a comfortable max width and center it, giving generous
-     breathing room on both sides. The dot-grid background still lives on
-     <main> itself, so the grid keeps filling the full window while only
-     the CONTENT is centered — matching the desired look.                  */
+  
   .cain-content {
     width: 100%;
     max-width: 1180px;
@@ -63,13 +56,7 @@
     margin-right: auto;
   }
 
-  /* ── Sidebar ──────────────────────────────────────────────────────────
-     Fixed collapse glitch: the previous version animated `width` only and let
-     content reflow during the transition, which made labels/wordmark "phase"
-     into the icons mid-animation. Now:
-       - Labels/wordmark fade + clip via opacity & max-width (no abrupt display:none)
-       - white-space:nowrap on rows prevents text wrapping during the squeeze
-       - overflow:hidden on the aside clips cleanly, no horizontal jitter      */
+  
   #sidebar {
     width: 220px;
     transition: width 0.25s ease;
@@ -77,11 +64,11 @@
   }
   #sidebar.collapsed { width: 56px; }
 
-  /* Keep every nav row on one line so nothing wraps while collapsing */
+  
   #sidebar nav a,
   #sidebar nav button { white-space: nowrap; }
 
-  /* Labels: fade and clip rather than vanish instantly */
+  
   #sidebar .sidebar-label,
   #sidebar .sidebar-wordmark {
     transition: opacity 0.18s ease, max-width 0.25s ease;
@@ -97,11 +84,7 @@
     pointer-events: none;
   }
 
-  /* ── Collapsed layout: center the icons in the 56px rail ──────────────
-     At 56px wide the container padding + each row's px-3 + the icon/label
-     gap left no room, so icons were shoved against the left edge. When
-     collapsed we drop the inner padding, zero the row gap, and center each
-     row so every icon sits dead-center under the logo.                     */
+  
   #sidebar.collapsed .p-4 { padding-left: 0; padding-right: 0; }
   #sidebar.collapsed nav a,
   #sidebar.collapsed nav button,
@@ -111,22 +94,14 @@
     padding-left: 0;
     padding-right: 0;
   }
-  /* Center the logo block too while collapsed */
+  
   #sidebar.collapsed .p-4 > .flex.items-center { justify-content: center; }
 
-  /* The bottom collapse control rotates its chevron to indicate state */
+  
   #collapse-icon { transition: transform 0.25s ease; }
   #sidebar.collapsed #collapse-icon { transform: rotate(180deg); }
 
-  /* ── Glass table styles ───────────────────────────────────────────────
-     Requirement: tables sit at ~50% opacity with a slight blur, the page's
-     dot-grid must show THROUGH them, and edge/corner refractions where
-     possible. Because the dot grid lives on <main> (a sibling background,
-     not stacked behind the table for compositing), backdrop-filter alone
-     won't blur it — so the table body is a translucent fill that lets the
-     dots read through via alpha, plus its own dot layer for guaranteed
-     coverage. Opacity is carried on EVERY layer (fill, header, rows, hover)
-     so no single layer flips it back to solid.                              */
+  
   .table-wrap {
     position: relative;
     border: 1px solid rgba(255,255,255,0.06);
@@ -136,8 +111,7 @@
     background: transparent;
   }
 
-  /* Layer 1 — translucent glass fill (50% opacity) + slight blur of itself.
-     rgba alpha keeps it semi-transparent so the page dots read through.     */
+  
   .table-wrap::before {
     content: "";
     position: absolute;
@@ -149,8 +123,7 @@
     border-radius: inherit;
   }
 
-  /* Layer 2 — the dot grid, rendered ON the table so it's guaranteed to show
-     through regardless of compositing. Faint so it reads as "behind glass".  */
+  
   .table-wrap::after {
     content: "";
     position: absolute;
@@ -162,9 +135,7 @@
     border-radius: inherit;
   }
 
-  /* Edge / corner refraction — a soft inner highlight ring + a top sheen,
-     like light catching the rim of a glass touchbar. Sits above the fill but
-     below the content; purely decorative.                                    */
+  
   .table-wrap > .refraction {
     content: "";
     position: absolute;
@@ -181,8 +152,7 @@
       radial-gradient(120% 60% at 50% -10%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 60%);
   }
 
-  /* Table + cells sit above the glass layers. All cell backgrounds are
-     translucent so opacity carries through and never goes solid.            */
+  
   .table-wrap table { width:100%; border-collapse:collapse; position:relative; z-index:1; }
   .table-wrap thead th { font-size:11px; color:#777; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; padding:16px 24px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.015); }
   .table-wrap tbody td { padding:22px 24px; border-top:1px solid rgba(255,255,255,0.05); vertical-align:middle; font-size:13px; background: transparent; }
@@ -217,24 +187,15 @@
   .c-falcon   { background:#10103a; color:#a78bfa; }
   .c-acrdx    { background:#122212; color:#4ade80; }
   .c-axi      { background:#2a122a; color:#c084fc; }
-  /* ── Liquid-glass featured cards ──────────────────────────────────────
-     Recreation of the macOS "Liquid Glass" effect
-     (github.com/lucasromerodb/liquid-glass-effect-macos), adapted from a
-     light-background button to Cain's dark dashboard. Structure per card:
-       .liquidGlass-effect  → backdrop blur + SVG #glass-distortion refraction
-       .liquidGlass-tint    → faint translucent fill (keeps text legible)
-       .liquidGlass-shine   → inset rim highlights (the "edge of glass")
-       .liquidGlass-content → the real card content, on top of all layers
-     The card itself is now transparent so the page dot-grid refracts THROUGH
-     the glass via backdrop-filter + the displacement map.                    */
+  
   .featured-card {
     position: relative;
     isolation: isolate;
-    background: transparent;        /* let the glass layers do the work   */
+    background: transparent;        
     border: 1px solid rgba(255,255,255,0.10);
     border-radius: 32px;
     padding: 40px;
-    overflow: hidden;               /* clip the refraction to the radius  */
+    overflow: hidden;               
     cursor: pointer;
     box-shadow: 0 6px 18px rgba(0,0,0,0.35), 0 0 24px rgba(0,0,0,0.18);
     transition: border-color 0.3s ease, transform 0.4s cubic-bezier(0.175,0.885,0.32,1.4), box-shadow 0.3s ease;
@@ -245,7 +206,7 @@
     box-shadow: 0 10px 28px rgba(0,0,0,0.45), 0 0 32px rgba(0,0,0,0.22);
   }
 
-  /* Layer 0 — refraction: blurs + distorts whatever sits behind the card */
+  
   .featured-card .liquidGlass-effect {
     position: absolute;
     z-index: 0;
@@ -258,8 +219,7 @@
     isolation: isolate;
     pointer-events: none;
   }
-  /* Layer 1 — tint: subtle wash so the content stays readable on dark bg.
-     A whisper of white at the top fading to a faint dark base.            */
+  
   .featured-card .liquidGlass-tint {
     position: absolute;
     z-index: 1;
@@ -269,7 +229,7 @@
       linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 40%, rgba(10,10,12,0.18) 100%);
     pointer-events: none;
   }
-  /* Layer 2 — shine: the lit rim of the glass */
+  
   .featured-card .liquidGlass-shine {
     position: absolute;
     z-index: 2;
@@ -281,7 +241,7 @@
       inset 1.5px 1.5px 1px 0 rgba(255,255,255,0.35),
       inset -1px -1px 1px 1px rgba(255,255,255,0.18);
   }
-  /* Layer 3 — the actual card content sits above every glass layer */
+  
   .featured-card .liquidGlass-content { position: relative; z-index: 3; }
   .vault-header { display:flex; align-items:center; gap:18px; margin-bottom:24px; }
   .vault-icon { width:60px; height:60px; border-radius:16px; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
@@ -294,7 +254,7 @@
   .vs-item .vs-val { font-size:30px; font-weight:700; color:#fff; line-height:1; }
   .vs-item .vs-val.green { color:#4ade80; }
 
-  /* Wallet button — used by the React widget's custom trigger button */
+  
   #wallet-btn {
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.1);
@@ -312,7 +272,7 @@
   }
   #wallet-btn:hover { background: rgba(255,255,255,0.14); }
 
-  /* Connected address dropdown */
+  
   #wallet-dropdown {
     position: absolute;
     right: 0;
@@ -336,10 +296,7 @@
   }
   #wallet-dropdown a:hover { background: rgba(255,255,255,0.05); color: #fff; }
 
-  /* ── Wallet Adapter modal theming — match Cain dark/glass aesthetic ──
-     The adapter modal markup is fixed (rendered by the bundle), but every
-     visual aspect below is controlled from here. Refined for spacing,
-     alignment, and breathing room against the popup border. */
+  
   .wallet-adapter-modal-overlay {
     background: rgba(0,0,0,0.7) !important;
     backdrop-filter: blur(6px);
@@ -350,7 +307,7 @@
     border-radius: 24px !important;
     box-shadow: 0 24px 64px rgba(0,0,0,0.7) !important;
     font-family: 'Inter', sans-serif !important;
-    /* breathing room between content and the popup border */
+    
     padding: 28px 24px 24px !important;
     max-width: 400px !important;
     width: calc(100% - 32px) !important;
@@ -362,11 +319,11 @@
     font-weight: 600 !important;
     line-height: 1.4 !important;
     text-align: center !important;
-    /* leave room for the close button, keep title centered */
+    
     padding: 0 36px !important;
     margin: 2px 0 22px !important;
   }
-  /* The wallet list — even vertical spacing, full-width items, centered */
+  
   .wallet-adapter-modal-list {
     margin: 0 !important;
     padding: 0 !important;
@@ -398,7 +355,7 @@
     background: rgba(255,255,255,0.07) !important;
     border-color: rgba(255,255,255,0.14) !important;
   }
-  /* Keep the wallet icons a consistent size and aligned with the label */
+  
   .wallet-adapter-modal-list .wallet-adapter-button-start-icon,
   .wallet-adapter-modal-list .wallet-adapter-button-start-icon img,
   .wallet-adapter-modal-list .wallet-adapter-button-start-icon svg {
@@ -406,12 +363,12 @@
     height: 26px !important;
     margin: 0 !important;
   }
-  /* "Detected" / status text pushed to the right edge */
+  
   .wallet-adapter-modal-list .wallet-adapter-button-end-icon,
   .wallet-adapter-modal-list .wallet-adapter-button span:last-child:not(:first-child) {
     margin-left: auto !important;
   }
-  /* "More options" toggle — centered with a little space above */
+  
   .wallet-adapter-modal-list-more {
     display: flex !important;
     align-items: center !important;
@@ -423,7 +380,7 @@
     cursor: pointer !important;
   }
   .wallet-adapter-modal-list-more svg { fill: #888 !important; }
-  /* Close button — squared, inset from the corner */
+  
   .wallet-adapter-modal-button-close {
     background: rgba(255,255,255,0.05) !important;
     top: 18px !important;
@@ -434,9 +391,8 @@
   }
   .wallet-adapter-modal-button-close:hover { background: rgba(255,255,255,0.1) !important; }
 
-  /* Community dropdown */
   .dropdown { position:relative; display:inline-block; }
-  .dropdown-menu {
+  .popup-menu {
     display: none;
     position: absolute;
     right: 0;
@@ -449,8 +405,8 @@
     overflow: hidden;
     box-shadow: 0 8px 24px rgba(0,0,0,0.5);
   }
-  .dropdown-menu.open { display: block; }
-  .dropdown-menu a {
+  .popup-menu.open { display: block; }
+  .popup-menu a {
     display: block;
     padding: 10px 16px;
     font-size: 13px;
@@ -458,33 +414,8 @@
     text-decoration: none;
     transition: background 0.12s, color 0.12s;
   }
-  .dropdown-menu a:hover { background: #1e1e1e; color: #fff; }
-  /* ── Legal dropdown ── */
-  .legal-menu {
-    display: none;
-    position: absolute;
-    right: 0;
-    top: calc(100% + 8px);
-    background: #141414;
-    border: 1px solid #2a2a2a;
-    border-radius: 10px;
-    min-width: 200px;
-    z-index: 50;
-    overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-  }
-  .legal-menu.open { display: block; }
-  .legal-menu a {
-    display: block;
-    padding: 10px 16px;
-    font-size: 13px;
-    color: #bbb;
-    text-decoration: none;
-    transition: background 0.12s, color 0.12s;
-  }
-  .legal-menu a:hover { background: #1e1e1e; color: #fff; }
+  .popup-menu a:hover { background: #1e1e1e; color: #fff; }
 
-  /* ── "Get ready to start earning" expandable panel ── */
   #earning-panel {
     max-height: 0;
     opacity: 0;
@@ -512,41 +443,11 @@
     border:1px solid rgba(0,255,163,0.2);
   }
 
-  /* ── Asset classes dropdown ── */
-  .asset-menu {
-    display: none;
-    position: absolute;
-    left: 0;
-    top: calc(100% + 8px);
-    background: #141414;
-    border: 1px solid #2a2a2a;
-    border-radius: 12px;
-    min-width: 180px;
-    z-index: 50;
-    overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-  }
-  .asset-menu.open { display: block; }
-  .asset-menu a {
-    display: block;
-    padding: 11px 16px;
-    font-size: 13px;
-    color: #bbb;
-    text-decoration: none;
-    transition: background 0.12s, color 0.12s;
-  }
-  .asset-menu a:hover { background: #1e1e1e; color: #fff; }
 </style>
 <base target="_blank">
 </head>
 <body class="h-full font-sans overflow-hidden">
 
-<!-- ══ Liquid-glass SVG distortion filter ══
-     Drives the refraction on the featured cards' .liquidGlass-effect layer.
-     feTurbulence builds organic noise; the gamma transfer + blur shape it
-     into a smooth displacement map; feDisplacementMap warps the backdrop so
-     the dot-grid bends like it's seen through real glass.
-     (Source: github.com/lucasromerodb/liquid-glass-effect-macos) -->
 <svg xmlns="http://www.w3.org/2000/svg" role="presentation" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden;">
   <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%" filterUnits="objectBoundingBox">
     <feTurbulence type="fractalNoise" baseFrequency="0.008 0.008" numOctaves="2" seed="5" result="turbulence" />
@@ -566,10 +467,8 @@
 
 <div class="flex h-full">
 
-<!-- Sidebar -->
 <aside id="sidebar" class="bg-cain-sidebar border-r border-cain-border flex flex-col shrink-0">
   <div class="p-4">
-    <!-- Logo (toggle moved to the bottom container) -->
     <div class="flex items-center mb-10" style="min-height:32px;">
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 bg-[#c9b87a] rounded-lg flex items-center justify-center flex-shrink-0 cursor-pointer">
@@ -597,7 +496,6 @@
         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
         <span class="sidebar-label">Portfolio</span>
       </a>
-      <!-- Faucet link → /faucet -->
       <a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="/faucet">
         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
         <span class="sidebar-label">Faucet</span>
@@ -609,7 +507,6 @@
     </nav>
   </div>
 
-  <!-- Bottom container is now responsible for collapsing/expanding the sidebar -->
   <div class="mt-auto p-4 border-t border-cain-border">
     <button id="sidebar-toggle" onclick="toggleSidebar()" aria-label="Collapse sidebar"
             class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-cain-gray-text hover:text-white hover:bg-white/5 transition-colors">
@@ -621,11 +518,8 @@
   </div>
 </aside>
 
-<!-- Main Content -->
 <main class="flex-1 flex flex-col h-full overflow-y-auto dot-grid">
 
-  <!-- New-user faucet banner. Shown by default; hidden when the visitor was
-       redirected here from /faucet (via ?from=faucet or document.referrer). -->
   <div id="faucet-promo" class="cain-content px-8 pt-5">
     <div class="glass rounded-2xl flex items-center justify-between gap-4 pl-5 pr-3 py-3.5">
       <a href="/faucet" class="flex items-center gap-3 flex-1 min-w-0" style="text-decoration:none;color:inherit;">
@@ -662,7 +556,6 @@
     })();
   </script>
 
-  <!-- Topbar -->
   <header class="cain-content h-16 px-8 flex items-center justify-between shrink-0">
     <div class="flex-1 max-w-md">
       <div class="relative">
@@ -682,7 +575,7 @@
           Legal
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
         </button>
-        <div id="legal-menu" class="legal-menu">
+        <div id="legal-menu" class="popup-menu">
           <a href="/termsofservice.html">Terms of Service</a>
           <a href="/termsandconditions.html">Terms &amp; Conditions</a>
           <a href="/Riskdisclosurestatement.html">Risk Disclosure</a>
@@ -694,7 +587,7 @@
         <button onclick="toggleDropdown()" class="p-2 hover:bg-white/5 rounded-lg text-cain-gray-text">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
         </button>
-        <div id="community-dropdown" class="dropdown-menu">
+        <div id="community-dropdown" class="popup-menu">
           <a href="https://github.com/Invinciblebond/cainfin" target="_blank" rel="noopener">GitHub</a>
           <a href="https://discord.gg/FILL_IN" target="_blank">Discord</a>
           <a href="https://reddit.com/r/FILL_IN" target="_blank">Reddit</a>
@@ -705,17 +598,12 @@
       </div>
       <div class="h-8 w-px bg-white/10 mx-1"></div>
 
-      <!-- ══ WALLET: React (Wallet Adapter) island mounts here ══
-           The built widget (cain-wallet-widget.iife.js) renders the connect
-           button + connected dropdown into #cain-wallet-root and writes state
-           into window.cainWallet for swap.js / balance fetch to consume. -->
       <div style="position:relative;">
         <div id="cain-wallet-root"></div>
       </div>
     </div>
   </header>
 
-  <!-- Hero & Metrics -->
   <section class="cain-content px-8 pt-6 pb-8">
     <div class="mb-6">
       <div class="flex items-center gap-1 text-cain-gray-text text-xs mb-1 cursor-pointer select-none">
@@ -744,7 +632,6 @@
       <div class="space-y-1" style="position:relative;">
         <p style="font-size:10px; color:#666; text-transform:uppercase; letter-spacing:0.07em; border-bottom:1px dashed rgba(255,255,255,0.12); padding-bottom:3px; width:fit-content;">Available to invest</p>
         <p id="available-balance" class="text-lg font-semibold" style="cursor:default;">$0.00</p>
-        <!-- Hover tooltip: stablecoin breakdown -->
         <div id="invest-tooltip" style="display:none; position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%); background:#1a1a1a; border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:16px 20px; min-width:260px; z-index:100; box-shadow:0 12px 40px rgba(0,0,0,0.7);">
           <p style="font-size:13px; color:#999; line-height:1.6;" id="invest-tooltip-text">Stablecoin balance in your wallet that you can invest in Cain vaults.</p>
           <div id="invest-tooltip-loader" style="display:none; margin-top:10px;">
@@ -758,12 +645,10 @@
     </div>
     <div class="flex items-center gap-3">
       <button class="px-7 py-2.5 bg-white text-black font-semibold rounded-full text-sm hover:bg-gray-100 transition-colors">Start earning</button>
-      <!-- Get USDC → redirect to /swap.html -->
       <button onclick="window.location.href='/swap.html'" class="px-7 py-2.5 bg-white/8 border border-white/10 font-semibold rounded-full text-sm hover:bg-white/15 transition-colors" style="background:rgba(255,255,255,0.06);">Get USDC</button>
     </div>
   </section>
 
-  <!-- Promotion Banner -->
   <section class="cain-content px-8 mb-10">
     <div id="earning-banner" class="glass rounded-3xl overflow-hidden relative">
       <div onclick="toggleEarning()" class="cursor-pointer h-32 flex items-center">
@@ -782,7 +667,6 @@
           </div>
         </div>
       </div>
-      <!-- Expandable filler content (default collapsed) -->
       <div id="earning-panel">
         <div class="px-10 pb-8 pt-2 border-t border-white/5">
           <p class="text-xs text-cain-gray-text mb-4 mt-4">Complete these steps to unlock earning on Cain.</p>
@@ -814,7 +698,6 @@
     </div>
   </section>
 
-  <!-- Explore Vaults -->
   <section class="cain-content px-8 pb-20">
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-4xl font-bold">Explore our vaults</h2>
@@ -824,7 +707,7 @@
             Asset classes
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
           </button>
-          <div id="asset-menu" class="asset-menu">
+          <div id="asset-menu" class="popup-menu" style="left:0;right:auto;">
             <a href="#">Stocks</a>
             <a href="#">Funds</a>
             <a href="#">Lending</a>
@@ -837,63 +720,18 @@
       </div>
     </div>
 
-    <!-- Featured Cards -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
-      <a class="featured-card" id="pool-card-0" href="/solusdcvault.html" style="text-decoration:none; color:inherit; display:block;">
-        <div class="liquidGlass-effect"></div>
-        <div class="liquidGlass-tint"></div>
-        <div class="liquidGlass-shine"></div>
-        <div class="liquidGlass-content">
-        <div class="vault-header">
-          <div class="vault-icon" style="background:#222;">
-            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDaXSd9q5FkYGspNsuTsCI9XJgEbMNYjbgEwtfpGnHjyssY_FgU-3GKbl1GRVAYPdvFF-nGuL2P1mkcfhsOvHKpK-IWc9Gh7cDc2y3lXan3aS2DEZ9vKnx03KcoRfTFPCoJKJx2OG31OR5aYJtYpgZHc-KdjkhyR31DwZZb77YOkixPIR0niu9sD6Deh-wt6wDQcz2ERthdBG2cu4EaF0OrpZpq5D77lsQ03Ibtg0Xlm85NLXq8-4OjevN8IBFXAwTxYts6Ea9MY39" alt="BlackOpal" />
-          </div>
-          <div>
-            <div class="vault-name">BlackOpal LiquidStone II</div>
-            <div class="vault-cat">Payment financing</div>
-          </div>
-        </div>
-        <div class="vault-desc">Investment grade short-duration payment receivables. Designed for consistent, risk-adjusted income.</div>
-        <div class="vault-stats">
-          <div class="vs-item"><label>APR</label><div class="vs-val green" id="pool-0-apr">—</div></div>
-          <div class="vs-item"><label>TVL</label><div class="vs-val" id="pool-0-tvl">—</div></div>
-        </div>
-        <div style="display:flex;gap:16px;margin-top:10px;padding-top:8px;">
-          <span style="font-size:11px;color:#555;">Fees 7d: <span id="pool-0-fee7d" style="color:#999;">—</span></span>
-          <span style="font-size:11px;color:#555;">Vol 24h: <span id="pool-0-vol" style="color:#999;">—</span></span>
-        </div>
-        <div id="pool-0-meta" style="font-size:10px;color:#3a3a3a;margin-top:14px;letter-spacing:0.04em;">Loading live data…</div>
-        </div>
-      </a>
-      <a class="featured-card" id="pool-card-1" href="/sp500lp.html" style="text-decoration:none; color:inherit; display:block;">
-        <div class="liquidGlass-effect"></div>
-        <div class="liquidGlass-tint"></div>
-        <div class="liquidGlass-shine"></div>
-        <div class="liquidGlass-content">
-        <div class="vault-header">
-          <div class="vault-icon" style="background:#000;">
-            <img src="https://i.postimg.cc/P5zN3JyD/spyx-usdc-sw-ap-200x200.png" alt="Alpha" />
-          </div>
-          <div>
-            <div class="vault-name">Alpha</div>
-            <div class="vault-cat">Diversified Index</div>
-          </div>
-        </div>
-        <div class="vault-desc">Cain's flagship real-world yield vault, providing passive exposure to a diversified portfolio of Cain's top yield-generating assets</div>
-        <div class="vault-stats">
-          <div class="vs-item"><label>APR</label><div class="vs-val green" id="pool-1-apr">—</div></div>
-          <div class="vs-item"><label>TVL</label><div class="vs-val" id="pool-1-tvl">—</div></div>
-        </div>
-        <div style="display:flex;gap:16px;margin-top:10px;padding-top:8px;">
-          <span style="font-size:11px;color:#555;">Fees 7d: <span id="pool-1-fee7d" style="color:#999;">—</span></span>
-          <span style="font-size:11px;color:#555;">Vol 24h: <span id="pool-1-vol" style="color:#999;">—</span></span>
-        </div>
-        <div id="pool-1-meta" style="font-size:10px;color:#3a3a3a;margin-top:14px;letter-spacing:0.04em;">Loading live data…</div>
-        </div>
-      </a>
-    </div>
+    <div id="featured-cards" style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;"></div>
+    <script>
+    (function(){var cards=[
+      {id:0,href:'/solusdcvault.html',bg:'#222',img:'https://lh3.googleusercontent.com/aida-public/AB6AXuDDaXSd9q5FkYGspNsuTsCI9XJgEbMNYjbgEwtfpGnHjyssY_FgU-3GKbl1GRVAYPdvFF-nGuL2P1mkcfhsOvHKpK-IWc9Gh7cDc2y3lXan3aS2DEZ9vKnx03KcoRfTFPCoJKJx2OG31OR5aYJtYpgZHc-KdjkhyR31DwZZb77YOkixPIR0niu9sD6Deh-wt6wDQcz2ERthdBG2cu4EaF0OrpZpq5D77lsQ03Ibtg0Xlm85NLXq8-4OjevN8IBFXAwTxYts6Ea9MY39',alt:'BlackOpal',name:'BlackOpal LiquidStone II',cat:'Payment financing',desc:'Investment grade short-duration payment receivables. Designed for consistent, risk-adjusted income.'},
+      {id:1,href:'/sp500lp.html',bg:'#000',img:'https://i.postimg.cc/P5zN3JyD/spyx-usdc-sw-ap-200x200.png',alt:'Alpha',name:'Alpha',cat:'Diversified Index',desc:"Cain’s flagship real-world yield vault, providing passive exposure to a diversified portfolio of Cain’s top yield-generating assets"}
+    ];var ct=document.getElementById('featured-cards');cards.forEach(function(c){
+      var a=document.createElement('a');a.className='featured-card';a.id='pool-card-'+c.id;a.href=c.href;a.style.cssText='text-decoration:none;color:inherit;display:block;';
+      a.innerHTML='<div class="liquidGlass-effect"></div><div class="liquidGlass-tint"></div><div class="liquidGlass-shine"></div><div class="liquidGlass-content"><div class="vault-header"><div class="vault-icon" style="background:'+c.bg+'"><img src="'+c.img+'" alt="'+c.alt+'" /></div><div><div class="vault-name">'+c.name+'</div><div class="vault-cat">'+c.cat+'</div></div></div><div class="vault-desc">'+c.desc+'</div><div class="vault-stats"><div class="vs-item"><label>APR</label><div class="vs-val green" id="pool-'+c.id+'-apr">—</div></div><div class="vs-item"><label>TVL</label><div class="vs-val" id="pool-'+c.id+'-tvl">—</div></div></div><div style="display:flex;gap:16px;margin-top:10px;padding-top:8px;"><span style="font-size:11px;color:#555;">Fees 7d: <span id="pool-'+c.id+'-fee7d" style="color:#999;">—</span></span><span style="font-size:11px;color:#555;">Vol 24h: <span id="pool-'+c.id+'-vol" style="color:#999;">—</span></span></div><div id="pool-'+c.id+'-meta" style="font-size:10px;color:#3a3a3a;margin-top:14px;letter-spacing:0.04em;">Loading live data…</div></div>';
+      ct.appendChild(a);
+    });})();
+    </script>
 
-    <!-- Vault Table — 8 rows wired to live Byreal pool data -->
     <div class="table-wrap">
       <div class="refraction"></div>
       <table>
@@ -903,84 +741,27 @@
             <th>Assets</th><th>Available networks</th><th>Supported apps</th>
           </tr>
         </thead>
-        <tbody>
-          <tr data-pool-index="2">
-            <td><div class="row-flex"><div class="row-logo c-alpha">α</div><div><div class="rv-name" id="row-2-name">Alpha</div><div class="rv-cat">Diversified Index</div></div></div></td>
-            <td><span class="token-badge" id="row-2-token">nALPHA</span></td>
-            <td><span class="apy-plain" id="row-2-apy">—</span></td>
-            <td class="tvl-val" id="row-2-tvl">—</td>
-            <td><div class="asset-dots"><div class="ad" style="background:#3b82f6;color:#fff;">A</div><div class="ad" style="background:#7c3aed;color:#fff;">X</div><div class="ad" style="background:#0d9488;color:#fff;">U</div><div class="ad" style="background:#16a34a;color:#fff;">B</div><span class="count-pill">+1</span></div></td>
-            <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
-            <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
-          </tr>
-          <tr data-pool-index="3">
-            <td><div class="row-flex"><div class="row-logo c-opal">◈</div><div><div class="rv-name" id="row-3-name">BlackOpal LiquidStone II</div><div class="rv-cat">Payment financing</div></div></div></td>
-            <td><span class="token-badge" id="row-3-token">nOPAL</span></td>
-            <td><span class="apy-plain" id="row-3-apy">—</span></td>
-            <td class="tvl-val" id="row-3-tvl">—</td>
-            <td><div class="asset-dots"><div class="ad" style="background:#3b82f6;color:#fff;">B</div><div class="ad" style="background:#eab308;color:#000;">T</div></div></td>
-            <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
-            <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
-          </tr>
-          <tr data-pool-index="4">
-            <td><div class="row-flex"><div class="row-logo c-basis">B</div><div><div class="rv-name" id="row-4-name">Basis</div><div class="rv-cat">Crypto Basis</div></div></div></td>
-            <td><span class="token-badge" id="row-4-token">nBASIS</span></td>
-            <td><span class="apy-plain" id="row-4-apy">—</span></td>
-            <td class="tvl-val" id="row-4-tvl">—</td>
-            <td><div class="asset-dots"><div class="ad" style="background:#f97316;color:#fff;">B</div><div class="ad" style="background:#0d9488;color:#fff;">E</div></div></td>
-            <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
-            <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
-          </tr>
-          <tr data-pool-index="5">
-            <td><div class="row-flex"><div class="row-logo c-treasury">T</div><div><div class="rv-name" id="row-5-name">Treasury</div><div class="rv-cat">US Treasuries</div></div></div></td>
-            <td><span class="token-badge" id="row-5-token">nTBILL</span></td>
-            <td><span class="apy-plain" id="row-5-apy">—</span></td>
-            <td class="tvl-val" id="row-5-tvl">—</td>
-            <td><div class="asset-dots"><div class="ad" style="background:#3b82f6;color:#fff;">M</div><div class="ad" style="background:#16a34a;color:#fff;">O</div></div></td>
-            <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
-            <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
-          </tr>
-          <tr data-pool-index="6">
-            <td><div class="row-flex"><div class="row-logo c-wisdom">W</div><div><div class="rv-name" id="row-6-name">WisdomTree CRDYX</div><div class="rv-cat">Private Credit</div></div></div></td>
-            <td><span class="token-badge" id="row-6-token">nWISDOM</span></td>
-            <td><span class="apy-plain" id="row-6-apy">—</span></td>
-            <td class="tvl-val" id="row-6-tvl">—</td>
-            <td><div class="asset-dots"><div class="ad" style="background:#38bdf8;color:#0c2233;">W</div><div class="ad" style="background:#eab308;color:#000;">T</div></div></td>
-            <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
-            <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
-          </tr>
-          <tr data-pool-index="7">
-            <td><div class="row-flex"><div class="row-logo c-credit">C</div><div><div class="rv-name" id="row-7-name">Credit</div><div class="rv-cat">Private Credit</div></div></div></td>
-            <td><span class="token-badge" id="row-7-token">nCREDIT</span></td>
-            <td><span class="apy-plain" id="row-7-apy">—</span></td>
-            <td class="tvl-val" id="row-7-tvl">—</td>
-            <td><div class="asset-dots"><div class="ad" style="background:#f87171;color:#2a1212;">C</div><div class="ad" style="background:#f97316;color:#fff;">R</div></div></td>
-            <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
-            <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
-          </tr>
-          <tr data-pool-index="8">
-            <td><div class="row-flex"><div class="row-logo c-falcon">X</div><div><div class="rv-name" id="row-8-name">FalconX Overcollateralized Loans</div><div class="rv-cat">Prime Brokerage Lending</div></div></div></td>
-            <td><span class="token-badge" id="row-8-token">nFALCON</span></td>
-            <td><span class="apy-plain" id="row-8-apy">—</span></td>
-            <td class="tvl-val" id="row-8-tvl">—</td>
-            <td><div class="asset-dots"><div class="ad" style="background:#1d4ed8;color:#fff;">F</div></div></td>
-            <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
-            <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
-          </tr>
-          <tr data-pool-index="9">
-            <td><div class="row-flex"><div class="row-logo c-acrdx">A</div><div><div class="rv-name" id="row-9-name">ACRDX</div><div class="rv-cat">Private Credit</div></div></div></td>
-            <td><span class="token-badge" id="row-9-token">nACRDX</span></td>
-            <td><span class="apy-plain" id="row-9-apy">—</span></td>
-            <td class="tvl-val" id="row-9-tvl">—</td>
-            <td><div class="asset-dots"><div class="ad" style="background:#4ade80;color:#122212;">A</div></div></td>
-            <td><div class="nets"><div class="nd nd-pu">S</div></div></td>
-            <td><div class="nets"><div class="nd nd-gr">☁</div></div></td>
-          </tr>
-        </tbody>
+        <tbody id="vault-rows"></tbody>
+        <script>
+        (function(){var rows=[
+          {i:2,cls:'c-alpha',letter:'α',name:'Alpha',cat:'Diversified Index',token:'nALPHA',dots:[{bg:'#3b82f6',c:'#fff',l:'A'},{bg:'#7c3aed',c:'#fff',l:'X'},{bg:'#0d9488',c:'#fff',l:'U'},{bg:'#16a34a',c:'#fff',l:'B'}],pill:'+1'},
+          {i:3,cls:'c-opal',letter:'◈',name:'BlackOpal LiquidStone II',cat:'Payment financing',token:'nOPAL',dots:[{bg:'#3b82f6',c:'#fff',l:'B'},{bg:'#eab308',c:'#000',l:'T'}]},
+          {i:4,cls:'c-basis',letter:'B',name:'Basis',cat:'Crypto Basis',token:'nBASIS',dots:[{bg:'#f97316',c:'#fff',l:'B'},{bg:'#0d9488',c:'#fff',l:'E'}]},
+          {i:5,cls:'c-treasury',letter:'T',name:'Treasury',cat:'US Treasuries',token:'nTBILL',dots:[{bg:'#3b82f6',c:'#fff',l:'M'},{bg:'#16a34a',c:'#fff',l:'O'}]},
+          {i:6,cls:'c-wisdom',letter:'W',name:'WisdomTree CRDYX',cat:'Private Credit',token:'nWISDOM',dots:[{bg:'#38bdf8',c:'#0c2233',l:'W'},{bg:'#eab308',c:'#000',l:'T'}]},
+          {i:7,cls:'c-credit',letter:'C',name:'Credit',cat:'Private Credit',token:'nCREDIT',dots:[{bg:'#f87171',c:'#2a1212',l:'C'},{bg:'#f97316',c:'#fff',l:'R'}]},
+          {i:8,cls:'c-falcon',letter:'X',name:'FalconX Overcollateralized Loans',cat:'Prime Brokerage Lending',token:'nFALCON',dots:[{bg:'#1d4ed8',c:'#fff',l:'F'}]},
+          {i:9,cls:'c-acrdx',letter:'A',name:'ACRDX',cat:'Private Credit',token:'nACRDX',dots:[{bg:'#4ade80',c:'#122212',l:'A'}]}
+        ];var tb=document.getElementById('vault-rows');rows.forEach(function(r){
+          var ds=r.dots.map(function(d){return '<div class="ad" style="background:'+d.bg+';color:'+d.c+';">'+d.l+'</div>';}).join('')+(r.pill?'<span class="count-pill">'+r.pill+'</span>':'');
+          var tr=document.createElement('tr');tr.setAttribute('data-pool-index',r.i);
+          tr.innerHTML='<td><div class="row-flex"><div class="row-logo '+r.cls+'">'+r.letter+'</div><div><div class="rv-name" id="row-'+r.i+'-name">'+r.name+'</div><div class="rv-cat">'+r.cat+'</div></div></div></td><td><span class="token-badge" id="row-'+r.i+'-token">'+r.token+'</span></td><td><span class="apy-plain" id="row-'+r.i+'-apy">—</span></td><td class="tvl-val" id="row-'+r.i+'-tvl">—</td><td><div class="asset-dots">'+ds+'</div></td><td><div class="nets"><div class="nd nd-pu">S</div></div></td><td><div class="nets"><div class="nd nd-gr">☁</div></div></td>';
+          tb.appendChild(tr);
+        });})();
+        </script>
       </table>
     </div>
 
-    <!-- Private Vaults -->
     <div style="margin-top:56px; padding-top:48px; border-top:1px solid rgba(255,255,255,0.05);">
       <h2 class="text-3xl font-semibold mb-3" style="color:#e8e8e8;">Private vaults</h2>
       <p style="font-size:13px; color:#555; line-height:1.7; max-width:560px; margin-bottom:20px;">
@@ -1054,9 +835,6 @@
   });
 </script>
 
-<!-- ══ Solana balance fetch (extracted from old wallet.js, unchanged logic) ══
-     The React wallet widget calls window.fetchSolanaBalance(address) on connect.
-     Point window.CAIN_SOLANA_RPC_URL at your own RPC to avoid public 429s. -->
 <script>
 (function () {
   var SOLANA_RPC_URL = window.CAIN_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
@@ -1184,18 +962,6 @@
 })();
 </script>
 
-<!--
-  ── Pool data from Cloudflare Worker ──────────────────────────────────────
-  Worker returns: { pools: [ { id, ok, tvl, volume24h, feeTier, apr,
-                               tokenASymbol, tokenBSymbol }, ... ] }
-  Index 0–1  → the two featured cards (unchanged behaviour).
-  Index 2–9  → the eight vault-table rows (now live).
-
-  NOTE: This script only ever writes text into specific cell elements via
-  setText(); it never touches the .table-wrap container, its ::before/::after
-  glass layers, or the .refraction element. So the glass aesthetic survives
-  every refresh — the data load can't strip styling it never references.
--->
 <script>
 (function () {
   var POOLS_PROXY = 'https://infofetchworker.doffecul.workers.dev';
@@ -1332,14 +1098,10 @@
 })();
 </script>
 
-<!-- ══ Global wallet manager — Solana Wallet Adapter + WalletConnect fallback ══
-     Built by Vite from src/main.jsx → dist/cain-wallet-widget.iife.js.
-     Replaces the old /js/wallet.js entirely on this page. -->
 <script src="/wallet-widget/dist/cain-wallet-widget.iife.js" defer></script>
 
-<!-- ── Custom cursor (dot + lagging ring), matches potentialnewlandingpage ── -->
 <style>
-  /* ── PAGE LOADER ── */
+  
   #pageLoader {
     position: fixed; inset: 0; z-index: 10000;
     background: radial-gradient(ellipse at 50% 40%, rgba(0,255,163,0.07), #060606);
@@ -1376,14 +1138,6 @@
     }
   }
   @media (hover: none), (pointer: coarse) { #cain-cursor, #cain-cursor-ring { display: none; } }
-  @media (max-width: 768px) {
-    #sidebar { width: 56px; }
-    #sidebar .sidebar-label, #sidebar .sidebar-wordmark { opacity:0; max-width:0; pointer-events:none; }
-    #sidebar .p-4 { padding-left:0; padding-right:0; }
-    #sidebar nav a, #sidebar nav button, #sidebar #sidebar-toggle { justify-content:center; gap:0; padding-left:0; padding-right:0; }
-    #sidebar .p-4 > .flex.items-center { justify-content:center; }
-    #sidebar #collapse-icon { transform:rotate(180deg); }
-  }
   @keyframes tooltipLoad { from { transform: translateX(0); } to { transform: translateX(150%); } }
   @keyframes balSpin { to { transform: rotate(360deg); } }
 </style>
@@ -1432,6 +1186,9 @@
 })();
 </script>
 
+<script>
+(function(){var mq=matchMedia('(max-width:768px)');function apply(){document.getElementById('sidebar').classList.toggle('collapsed',mq.matches);}mq.addEventListener('change',apply);apply();})();
+</script>
 <div id="pageLoader">
   <div class="loader-ring"></div>
   <svg class="loader-logo" viewBox="0 0 16 16" width="18" height="18" style="opacity:.5"><path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" fill="#00ffa3"/></svg>
