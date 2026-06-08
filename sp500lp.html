@@ -1994,27 +1994,28 @@ async function realDeposit() {
     }).compileToV0Message();
     const feeTx = new VersionedTransaction(feeMsg);
 
-    // 5. Deserialize position tx and sign both with one wallet prompt
-    setBusy('Approve in wallet…');
-    const positionTx = web3.VersionedTransaction.deserialize(b64ToBytes(buildData.unsignedTransactions[0]));
-    let signedFee, signedPosition;
-    if (typeof w.provider.signAllTransactions === 'function') {
-      const signed = await w.provider.signAllTransactions([feeTx, positionTx]);
-      signedFee = signed[0]; signedPosition = signed[1];
+    // 5. Send fee tx — prefer signAndSendTransaction (Phantom controls full lifecycle,
+    //    avoids the sign-then-relay warning). Falls back to sign+relay if unavailable.
+    setBusy('Approve fee in wallet…');
+    if (typeof w.provider.signAndSendTransaction === 'function') {
+      const feeResult = await w.provider.signAndSendTransaction(feeTx);
+      const feeSig = typeof feeResult === 'string' ? feeResult : feeResult.signature;
+      if (!feeSig) throw new Error('Failed to submit fee transaction');
     } else {
-      signedFee      = await w.provider.signTransaction(feeTx);
-      signedPosition = await w.provider.signTransaction(positionTx);
+      const signedFee = await w.provider.signTransaction(feeTx);
+      const b64Fee = bytesToB64(signedFee.serialize());
+      const feeRes = await fetch(`${BYREAL_API}/api/send-fee-tx`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transaction: b64Fee }),
+      }).then(r => r.json());
+      if (!feeRes.signature) throw new Error(feeRes.error || 'Failed to submit fee transaction');
     }
-    const b64Fee = bytesToB64(signedFee.serialize());
-    const b64    = bytesToB64(signedPosition.serialize());
 
-    // 6. Submit fee tx
-    setBusy('Submitting fee…');
-    const feeRes = await fetch(`${BYREAL_API}/api/send-fee-tx`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ transaction: b64Fee }),
-    }).then(r => r.json());
-    if (!feeRes.signature) throw new Error(feeRes.error || 'Failed to submit fee transaction');
+    // 6. Sign position tx separately (must relay through Byreal)
+    setBusy('Approve deposit in wallet…');
+    const positionTx = web3.VersionedTransaction.deserialize(b64ToBytes(buildData.unsignedTransactions[0]));
+    const signedPosition = await w.provider.signTransaction(positionTx);
+    const b64 = bytesToB64(signedPosition.serialize());
 
     // 7. Simulate position tx
     setBusy('Simulating…');
