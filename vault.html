@@ -2095,6 +2095,14 @@ function applyPoolToUI() {
   if (pairBadge && p.tokenASymbol && p.tokenBSymbol) {
     pairBadge.textContent = p.tokenASymbol + ' · ' + p.tokenBSymbol;
   }
+  if (p.tokenASymbol && p.tokenBSymbol) {
+    const pair = p.tokenASymbol + '/' + p.tokenBSymbol;
+    document.title = pair + ' LP | Cain by Cain.Finance';
+    document.querySelectorAll('meta[property="og:title"], meta[name="twitter:title"]')
+      .forEach(m => m.setAttribute('content', pair + ' LP — Cain'));
+    document.querySelectorAll('meta[name="description"], meta[property="og:description"], meta[name="twitter:description"]')
+      .forEach(m => m.setAttribute('content', p.tokenASymbol + ' ' + p.tokenBSymbol + ' Cain Liquidity Pool on Solana'));
+  }
 
   document.getElementById('stat-fee24h').textContent = fmtUSD(p.fee24h);
   document.getElementById('stat-fee7d').textContent  = fmtUSD(p.fee7d);
