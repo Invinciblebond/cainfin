@@ -1,0 +1,2686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+  <link rel="apple-touch-icon" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>S&amp;P500 LP | Cain by Cain.Finance</title>
+  <meta name="description" content="SPYx USDC Cain Liquidity Pool on Solana">
+  <meta property="og:title" content="SPYx/USDC LP — Cain">
+  <meta property="og:description" content="SPYx USDC Cain Liquidity Pool on Solana">
+  <meta property="og:image" content="https://i.ibb.co/q4kwtJH/ee973fab-08f0-4e27-b170-ecb250a9e08a.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SPYx/USDC LP — Cain">
+  <meta name="twitter:description" content="SPYx USDC Cain Liquidity Pool on Solana">
+  <meta name="twitter:image" content="https://i.ibb.co/q4kwtJH/ee973fab-08f0-4e27-b170-ecb250a9e08a.png">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- ── Buffer polyfill + Solana web3.js (for Byreal LP deposits) ── -->
+  <script>
+    // Inline Buffer polyfill — web3.js internals need Buffer.from with hex/base64.
+    // Guarded so it won't clobber a Buffer the wallet widget may provide.
+    (function () {
+      if (typeof window.Buffer !== 'undefined' && typeof window.Buffer.from === 'function') return;
+      function Buffer(arg, encodingOrOffset) {
+        if (!(this instanceof Buffer)) return Buffer.from(arg, encodingOrOffset);
+        var u = typeof arg === 'number' ? new Uint8Array(arg) : Buffer.from(arg, encodingOrOffset);
+        Object.setPrototypeOf(u, Buffer.prototype);
+        return u;
+      }
+      Buffer.prototype = Object.create(Uint8Array.prototype);
+      Buffer.prototype._isBuffer = true;
+      Buffer.from = function (value, encoding) {
+        if (typeof value === 'string') {
+          var enc = (encoding || 'utf8').toLowerCase();
+          if (enc === 'hex') {
+            var bytes = new Uint8Array(value.length >>> 1);
+            for (var i = 0; i < bytes.length; i++) bytes[i] = parseInt(value.substr(i * 2, 2), 16);
+            return bytes;
+          }
+          if (enc === 'base64') {
+            var bin = atob(value.replace(/-/g, '+').replace(/_/g, '/'));
+            var out = new Uint8Array(bin.length);
+            for (var j = 0; j < bin.length; j++) out[j] = bin.charCodeAt(j);
+            return out;
+          }
+          return new TextEncoder().encode(value);
+        }
+        if (value instanceof ArrayBuffer) return new Uint8Array(value);
+        if (ArrayBuffer.isView(value)) return new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+        return new Uint8Array(value);
+      };
+      Buffer.alloc = function (size, fill) {
+        var b = new Uint8Array(size);
+        if (fill != null) b.fill(typeof fill === 'string' ? fill.charCodeAt(0) : fill);
+        return b;
+      };
+      Buffer.allocUnsafe = function (size) { return new Uint8Array(size); };
+      Buffer.allocUnsafeSlow = Buffer.allocUnsafe;
+      Buffer.isBuffer = function (o) { return o != null && (o._isBuffer === true || o instanceof Uint8Array); };
+      Buffer.concat = function (list, len) {
+        var total = len || list.reduce(function (a, b) { return a + b.length; }, 0);
+        var out = new Uint8Array(total), offset = 0;
+        list.forEach(function (b) { out.set(b, offset); offset += b.length; });
+        return out;
+      };
+      Buffer.byteLength = function (str, enc) { return Buffer.from(str, enc).length; };
+      window.Buffer = Buffer;
+      globalThis.Buffer = Buffer;
+    })();
+  </script>
+  <script src="https://unpkg.com/@solana/web3.js@1.98.0/lib/index.iife.min.js"></script>
+
+  <!-- ── GLOBAL WALLET ADAPTER STYLES (copied from index.html) ── -->
+  <link rel="stylesheet" href="/wallet-widget/dist/wallet-widget.css">
+
+<style data-purpose="base">
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #060606;
+    color: #ffffff;
+  }
+  /* ── LEGAL DROPDOWN ── */
+  #legal-dropdown-container { position: relative; }
+  #legal-dropdown.hidden { display: none; }
+  #legal-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    min-width: 190px;
+    z-index: 200;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+  }
+  #legal-dropdown a {
+    display: block;
+    padding: 11px 16px;
+    font-size: 13px;
+    color: #aaa;
+    text-decoration: none;
+    transition: background 0.12s, color 0.12s;
+  }
+  #legal-dropdown a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+
+</style>
+
+<style data-purpose="layout-and-components">
+  .bg-dot-grid {
+    background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .glass-card {
+    background: rgba(18,18,18,0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .sidebar-active {
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+  }
+  .action-btn-gradient {
+    background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    border: 1px solid rgba(255,255,255,0.15);
+    transition: all 0.2s;
+  }
+  .action-btn-gradient:hover { background: rgba(255,255,255,0.12); }
+
+  /* ── SIDEBAR (mirrors index.html) ── */
+  #sidebar { width: 220px; transition: width 0.25s ease; overflow: hidden; }
+  #sidebar.collapsed { width: 56px; }
+  #sidebar nav a, #sidebar nav button { white-space: nowrap; }
+  #sidebar .sidebar-label, #sidebar .sidebar-wordmark {
+    transition: opacity 0.18s ease, max-width 0.25s ease;
+    opacity: 1; max-width: 160px; overflow: hidden; white-space: nowrap;
+  }
+  #sidebar.collapsed .sidebar-label, #sidebar.collapsed .sidebar-wordmark {
+    opacity: 0; max-width: 0; pointer-events: none;
+  }
+  #sidebar.collapsed .p-4 { padding-left: 0; padding-right: 0; }
+  #sidebar.collapsed nav a, #sidebar.collapsed nav button, #sidebar.collapsed #sidebar-toggle {
+    justify-content: center; gap: 0; padding-left: 0; padding-right: 0;
+  }
+  #sidebar.collapsed .p-4 > .flex.items-center { justify-content: center; }
+  #collapse-icon { transition: transform 0.25s ease; }
+  #sidebar.collapsed #collapse-icon { transform: rotate(180deg); }
+
+  /* ── WALLET ADAPTER MODAL THEMING (copied from index.html) ── */
+  .wallet-adapter-modal-overlay {
+    background: rgba(0,0,0,0.7) !important;
+    backdrop-filter: blur(6px);
+  }
+  .wallet-adapter-modal-wrapper {
+    background: #0f0f0f !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.7) !important;
+    font-family: 'Inter', sans-serif !important;
+    padding: 28px 24px 24px !important;
+    max-width: 400px !important;
+    width: calc(100% - 32px) !important;
+    box-sizing: border-box !important;
+  }
+  .wallet-adapter-modal-title {
+    color: #fff !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+    padding: 0 36px !important;
+    margin: 2px 0 22px !important;
+  }
+  .wallet-adapter-modal-list {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+  .wallet-adapter-modal-list li { margin: 0 !important; padding: 0 !important; }
+  .wallet-adapter-modal-list .wallet-adapter-button {
+    width: 100% !important;
+    height: 52px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    padding: 0 18px !important;
+    margin: 0 !important;
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid rgba(255,255,255,0.07) !important;
+    border-radius: 14px !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #f5f5f5 !important;
+    transition: background .15s, border-color .15s !important;
+  }
+  .wallet-adapter-modal-list .wallet-adapter-button:hover {
+    background: rgba(255,255,255,0.07) !important;
+    border-color: rgba(255,255,255,0.14) !important;
+  }
+  .wallet-adapter-modal-list .wallet-adapter-button-start-icon,
+  .wallet-adapter-modal-list .wallet-adapter-button-start-icon img,
+  .wallet-adapter-modal-list .wallet-adapter-button-start-icon svg {
+    width: 26px !important;
+    height: 26px !important;
+    margin: 0 !important;
+  }
+  .wallet-adapter-modal-list .wallet-adapter-button-end-icon,
+  .wallet-adapter-modal-list .wallet-adapter-button span:last-child:not(:first-child) {
+    margin-left: auto !important;
+  }
+  .wallet-adapter-modal-list-more {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    margin: 16px auto 0 !important;
+    color: #888 !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+  }
+  .wallet-adapter-modal-list-more svg { fill: #888 !important; }
+  .wallet-adapter-modal-button-close {
+    background: rgba(255,255,255,0.05) !important;
+    top: 18px !important;
+    right: 18px !important;
+    padding: 8px !important;
+    border-radius: 10px !important;
+    transition: background .15s !important;
+  }
+  .wallet-adapter-modal-button-close:hover { background: rgba(255,255,255,0.1) !important; }
+
+  /* ── WALLET BUTTON (copied from index.html) ── */
+  #wallet-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  #wallet-btn:hover { background: rgba(255,255,255,0.14); }
+
+  /* ── WALLET DROPDOWN (copied from index.html) ── */
+  #wallet-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    min-width: 190px;
+    z-index: 200;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+  }
+  #wallet-dropdown.hidden { display: none; }
+  #wallet-dropdown a {
+    display: block;
+    padding: 11px 16px;
+    font-size: 13px;
+    color: #aaa;
+    text-decoration: none;
+    transition: background 0.12s, color 0.12s;
+  }
+  #wallet-dropdown a:hover { background: rgba(255,255,255,0.05); color: #fff; }
+
+  /* ── PAGE TABS ── */
+  .tab-active   { color:#fff; border-bottom: 2px solid #fff; }
+  .tab-inactive { color:#71717a; border-bottom: 2px solid transparent; }
+  .tab-inactive:hover { color:#fff; }
+
+  /* ── DEPOSIT CARD TABS ── */
+  .dtab-wrap {
+    display: flex;
+    background: rgba(0,0,0,0.4);
+    border-radius: 8px;
+    padding: 3px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .dtab {
+    flex: 1;
+    padding: 7px;
+    text-align: center;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: #71717a;
+    transition: all 0.15s;
+    border: none;
+    background: none;
+    font-family: 'Inter', sans-serif;
+  }
+  .dtab.active {
+    background: rgba(255,255,255,0.07);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* ── INCOME SIMULATOR ── */
+  .sim-amt-btn {
+    padding: 7px 14px;
+    font-size: 12px; font-weight: 500;
+    color: #52525b;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px; cursor: pointer;
+    transition: all 0.12s;
+    font-family: 'Inter', sans-serif;
+  }
+  .sim-amt-btn:hover { color: #a1a1aa; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+  .sim-amt-btn.active { color: #fff; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.28); font-weight: 600; }
+
+  /* ── ACCORDION ── */
+  details summary::-webkit-details-marker { display:none; }
+  details[open] summary svg { transform: rotate(180deg); }
+  details summary svg { transition: transform 0.2s; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom:24px; right:24px;
+    background: #121212;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 11px 18px;
+    font-size: 13px;
+    color: #e5e5e5;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+  }
+  #toast.show { opacity:1; transform:translateY(0); }
+  #toast.green { border-color: rgba(34,197,94,0.35); color:#4ade80; }
+  #toast.red   { border-color: rgba(239,68,68,0.35);  color:#f87171; }
+
+  /* ── PAGE FADE ── */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(14px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.45s ease both; }
+  .delay-1 { animation-delay: 0.05s; }
+  .delay-2 { animation-delay: 0.12s; }
+  .delay-3 { animation-delay: 0.20s; }
+
+  /* ── TAB PANELS ── */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── METRICS TABLE ── */
+  .metrics-table { width: 100%; border-collapse: collapse; }
+  .metrics-table tr { border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .metrics-table tr:last-child { border-bottom: none; }
+  .metrics-table td { padding: 11px 0; font-size: 13px; }
+  .metrics-table td:first-child { color: #71717a; }
+  .metrics-table td:last-child { text-align: right; color: #e5e5e5; font-size: 12px; font-family: monospace; }
+
+  /* ── ASSET / DOC ROWS ── */
+  .asset-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .asset-row:last-child { border-bottom: none; }
+
+  /* ── RISK BARS ── */
+  .risk-bar-wrap { height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+  .risk-bar { height: 100%; border-radius: 2px; background: rgba(255,255,255,0.4); }
+
+  /* ── CHART ── */
+  .chart-wrap { height: 180px; position: relative; }
+  #perf-canvas { display: block; }
+
+  /* ── SPREAD SELECTOR ── */
+  .spread-section {
+    margin-bottom: 18px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .spread-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .spread-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #52525b;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+  .spread-selected-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    font-family: 'Inter', monospace;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 5px;
+    padding: 2px 8px;
+    min-width: 38px;
+    text-align: center;
+  }
+  .spread-pills {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+    margin-bottom: 8px;
+  }
+  /* ── Deposit token selector (SOL / USDC) ── */
+  .dep-token-toggle {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .dep-token-pill {
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #71717a;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.12s;
+    font-family: 'Inter', sans-serif;
+  }
+  .dep-token-pill:hover { color: #d4d4d8; background: rgba(255,255,255,0.06); }
+  .dep-token-pill.active {
+    color: #fff;
+    background: rgba(99,102,241,0.18);
+    border-color: rgba(99,102,241,0.5);
+  }
+  /* ── Open positions list ── */
+  .positions-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; max-height: 440px; overflow-y: auto; }
+  .positions-list .empty-state { text-align: center; color: #52525b; font-size: 13px; padding: 28px 8px; }
+  .position-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 14px;
+  }
+  .position-pair { font-size: 14px; font-weight: 600; color: #fff; }
+  .position-tvl  { font-size: 20px; font-weight: 600; color: #4ade80; margin-top: 2px; }
+  .position-meta { font-size: 11px; color: #a1a1aa; margin-top: 6px; line-height: 1.5; }
+  .position-nft  { font-size: 10px; color: #52525b; margin-top: 6px; word-break: break-all; font-family: ui-monospace, monospace; }
+  .position-close-btn {
+    margin-top: 12px; width: 100%; padding: 9px; border-radius: 10px;
+    background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.35);
+    color: #f87171; font-weight: 600; font-size: 12px; cursor: pointer; transition: all 0.12s;
+  }
+  .position-close-btn:hover:not(:disabled) { background: rgba(239,68,68,0.2); }
+  .position-close-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  /* ── Close-position modal ── */
+  .close-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; }
+  .close-modal { background: #12121a; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 24px; width: 90%; max-width: 380px; position: relative; }
+  .close-modal-x { position: absolute; top: 14px; right: 16px; background: none; border: none; color: #71717a; font-size: 16px; cursor: pointer; }
+  .close-modal-title { font-size: 16px; font-weight: 700; color: #fff; }
+  .close-modal-sub { font-size: 13px; color: #fb923c; font-weight: 600; margin: 2px 0 16px; }
+  .close-options { display: flex; flex-direction: column; gap: 10px; }
+  .close-options button {
+    text-align: left; padding: 13px 14px; border-radius: 12px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+    color: #fff; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.12s;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .close-options button:hover { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.5); }
+  .close-options .opt-sub { font-size: 11px; font-weight: 400; color: #a1a1aa; }
+  .spread-pill {
+    padding: 7px 4px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: #52525b;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.12s;
+    white-space: nowrap;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.01em;
+  }
+  .spread-pill:hover {
+    color: #a1a1aa;
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.12);
+  }
+  .spread-pill.active {
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.28);
+    font-weight: 600;
+  }
+  .spread-custom-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .spread-custom-input {
+    flex: 1;
+    background: rgba(255,255,255,0.04) !important;
+    background-color: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 7px;
+    padding: 6px 10px;
+    font-size: 12px;
+    color: #e5e5e5 !important;
+    font-family: 'Inter', sans-serif;
+    outline: none !important;
+    box-shadow: none !important;
+    transition: border-color 0.15s, background 0.15s;
+    width: 100%;
+  }
+  .spread-custom-input:focus {
+    border-color: rgba(255,255,255,0.2) !important;
+    background: rgba(255,255,255,0.06) !important;
+  }
+  .spread-custom-input::placeholder { color: #3f3f46 !important; }
+  .spread-custom-input.error { border-color: rgba(239,68,68,0.45) !important; }
+  .spread-custom-apply {
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #a1a1aa;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.12s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .spread-custom-apply:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  /* ── LP WIDTH SELECTOR (shown after entering deposit amount) ── */
+  #lp-width-section {
+    display: none;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    animation: fadeUp 0.25s ease both;
+  }
+  #lp-width-section.visible { display: block; }
+  .lp-width-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .lp-width-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #52525b;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+  .lp-width-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 5px;
+    padding: 2px 8px;
+    min-width: 38px;
+    text-align: center;
+  }
+  .lp-pills {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+    margin-bottom: 8px;
+  }
+  .lp-pill {
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: #52525b;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.12s;
+    font-family: 'Inter', sans-serif;
+  }
+  .lp-pill:hover {
+    color: #a1a1aa;
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.12);
+  }
+  .lp-pill.active {
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.28);
+    font-weight: 600;
+  }
+  .lp-custom-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .lp-custom-input {
+    flex: 1;
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 7px;
+    padding: 6px 10px;
+    font-size: 12px;
+    color: #e5e5e5 !important;
+    font-family: 'Inter', sans-serif;
+    outline: none !important;
+    box-shadow: none !important;
+    transition: border-color 0.15s;
+  }
+  .lp-custom-input:focus { border-color: rgba(255,255,255,0.2) !important; }
+  .lp-custom-input::placeholder { color: #3f3f46 !important; }
+  .lp-custom-input.error { border-color: rgba(239,68,68,0.45) !important; }
+  .lp-custom-apply {
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #a1a1aa;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.12s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .lp-custom-apply:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.2);
+  }
+  .lp-hint {
+    font-size: 10px;
+    color: #3f3f46;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  /* ── GLOBAL INPUT RESET (overrides Tailwind forms plugin) ── */
+  input[type="number"],
+  input[type="text"] {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    color: #e5e5e5 !important;
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="number"]:focus,
+  input[type="text"]:focus {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    ring: none !important;
+  }
+
+  /* ── TOKEN INPUT ── */
+  .token-input-wrap {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .token-input-wrap:focus-within {
+    border-color: rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.06);
+  }
+  .token-input {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    font-size: 22px;
+    font-weight: 500;
+    color: #e5e5e5 !important;
+    font-family: 'Inter', sans-serif;
+    width: 100%;
+    padding: 0 !important;
+  }
+  .token-input::placeholder { color: #3f3f46 !important; }
+  .token-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #e5e5e5;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ── SEARCH INPUT (top nav) ── */
+  header input[type="text"] {
+    background-color: #121212 !important;
+    border-color: rgba(255,255,255,0.1) !important;
+    color: #e5e5e5 !important;
+  }
+  header input[type="text"]:focus {
+    background-color: #121212 !important;
+    border-color: rgba(255,255,255,0.2) !important;
+    box-shadow: none !important;
+  }
+</style>
+<base target="_blank">
+</head>
+
+<body class="bg-[#060606] text-[#e5e5e5] selection:bg-blue-500/30">
+<div class="flex min-h-screen relative">
+
+  <!-- ══════════════ SIDEBAR ══════════════ -->
+  <aside id="sidebar" class="flex flex-col shrink-0 sticky top-0 h-screen" style="background:#0a0a0a;border-right:1px solid rgba(255,255,255,0.1);">
+    <div class="p-4">
+      <div class="flex items-center mb-10" style="min-height:32px;">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-[#c9b87a] rounded-lg flex items-center justify-center flex-shrink-0 cursor-pointer" onclick="location.href='/index.html'">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" style="transition:transform 0.6s cubic-bezier(0.4,0,0.2,1);" onmouseenter="this.style.transform='rotate(180deg)'" onmouseleave="this.style.transform='rotate(0)'">
+              <polygon points="50,7 89,28.5 89,71.5 50,93 11,71.5 11,28.5" fill="#1a1610"/>
+            </svg>
+          </div>
+          <div class="sidebar-wordmark">
+            <h1 class="text-xl font-bold tracking-tight leading-none">Cain</h1>
+            <p class="text-[10px] uppercase tracking-widest" style="color:#888;">by Cain</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="space-y-1">
+        <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-white font-medium" style="background:rgba(255,255,255,0.05);" href="/index.html">
+          <svg class="w-5 h-5 flex-shrink-0" style="color:#888;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          <span class="sidebar-label">Earn</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 transition-colors hover:text-white" style="color:#888;" href="/Swap.html">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          <span class="sidebar-label">Swap</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 transition-colors hover:text-white" style="color:#888;" href="/Portfolio.html">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          <span class="sidebar-label">Portfolio</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 transition-colors hover:text-white" style="color:#888;" href="/Tokenomics.html">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 7h.01M2 2h8l12 12-8 8L2 10V2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          <span class="sidebar-label">Token</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-2 transition-colors hover:text-white" style="color:#888;" href="/faucet">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          <span class="sidebar-label">Faucet</span>
+        </a>
+        <button class="w-full flex items-center gap-3 px-3 py-2 transition-colors hover:text-white" style="color:#888;">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          <span class="sidebar-label">More</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="mt-auto p-4" style="border-top:1px solid rgba(255,255,255,0.1);">
+      <button id="sidebar-toggle" aria-label="Collapse sidebar"
+              class="w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:text-white hover:bg-white/5" style="color:#888;">
+        <svg id="collapse-icon" class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 6l-6 6 6 6"/>
+        </svg>
+        <span class="sidebar-label">Collapse</span>
+      </button>
+    </div>
+  </aside>
+  <!-- ══ END SIDEBAR ══ -->
+
+  <!-- ══════════════ MAIN ══════════════ -->
+  <main class="flex-1 bg-dot-grid overflow-y-auto">
+
+    <!-- TOP NAV -->
+    <header class="flex items-center justify-between px-10 py-4 sticky top-0 z-20 bg-[#060606]/80 backdrop-blur-md border-b border-white/5">
+      <div class="relative w-80">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-4 w-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </div>
+        <input class="block w-full bg-[#121212] border border-white/10 rounded-lg py-2 pl-10 pr-3 text-sm placeholder-zinc-500 focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all" placeholder="Search vaults…" type="text">
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+          <span class="text-[10px] text-zinc-500 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">⌘K</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Legal dropdown -->
+        <div class="relative" id="legal-dropdown-container">
+          <button id="legal-dropdown-btn" class="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            Legal
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          </button>
+          <div id="legal-dropdown" class="hidden absolute right-0 top-full mt-2 w-48 bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50">
+            <a href="/termsofservice.html" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">ToS</a>
+            <a href="/termsandconditions.html" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">T&amp;S</a>
+            <a href="/Riskdisclosurestatement.html" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">Risk Disclosure</a>
+            <a href="/BorrowTerms.html" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">Borrow Terms</a>
+            <a href="/Earnterms.html" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">Earn Terms</a>
+          </div>
+        </div>
+
+        <!-- Utility icons -->
+        <button class="p-2 text-zinc-400 hover:bg-white/5 rounded-lg transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </button>
+        <div class="relative" id="community-dropdown-container">
+          <button id="community-dropdown-btn" class="p-2 text-zinc-400 hover:bg-white/5 rounded-lg transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          </button>
+          <div id="community-dropdown" class="hidden absolute right-0 top-full mt-2 w-48 bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50">
+            <a href="https://github.com/Invinciblebond/cainfin" target="_blank" rel="noopener" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">GitHub</a>
+            <a href="https://discord.gg/FILL_IN" target="_blank" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">Discord</a>
+            <a href="https://reddit.com/r/FILL_IN" target="_blank" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">Reddit</a>
+            <a href="https://t.me/FILL_IN" target="_blank" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">Telegram</a>
+            <a href="https://FILL_IN.com/token" target="_blank" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">Cain Token</a>
+            <a href="mailto:contact@FILL_IN.com" class="block px-4 py-2.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 transition-colors">Contact</a>
+          </div>
+        </div>
+
+        <!-- ══ GLOBAL WALLET: React island (copied from index.html) ══ -->
+        <div style="position:relative;">
+          <div id="cain-wallet-root"></div>
+        </div>
+      </div>
+    </header>
+    <!-- END TOP NAV -->
+
+    <div class="max-w-[1400px] mx-auto px-10 pt-12 pb-24">
+
+      <!-- VAULT HERO -->
+      <div class="mb-10 fade-up delay-1">
+        <div class="w-20 h-20 bg-zinc-900 rounded-2xl mb-6 flex items-center justify-center border border-white/10 shadow-2xl">
+          <span class="text-3xl font-bold text-white tracking-tight">SP</span>
+        </div>
+        <div class="flex items-center gap-4 mb-4">
+          <h2 class="text-6xl font-semibold text-white tracking-tight">S&amp;P500 LP</h2>
+          <div class="flex gap-2">
+            <button class="p-2 hover:bg-white/5 rounded-lg border border-white/5 transition-colors">
+              <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            </button>
+            <button class="p-2 hover:bg-white/5 rounded-lg border border-white/5 transition-colors">
+              <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">Concentrated Liquidity Pool</span>
+          <span id="pool-pair-badge" class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">…</span>
+          <span class="bg-white/5 border border-white/10 px-3 py-1 rounded-full text-xs font-medium text-zinc-400 uppercase tracking-wider">Audited</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-12 gap-12 fade-up delay-3">
+
+        <!-- ══ LEFT COLUMN ══ -->
+        <div class="col-span-8 space-y-0">
+
+          <!-- NAV TABS -->
+          <div class="flex gap-8 mb-10 border-b border-white/5 fade-up delay-2" id="page-tabs">
+            <button class="pb-4 text-sm font-medium transition-colors tab-active" data-tab="overview">Overview</button>
+            <button class="pb-4 text-sm font-medium transition-colors tab-inactive" data-tab="performance">Performance</button>
+            <button class="pb-4 text-sm font-medium transition-colors tab-inactive" data-tab="assets">Assets</button>
+            <button class="pb-4 text-sm font-medium transition-colors tab-inactive" data-tab="details">Details</button>
+            <button class="pb-4 text-sm font-medium transition-colors tab-inactive" data-tab="docs">Documents</button>
+          </div>
+
+          <!-- ══ PANEL: OVERVIEW ══ -->
+          <div id="panel-overview" class="panel active space-y-14">
+
+            <!-- Key metrics -->
+            <div class="grid grid-cols-3 gap-8">
+              <div>
+                <p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3 underline decoration-dotted underline-offset-4">Vault APY</p>
+                <p class="text-5xl font-medium text-white tracking-tight" id="overview-apy">—</p>
+                <p class="text-xs text-zinc-600 mt-2">Trailing 30d</p>
+              </div>
+              <div>
+                <p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3 underline decoration-dotted underline-offset-4">TVL</p>
+                <p class="text-5xl font-medium text-white tracking-tight" id="overview-tvl">—</p>
+                <p class="text-xs text-zinc-600 mt-2">Total value locked</p>
+              </div>
+              <div>
+                <p class="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3">Available networks</p>
+                <div class="flex items-center -space-x-2">
+                  <div class="w-8 h-8 rounded-full bg-purple-600 border-2 border-[#060606] flex items-center justify-center text-[10px] font-bold">SPY</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- About -->
+            <div>
+              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">About</h3>
+              <div class="space-y-4 text-lg leading-relaxed text-zinc-300">
+                <p>The S&amp;P500 LP vault accepts USDC deposits on Solana and zaps 100% of capital into the Bitget-backed byreal CLMM SPYx-USDC pool at a user-selected LP width.</p>
+                <p>Returns come from trading fees earned on the SPYx-USDC pair and are reflected directly in the S&amp;P500 LP token price rather than distributed as yield — providing passive, compounding exposure to concentrated liquidity returns entirely on-chain. Upon redemption, USDC is returned with no fees.</p>
+                <p>The vault is designed for users who want LP yield without manually managing tick ranges, rebalancing, or fee collection.</p>
+              </div>
+            </div>
+
+            <!-- Risk Profile -->
+            <div class="grid grid-cols-2 gap-8">
+              <div>
+                <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">Strategy</h3>
+                <p class="text-sm text-zinc-400 leading-relaxed">The S&amp;P500 LP vault provides on-chain, passive access to concentrated-liquidity fee income from the SPYx-USDC trading pair on Solana. Capital is zapped into a byreal CLMM position at the user's chosen LP width, with fees auto-compounded back into the position.</p>
+                <br/>
+                <p class="text-sm text-zinc-400 leading-relaxed">Designed for users who want LP returns without managing positions manually. The pool is hosted on <a href="https://www.bitget.com" target="_blank" rel="noopener" class="text-zinc-300 hover:text-white transition-colors">Bitget's byreal.io</a> CLMM DEX; the S&amp;P500 LP pool trades SPYx against USDC.</p>
+              </div>
+              <div>
+                <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">Risk Profile</h3>
+                <div class="space-y-4 mb-6">
+                  <div>
+                    <div class="flex justify-between text-xs text-zinc-500 mb-2"><span>Impermanent Loss</span><span>High</span></div>
+                    <div class="risk-bar-wrap"><div class="risk-bar" style="width:75%"></div></div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-xs text-zinc-500 mb-2"><span>Smart Contract Risk</span><span>Low–Med</span></div>
+                    <div class="risk-bar-wrap"><div class="risk-bar" style="width:30%"></div></div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-xs text-zinc-500 mb-2"><span>SPYx Price Risk</span><span>Medium</span></div>
+                    <div class="risk-bar-wrap"><div class="risk-bar" style="width:55%"></div></div>
+                  </div>
+                </div>
+                <table class="metrics-table">
+                  <tr><td>Asset Class</td><td>Liquidity Pool</td></tr>
+                  <tr><td>Pair</td><td>SPYx / USDC</td></tr>
+                  <tr><td>Chain</td><td>Solana</td></tr>
+                  <tr><td>Partners</td><td><a href="https://www.bitget.com" target="_blank" rel="noopener" class="hover:text-white transition-colors">Bitget's byreal.io</a></td></tr>
+                </table>
+              </div>
+            </div>
+
+            <!-- Asset Manager -->
+            <div>
+              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Integration Partners</h3>
+              <div class="glass-card rounded-2xl p-6 flex items-center gap-5">
+                <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-sm font-bold text-zinc-300 flex-shrink-0">BR</div>
+                <div class="flex-1">
+                  <p class="text-sm font-semibold text-white mb-1">Bitget's byreal.io</p>
+                  <p class="text-sm text-zinc-500 leading-relaxed">byreal.io is the Bitget-backed concentrated-liquidity DEX on Solana that hosts the SPYx/USDC CLMM pool this vault deposits into. The S&amp;P500 LP pool routes 100% of capital into a byreal CLMM position at your selected range.</p>
+                  <a href="https://www.bitget.com" target="_blank" rel="noopener" class="text-xs text-zinc-400 hover:text-white transition-colors mt-2 inline-block">bitget.com ↗</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- FAQ -->
+            <div class="space-y-8 pt-8 border-t border-white/5">
+              <h3 class="text-2xl font-semibold text-white">Risk FAQ</h3>
+              <div class="space-y-4">
+                <details class="group glass-card rounded-xl overflow-hidden" open>
+                  <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
+                    <span class="text-lg font-medium text-white">Is the 13% APY real?</span>
+                    <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                  </summary>
+                  <div class="px-6 pb-6 text-zinc-400 leading-relaxed">Yes — this is how concentrated liquidity pools work. The APR is derived from actual trading fees collected by the SPYx-USDC pool on byreal CLMM, annualised from the last 30 days of fee data. Fees vary with market volatility and trading volume; past performance does not guarantee future returns.</div>
+                </details>
+                <details class="group glass-card rounded-xl overflow-hidden">
+                  <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
+                    <span class="text-lg font-medium text-white">What fees does Cain charge?</span>
+                    <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                  </summary>
+                  <div class="px-6 pb-6 text-zinc-400 leading-relaxed">The $0.20 flat fee per deposit and withdrawal is the only fee Cain takes.</div>
+                </details>
+                <details class="group glass-card rounded-xl overflow-hidden">
+                  <summary class="flex items-center justify-between p-6 cursor-pointer hover:bg-white/5 transition-colors">
+                    <span class="text-lg font-medium text-white">What happens if my LP range goes out of bounds?</span>
+                    <svg class="w-5 h-5 text-zinc-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                  </summary>
+                  <div class="px-6 pb-6 text-zinc-400 leading-relaxed">If the SPYx price moves outside your selected LP width, your position stops earning fees until the price returns to range. You will receive an email notification when your position goes out of range. Auto-adjustment will soon be available as a toggle — for now, you can manually rebalance or wait for price to re-enter your range.</div>
+                </details>
+              </div>
+            </div>
+
+            <!-- Discord CTA -->
+            <div class="glass-card rounded-2xl p-8 flex items-center justify-between border border-blue-500/20 bg-blue-500/5">
+              <div>
+                <h4 class="text-xl font-bold text-white mb-2">Still have a question?</h4>
+                <p class="text-zinc-400">Join our Discord and chat with the technical team directly.</p>
+              </div>
+              <button class="bg-white text-black px-6 py-3 rounded-xl font-bold hover:bg-zinc-200 transition-colors">Join our Discord</button>
+            </div>
+
+          </div>
+          <!-- ══ END PANEL: OVERVIEW ══ -->
+
+          <!-- ══ PANEL: PERFORMANCE ══ -->
+          <div id="panel-performance" class="panel space-y-10">
+
+            <!-- Live Pool Stats Row -->
+            <div class="grid grid-cols-4 gap-4" id="perf-live-stats">
+              <div class="glass-card rounded-2xl p-5">
+                <div class="text-xs text-zinc-500 uppercase tracking-widest mb-2">24h Fees</div>
+                <div class="text-xl font-semibold text-white font-mono" id="stat-fee24h">—</div>
+                <div class="text-xs text-zinc-600 mt-1">Pool earnings</div>
+              </div>
+              <div class="glass-card rounded-2xl p-5">
+                <div class="text-xs text-zinc-500 uppercase tracking-widest mb-2">7d Fees</div>
+                <div class="text-xl font-semibold text-white font-mono" id="stat-fee7d">—</div>
+                <div class="text-xs text-zinc-600 mt-1">Rolling 7 days</div>
+              </div>
+              <div class="glass-card rounded-2xl p-5">
+                <div class="text-xs text-zinc-500 uppercase tracking-widest mb-2">Pool TVL</div>
+                <div class="text-xl font-semibold text-white font-mono" id="stat-tvl">—</div>
+                <div class="text-xs text-zinc-600 mt-1">Total value locked</div>
+              </div>
+              <div class="glass-card rounded-2xl p-5">
+                <div class="text-xs text-zinc-500 uppercase tracking-widest mb-2">Fee APR</div>
+                <div class="text-xl font-semibold font-mono" id="stat-apr" style="color:#4ade80;">—</div>
+                <div class="text-xs text-zinc-600 mt-1">Annualised (live)</div>
+              </div>
+            </div>
+
+            <!-- S&P 500 Price Chart (underlying asset of this SPYx-USDC LP) -->
+            <div>
+              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6">S&amp;P 500 Price · 7 Day</h3>
+              <div class="glass-card rounded-2xl p-6">
+                <div class="flex justify-between items-start mb-4">
+                  <div>
+                    <div class="text-xs text-zinc-500 uppercase tracking-widest mb-2">S&amp;P 500 / USDC · byreal CLMM pool</div>
+                    <div class="text-xs text-zinc-600" id="sol-vol">7d volatility: —</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-2xl font-medium text-white" id="sol-price-display">$—</div>
+                  </div>
+                </div>
+                <!-- Legend — updated to include fee accrual line -->
+                <div class="flex gap-5 mb-4">
+                  <div class="flex items-center gap-2">
+                    <div style="width:20px;height:2px;background:#a78bfa;border-radius:2px;"></div>
+                    <span class="text-xs text-zinc-400">S&amp;P 500 price</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div style="width:20px;height:2px;background:rgba(255,255,255,0.75);border-radius:2px;"></div>
+                    <span class="text-xs text-zinc-400">Fee accrual (APR)</span>
+                  </div>
+                  <div id="sol-status" class="text-xs text-zinc-600 ml-auto self-center"></div>
+                </div>
+                <div style="position:relative;">
+                  <canvas id="perf-canvas" height="200"></canvas>
+                  <div id="perf-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(6,6,6,0.6);border-radius:8px;">
+                    <span class="text-xs text-zinc-500">Loading S&amp;P 500 data…</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Historical Returns + Monthly Bar -->
+            <div class="grid grid-cols-2 gap-8">
+              <div class="glass-card rounded-2xl p-6">
+                <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Historical Returns</h3>
+                <table class="metrics-table">
+                  <tr><td>7 Day Return</td><td id="ret-7d">—</td></tr>
+                  <tr><td>30 Day Return</td><td id="ret-30d">—</td></tr>
+                  <tr><td>90 Day Return</td><td id="ret-90d">—</td></tr>
+                  <tr><td>Since Inception</td><td id="ret-inception">—</td></tr>
+                  <tr><td>Annualized APY</td><td id="ret-apy" style="color:#4ade80;">—</td></tr>
+                </table>
+              </div>
+              <div class="glass-card rounded-2xl p-6">
+                <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Monthly Fee Yield</h3>
+                <div class="chart-wrap" style="height:160px;">
+                  <canvas id="yield-chart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Income Simulator -->
+            <div>
+              <button id="simulate-toggle" style="
+                display:flex; align-items:center; gap:10px;
+                background:rgba(255,255,255,0.04);
+                border:1px solid rgba(255,255,255,0.1);
+                border-radius:12px; padding:12px 20px;
+                font-size:13px; font-weight:600; color:#a1a1aa;
+                cursor:pointer; transition:all 0.2s; width:100%;
+                font-family:'Inter',sans-serif;
+              ">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="simulate-chevron" style="transition:transform 0.2s;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+                <span>Simulate fee income annually</span>
+                <span style="margin-left:auto;font-size:11px;font-weight:400;color:#52525b;" id="simulate-apr-badge">APR: —</span>
+              </button>
+
+              <div id="simulate-panel" style="display:none; margin-top:8px;">
+                <div class="glass-card rounded-2xl p-6">
+
+                  <!-- Amount selector -->
+                  <div style="margin-bottom:24px;">
+                    <div style="font-size:11px;font-weight:600;color:#52525b;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px;">Deposit amount</div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                      <button class="sim-amt-btn active" data-amt="100">$100</button>
+                      <button class="sim-amt-btn" data-amt="500">$500</button>
+                      <button class="sim-amt-btn" data-amt="1000">$1,000</button>
+                      <button class="sim-amt-btn" data-amt="5000">$5,000</button>
+                      <button class="sim-amt-btn" data-amt="custom">Custom</button>
+                      <input id="sim-custom-input" type="number" min="1" placeholder="Enter amount…" style="
+                        display:none; flex:1; min-width:120px;
+                        background:rgba(255,255,255,0.04);
+                        border:1px solid rgba(255,255,255,0.1);
+                        border-radius:8px; padding:7px 12px;
+                        font-size:12px; color:#e5e5e5;
+                        font-family:'Inter',sans-serif; outline:none;
+                      ">
+                    </div>
+                  </div>
+
+                  <!-- Summary stats -->
+                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;">
+                    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;">
+                      <div style="font-size:10px;color:#52525b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Daily income</div>
+                      <div style="font-size:16px;font-weight:600;color:#fff;font-family:monospace;" id="sim-daily">—</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;">
+                      <div style="font-size:10px;color:#52525b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Monthly income</div>
+                      <div style="font-size:16px;font-weight:600;color:#fff;font-family:monospace;" id="sim-monthly">—</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;">
+                      <div style="font-size:10px;color:#52525b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Annual income</div>
+                      <div style="font-size:16px;font-weight:600;color:#4ade80;font-family:monospace;" id="sim-annual">—</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;">
+                      <div style="font-size:10px;color:#52525b;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">End balance</div>
+                      <div style="font-size:16px;font-weight:600;color:#fff;font-family:monospace;" id="sim-endbal">—</div>
+                    </div>
+                  </div>
+
+                  <!-- Chart -->
+                  <div style="display:flex;gap:16px;margin-bottom:10px;">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                      <div style="width:18px;height:2px;background:#4ade80;border-radius:2px;"></div>
+                      <span style="font-size:11px;color:#a1a1aa;">Your balance (projected)</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                      <div style="width:18px;height:2px;background:#a78bfa;border-radius:2px;opacity:0.8;"></div>
+                      <span style="font-size:11px;color:#a1a1aa;">S&amp;P 500 price (7d, scaled)</span>
+                    </div>
+                  </div>
+                  <div style="position:relative;">
+                    <canvas id="sim-canvas" height="180"></canvas>
+                  </div>
+
+                  <div style="margin-top:12px;font-size:10px;color:#3f3f46;text-align:right;" id="sim-footnote">—</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <!-- ══ END PANEL: PERFORMANCE ══ -->
+
+          <!-- ══ PANEL: ASSETS ══ -->
+          <div id="panel-assets" class="panel space-y-8">
+
+            <div class="glass-card rounded-2xl p-6">
+              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Pool Composition</h3>
+              <div class="asset-row">
+                <div class="flex items-center gap-4">
+                  <div class="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-xs font-bold text-purple-400">SPY</div>
+                  <div>
+                    <div class="text-sm font-medium text-white">SPYx</div>
+                    <div class="text-xs text-zinc-500 mt-0.5">SPL · S&amp;P 500 synthetic · Byreal CLMM</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-medium font-mono text-white">~50%</div>
+                  <div class="text-xs text-zinc-500">Pool side A</div>
+                </div>
+              </div>
+              <div class="asset-row">
+                <div class="flex items-center gap-4">
+                  <div class="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-xs font-bold text-blue-400">$</div>
+                  <div>
+                    <div class="text-sm font-medium text-white">USDC</div>
+                    <div class="text-xs text-zinc-500 mt-0.5">Circle · Stablecoin · Pool side B</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-medium font-mono text-white">~50%</div>
+                  <div class="text-xs text-zinc-500">Pool side B</div>
+                </div>
+              </div>
+              <p class="text-xs text-zinc-600 mt-4 leading-relaxed">Actual ratio drifts with SPYx price within your selected LP range. Outside the range the position becomes 100% of one side until price returns.</p>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6">
+              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Routing</h3>
+              <div class="asset-row">
+                <div class="flex items-center gap-4">
+                  <div class="w-9 h-9 rounded-lg bg-green-900/30 border border-green-500/20 flex items-center justify-center text-xs font-bold text-green-400">Ju</div>
+                  <div><div class="text-sm font-medium text-white">Jupiter Aggregator</div><div class="text-xs text-zinc-500 mt-0.5">Best-execution swaps at deposit/withdraw</div></div>
+                </div>
+                <div class="text-sm font-mono text-zinc-400">Auto</div>
+              </div>
+              <div class="asset-row">
+                <div class="flex items-center gap-4">
+                  <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-zinc-300">Br</div>
+                  <div><div class="text-sm font-medium text-white">Byreal CLMM</div><div class="text-xs text-zinc-500 mt-0.5">Concentrated-liquidity venue</div></div>
+                </div>
+                <div class="text-sm font-mono text-zinc-400">Native</div>
+              </div>
+              <div class="asset-row">
+                <div class="flex items-center gap-4">
+                  <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-zinc-300">Ca</div>
+                  <div><div class="text-sm font-medium text-white">Cain Finance</div><div class="text-xs text-zinc-500 mt-0.5">Vault management & fee collection</div></div>
+                </div>
+                <div class="text-sm font-mono text-zinc-400">Live</div>
+              </div>
+            </div>
+
+          </div>
+          <!-- ══ END PANEL: ASSETS ══ -->
+
+          <!-- ══ PANEL: DETAILS ══ -->
+          <div id="panel-details" class="panel space-y-8">
+
+            <div class="grid grid-cols-2 gap-8">
+              <div class="glass-card rounded-2xl p-6">
+                <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Vault Parameters</h3>
+                <table class="metrics-table">
+                  <tr><td>Payout schedule</td><td>Immediate · streaming (paid as fees accrue)</td></tr>
+                  <tr><td>Yield type</td><td>LP fees, auto-compounded</td></tr>
+                  <tr><td>Performance fee</td><td>None</td></tr>
+                  <tr><td>Flat tx fee</td><td>$0.20 deposit &amp; withdraw</td></tr>
+                  <tr><td>Avg. redeem time</td><td>Instant</td></tr>
+                  <tr><td>Min. deposit</td><td>$1 USDC</td></tr>
+                  <tr><td>Security reviews</td><td>Fully audited</td></tr>
+                  <tr><td>Architecture</td><td>Solana · Byreal CLMM</td></tr>
+                </table>
+              </div>
+              <div class="glass-card rounded-2xl p-6">
+                <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Smart Contracts</h3>
+                <div class="space-y-4">
+                  <div class="flex items-center justify-between py-2 border-b border-white/5">
+                    <span class="text-xs text-zinc-500">SPYx-USDC Pool (Byreal)</span>
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-mono text-zinc-500">27x6...DUZy</span>
+                      <button class="copy-addr-btn text-[10px] text-zinc-600 hover:text-zinc-300 transition-colors border border-white/5 px-1.5 py-0.5 rounded" data-addr="27x6aSxcAm6SoazoxmmTtFg6fWMQuNmdKJmHagq1DUZy">Copy</button>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between py-2">
+                    <span class="text-xs text-zinc-500">Cain Multisig Treasury</span>
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-mono text-zinc-500">Kd3R...xHwZ</span>
+                      <button class="copy-addr-btn text-[10px] text-zinc-600 hover:text-zinc-300 transition-colors border border-white/5 px-1.5 py-0.5 rounded" data-addr="Kd3Rfno1ja3ABNhWEFDBmb2FEzXPBSiUooopm98xHwZ">Copy</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Integrations -->
+            <div class="glass-card rounded-2xl p-6">
+              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Integrations</h3>
+              <div class="grid grid-cols-3 gap-6">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-lg bg-emerald-900/30 border border-emerald-500/20 flex items-center justify-center text-xs font-bold text-emerald-400">SR</div>
+                  <div>
+                    <div class="text-sm font-medium text-white">Solana-Native Routing</div>
+                    <div class="text-xs text-zinc-500">SPL · CLMM execution layer</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-lg bg-purple-900/30 border border-purple-500/20 flex items-center justify-center text-xs font-bold text-purple-400">Ph</div>
+                  <div>
+                    <div class="text-sm font-medium text-white">Phantom</div>
+                    <div class="text-xs text-zinc-500">Native Solana wallet</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-lg bg-green-900/30 border border-green-500/20 flex items-center justify-center text-xs font-bold text-green-400">Ju</div>
+                  <div>
+                    <div class="text-sm font-medium text-white">Jupiter</div>
+                    <div class="text-xs text-zinc-500">Swap aggregator</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <!-- ══ END PANEL: DETAILS ══ -->
+
+          <!-- ══ PANEL: DOCUMENTS ══ -->
+          <div id="panel-docs" class="panel space-y-8">
+
+            <div class="glass-card rounded-2xl p-6">
+              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-5">Legal Documents</h3>
+              <div class="space-y-0">
+                <div class="asset-row">
+                  <div class="flex items-center gap-4">
+                    <div class="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-base">📋</div>
+                    <div>
+                      <div class="text-sm font-medium text-white">Risk Disclosure Statement</div>
+                      <div class="text-xs text-zinc-500 mt-0.5">HTML · Compliance</div>
+                    </div>
+                  </div>
+                  <a href="/Riskdisclosurestatement.html" class="text-xs text-zinc-400 hover:text-white transition-colors flex items-center gap-1">View ↗</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6">
+              <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3">Ecosystem Partners</h3>
+              <p class="text-sm text-zinc-400 leading-relaxed mb-4">The S&amp;P500 LP pool is a native SPYx/USDC concentrated-liquidity vault on Solana, built on top of <strong class="text-zinc-300">Bitget's byreal.io</strong> — the Bitget-backed CLMM DEX that hosts the underlying SPYx/USDC pool. Cain Finance is not affiliated with, and does not operate or control, Bitget or byreal.io.</p>
+              <a href="https://www.bitget.com" target="_blank" rel="noopener" class="text-xs text-zinc-400 hover:text-white transition-colors inline-flex items-center gap-1">Visit bitget.com ↗</a>
+            </div>
+
+          </div>
+          <!-- ══ END PANEL: DOCUMENTS ══ -->
+
+        </div>
+        <!-- ══ END LEFT ══ -->
+
+        <!-- ══ RIGHT: DEPOSIT CARD ══ -->
+        <aside class="col-span-4 sticky top-28 h-fit">
+          <div class="glass-card rounded-[28px] p-7 shadow-2xl overflow-hidden relative">
+
+            <!-- Glow -->
+            <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-green-500/10 rounded-full blur-[80px] -z-10 pointer-events-none"></div>
+
+            <!-- Deposit / Withdraw tabs -->
+            <div class="dtab-wrap">
+              <button class="dtab active" data-dtab="deposit">Deposit</button>
+              <button class="dtab" data-dtab="withdraw">My Positions</button>
+            </div>
+
+            <!-- APY + TVL highlight -->
+            <div class="flex justify-between items-center mb-6 pb-5 border-b border-white/5">
+              <div>
+                <p class="text-[10px] font-medium text-zinc-500 uppercase tracking-widest mb-1">Vault APY</p>
+                <p class="text-2xl font-semibold text-green-400" id="deposit-apy">—</p>
+              </div>
+              <div class="text-right">
+                <p class="text-[10px] font-medium text-zinc-500 uppercase tracking-widest mb-1">TVL</p>
+                <p class="text-2xl font-semibold text-white" id="deposit-tvl">—</p>
+              </div>
+            </div>
+
+            <!-- ── SPREAD SELECTOR (always visible) ── -->
+            <div class="spread-section">
+              <div class="spread-label-row">
+                <span class="spread-label">Range</span>
+                <span class="spread-selected-badge" id="spread-badge">1%</span>
+              </div>
+              <div class="spread-pills">
+                <button class="spread-pill active" data-spread="1%">1%</button>
+                <button class="spread-pill" data-spread="2.5%">2.5%</button>
+                <button class="spread-pill" data-spread="5%">5%</button>
+                <button class="spread-pill" data-spread="10%">10%</button>
+                <button class="spread-pill" data-spread="20%">20%</button>
+              </div>
+              <div class="spread-custom-row">
+                <input class="spread-custom-input" id="spread-custom-input" type="number" min="0.01" max="100" step="0.01" placeholder="Custom %">
+                <button class="spread-custom-apply" id="spread-custom-apply">Apply</button>
+              </div>
+            </div>
+
+            <!-- ── LOCKED STATE (no wallet) ── -->
+            <div id="card-locked" class="py-6 text-center space-y-4">
+              <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mx-auto border border-white/10 text-2xl">🔒</div>
+              <p class="text-base font-semibold text-white">Connect your wallet</p>
+              <p class="text-sm text-zinc-500 leading-relaxed">Connect MetaMask (Solana) to deposit into the S&amp;P500 LP pool.</p>
+              <button id="connect-card-btn" class="w-full mt-2 action-btn-gradient py-3.5 rounded-2xl text-white font-bold shadow-lg shadow-black/40">
+                Connect Wallet to Deposit
+              </button>
+              <p class="text-[11px] text-zinc-600">By depositing you agree to the <a href="/Earnterms.html" class="text-zinc-500 underline">Earn Terms</a> and <a href="/Riskdisclosurestatement.html" class="text-zinc-500 underline">Risk Disclosure</a>.<br/>Avg. redemption: ~30 seconds.</p>
+            </div>
+
+            <!-- ── DEPOSIT FORM ── -->
+            <div id="deposit-form" class="hidden">
+              <div class="mb-4">
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-xs text-zinc-500">You deposit</label>
+                </div>
+                <div class="token-input-wrap">
+                  <input id="deposit-amount" class="token-input" placeholder="0.00" type="number" min="0" step="0.01">
+                  <div class="token-badge">
+                    <div id="deposit-token-icon" class="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-[9px] font-bold">$</div>
+                    <span id="deposit-token-badge-label">USDC</span>
+                  </div>
+                </div>
+                <div class="flex justify-between text-xs text-zinc-500 mb-4">
+                  <span id="deposit-balance">Balance: 0.00 USDC</span>
+                  <span id="deposit-usd-val" class="text-zinc-500">$0.00</span>
+                </div>
+              </div>
+
+              <!-- LP range is controlled by the Range selector above. -->
+              <div id="pool-range-display" class="text-[11px] text-zinc-500 mb-3">Pool price: — · Range: —</div>
+
+              <!-- Position breakdown -->
+              <div class="bg-white/[0.03] border border-white/5 rounded-xl p-4 mb-5 space-y-2">
+                <div class="flex justify-between text-xs text-zinc-500">
+                  <span>Invested in pool</span><span id="deposit-net" class="text-zinc-300">$0.00</span>
+                </div>
+                <div class="border-t border-white/5 pt-2 flex justify-between text-xs">
+                  <span class="text-zinc-500">Est. deposit split</span>
+                  <span id="deposit-split" class="text-white font-medium">—</span>
+                </div>
+                <div class="flex justify-between text-xs text-zinc-500">
+                  <span>Range width</span><span id="deposit-lp-width" class="text-zinc-300">1%</span>
+                </div>
+              </div>
+
+              <!-- Receive row -->
+              <div class="mb-5">
+                <label class="text-xs text-zinc-500 mb-2 block">You receive (LP position)</label>
+                <div class="token-input-wrap">
+                  <div class="flex flex-col">
+                    <span id="receive-acain-val" class="text-lg font-medium text-zinc-600">0.0000 SPYx + 0.00 USDC</span>
+                    <span id="receive-usd-val" class="text-xs text-zinc-500">$0.00</span>
+                  </div>
+                  <div class="token-badge">
+                    <div class="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center text-[9px] font-bold">LP</div>
+                    SPYx/USDC
+                  </div>
+                </div>
+              </div>
+
+              <div id="byreal-load-status" class="text-[11px] text-zinc-600 text-center mb-3"></div>
+
+              <button id="deposit-btn" class="w-full action-btn-gradient py-4 rounded-2xl text-white font-bold shadow-lg shadow-black/40 transition-all">
+                Deposit USDC
+              </button>
+              <p class="text-[11px] text-zinc-600 text-center mt-3">By depositing you agree to the <a href="/Earnterms.html" class="text-zinc-500 underline">Earn Terms</a>.</p>
+            </div>
+
+            <!-- ── OPEN POSITIONS (this pool) ── -->
+            <div id="withdraw-form" class="hidden">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-xs text-zinc-500">Your open positions in this pool</span>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-zinc-500 hover:text-zinc-300 cursor-help text-[12px] leading-none" title="Could take a small bit to load correctly for recent lp position creations">ⓘ</span>
+                  <button id="positions-refresh" class="text-[11px] text-zinc-400 hover:text-white border border-white/10 rounded px-2 py-1 transition-colors">Refresh</button>
+                </div>
+              </div>
+              <ul id="positions-list" class="positions-list">
+                <li class="empty-state">Connect your wallet to view positions.</li>
+              </ul>
+            </div>
+
+          </div>
+        </aside>
+        <!-- ══ END RIGHT ══ -->
+
+      </div>
+    </div>
+  </main>
+  <!-- ══ END MAIN ══ -->
+
+</div>
+
+<!-- CLOSE-POSITION MODAL -->
+<div id="close-overlay" class="close-overlay">
+  <div class="close-modal">
+    <button class="close-modal-x" onclick="hideCloseOptions()">✕</button>
+    <div class="close-modal-title">Close position</div>
+    <div id="close-subtitle" class="close-modal-sub">—</div>
+    <div id="close-options" class="close-options"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ─── CONSTANTS ───────────────────────────
+const ACAIN_PRICE  = 1.140;
+const COST_BASIS   = 1.000;
+const FLAT_FEE     = 0.20;
+const FEE_WALLET   = 'Kd3Rfno1ja3ABNhWEFDBmb2FEzXPBSiUooopm98xHwZ';
+const FEE_LAMPORTS = 2000000; // 0.002 SOL — matches byreal.html
+const PERF_FEE_PCT = 0.30;
+
+// ─── BYREAL LP CONFIG ─────────────────────
+// To repoint this page at a different pool, change BYREAL_POOL on this one line.
+const _poolParam = (new URLSearchParams(location.search)).get('pool');
+if (!_poolParam) { location.replace('/index.html'); throw new Error('No pool param — redirecting'); }
+const BYREAL_POOL = _poolParam;
+const BYREAL_API  = 'https://cainfin.onrender.com';
+const depositBase = 'MintB';   // SPYx/USDC pool — USDC deposits only
+
+// base64 <-> bytes helpers (for (de)serializing unsigned transactions)
+function b64ToBytes(b64) {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+function bytesToB64(bytes) {
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+
+// Spread selector (the always-visible pills/badge) controls the LP range width.
+function currentSpreadLabel() {
+  return (document.getElementById('spread-badge').textContent || '1%').trim();
+}
+function spreadFraction() {
+  const v = parseFloat(currentSpreadLabel().replace('%', ''));
+  return (!isNaN(v) && v > 0) ? v / 100 : 0.01;
+}
+
+// SPYx/USDC pool — USDC-only deposits, no token selector needed.
+
+// ─── SIDEBAR (default: collapsed) ────────
+const sidebar = document.getElementById('sidebar');
+document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
+function toggleSidebar() { sidebar.classList.toggle('collapsed'); }
+
+// ─── PAGE TABS ───────────────────────────
+document.querySelectorAll('#page-tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#page-tabs button').forEach(b => {
+      b.className = 'pb-4 text-sm font-medium transition-colors tab-inactive';
+    });
+    btn.className = 'pb-4 text-sm font-medium transition-colors tab-active';
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById('panel-' + btn.dataset.tab);
+    if (panel) {
+      panel.classList.add('active');
+      if (btn.dataset.tab === 'performance') {
+        initPerfCharts();
+        setTimeout(() => { redrawPerfChart(); }, 50);
+      }
+    }
+  });
+});
+
+// ─── DEPOSIT / WITHDRAW CARD TABS ────────
+let activeDepositTab = 'deposit';
+document.querySelectorAll('.dtab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeDepositTab = btn.dataset.dtab;
+    document.querySelectorAll('.dtab').forEach(b => {
+      b.className = b.dataset.dtab === activeDepositTab ? 'dtab active' : 'dtab';
+    });
+    if (walletAddress) showWalletForms();
+    if (activeDepositTab === 'withdraw') loadPositions();
+  });
+});
+
+// ─── WALLET STATE ─────────────────────────
+let walletAddress = null;
+
+function onConnect(address) {
+  walletAddress = address;
+  showWalletForms();
+  loaded.balance = false; loaded.positions = false; loaded.announced = false;
+  loadByrealData();
+}
+
+function onDisconnect() {
+  walletAddress = null;
+  document.getElementById('card-locked').classList.remove('hidden');
+  document.getElementById('deposit-form').classList.add('hidden');
+  document.getElementById('withdraw-form').classList.add('hidden');
+}
+
+function showWalletForms() {
+  document.getElementById('card-locked').classList.add('hidden');
+  document.getElementById('deposit-form').classList.toggle('hidden', activeDepositTab !== 'deposit');
+  document.getElementById('withdraw-form').classList.toggle('hidden', activeDepositTab !== 'withdraw');
+}
+
+window.addEventListener('cain:connected', e => {
+  if (e.detail && e.detail.address) onConnect(e.detail.address);
+});
+window.addEventListener('cain:disconnected', () => onDisconnect());
+
+document.getElementById('connect-card-btn').addEventListener('click', () => {
+  const widgetBtn = document.querySelector('#cain-wallet-root button');
+  if (widgetBtn) { widgetBtn.click(); return; }
+  connectViaProvider();
+});
+
+async function connectViaProvider() {
+  const sol = window.solana;
+  if (sol) {
+    try {
+      const resp = await sol.connect();
+      const pk = resp?.publicKey?.toString() || sol.publicKey?.toString();
+      if (pk) { onConnect(pk); showToast('Wallet connected · ' + pk.slice(0,4) + '…' + pk.slice(-4), 'green'); return; }
+    } catch (e) {
+      if (e.code === 4001) { showToast('Connection rejected', 'red'); return; }
+    }
+  }
+  if (window.ethereum) {
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      if (accounts.length) { onConnect(accounts[0]); showToast('Wallet connected · ' + accounts[0].slice(0,4) + '…' + accounts[0].slice(-4), 'green'); return; }
+    } catch (e) {
+      if (e.code === 4001) { showToast('Connection rejected', 'red'); return; }
+    }
+  }
+  showToast('MetaMask not found — install or update to v12.18+', 'red');
+  setTimeout(() => window.open('https://metamask.io/download/', '_blank'), 800);
+}
+
+// ─── BYREAL LIVE DATA (price, range, balance, invested split) ──────────
+let poolPriceUsdcPerSol = null;   // USDC per SOL
+let solUsd  = null;               // SOL price in USD
+let usdcUsd = null;               // USDC price in USD
+let solBalance = null;            // connected wallet SOL balance
+let investedUsd = 0;              // user's current liquidity in BYREAL_POOL (USD)
+const loaded = { price: false, balance: false, positions: false, announced: false };
+
+function maybeAllLoaded() {
+  const el = document.getElementById('byreal-load-status');
+  if (loaded.price && loaded.balance && loaded.positions) {
+    if (el) { el.textContent = 'Live info'; el.style.color = '#4ade80'; }
+    if (!loaded.announced) { loaded.announced = true; showToast('All info loaded successfully', 'green'); }
+  } else if (el) {
+    el.textContent = 'Loading pool info…'; el.style.color = '';
+  }
+}
+
+function connectedPubkey() {
+  const w = window.cainWallet;
+  return (w && w.provider && w.provider.publicKey) ? w.provider.publicKey.toString() : (walletAddress || null);
+}
+
+// Estimated SPYx/USDC split for a single-token deposit into the chosen range.
+// Uses the standard concentrated-liquidity value ratio for a symmetric range.
+function computeSplit() {
+  const amt = parseFloat(document.getElementById('deposit-amount').value) || 0;
+  if (!amt || poolPriceUsdcPerSol == null || !solUsd || !usdcUsd) return null;
+  const p = poolPriceUsdcPerSol, f = spreadFraction();
+  const pa = p * (1 - f), pb = p * (1 + f);
+  const sp = Math.sqrt(p), spa = Math.sqrt(pa), spb = Math.sqrt(pb);
+  // value(SOL) / value(USDC) for a position centred at current price
+  const R = (sp * (spb - sp)) / (spb * (sp - spa));
+  const totalUsd = amt * (depositBase === 'MintA' ? solUsd : usdcUsd);
+  const usdcVal  = totalUsd / (1 + R);
+  const solVal   = totalUsd - usdcVal;
+  return { solAmt: solVal / solUsd, usdcAmt: usdcVal / usdcUsd, totalUsd };
+}
+
+function updateRangeDisplay() {
+  const el = document.getElementById('pool-range-display');
+  if (!el) return;
+  if (poolPriceUsdcPerSol == null) { el.textContent = 'Pool price: — · Range: —'; return; }
+  const f = spreadFraction();
+  const lo = poolPriceUsdcPerSol * (1 - f), hi = poolPriceUsdcPerSol * (1 + f);
+  el.textContent = `Pool price: ${poolPriceUsdcPerSol.toFixed(2)} USDC/SOL · Range (${currentSpreadLabel()}): ${lo.toFixed(2)} – ${hi.toFixed(2)}`;
+}
+
+function updateSplitDisplay() {
+  const recvA   = document.getElementById('receive-acain-val');
+  const recvUsd = document.getElementById('receive-usd-val');
+  const splitEl = document.getElementById('deposit-split');
+  const usdEl   = document.getElementById('deposit-usd-val');
+  const s = computeSplit();
+  if (!s) {
+    if (recvA)   { recvA.textContent = '0.0000 SOL + 0.00 USDC'; recvA.className = 'text-lg font-medium text-zinc-600'; }
+    if (recvUsd) recvUsd.textContent = '$0.00';
+    if (splitEl) splitEl.textContent = '—';
+    if (usdEl)   usdEl.textContent = '$0.00';
+    return;
+  }
+  const label = `${s.solAmt.toFixed(4)} SOL + ${s.usdcAmt.toFixed(2)} USDC`;
+  if (recvA)   { recvA.textContent = label; recvA.className = 'text-lg font-medium text-white'; }
+  if (recvUsd) recvUsd.textContent = '$' + s.totalUsd.toFixed(2);
+  if (splitEl) splitEl.textContent = label;
+  if (usdEl)   usdEl.textContent = '$' + s.totalUsd.toFixed(2);
+}
+
+function updateInvestedDisplay() {
+  const dn = document.getElementById('deposit-net');
+  if (dn) dn.textContent = '$' + investedUsd.toFixed(2);
+}
+
+async function fetchPoolPrice() {
+  try {
+    const pd   = await fetch(`${BYREAL_API}/api/pool-details?poolAddress=${encodeURIComponent(BYREAL_POOL)}`).then(r => r.json());
+    const data = pd?.result?.data;
+    const b = parseFloat(data?.baseMint?.price  || data?.mintA?.price || '0');
+    const q = parseFloat(data?.quoteMint?.price || data?.mintB?.price || '0');
+    if (b && q) {
+      solUsd = b; usdcUsd = q; poolPriceUsdcPerSol = b / q;
+      updateRangeDisplay(); updateSplitDisplay();
+      loaded.price = true; maybeAllLoaded();
+    }
+  } catch (e) { console.warn('[byreal] pool price fetch failed:', e); }
+}
+
+async function fetchWalletBalance() {
+  const pk = connectedPubkey();
+  if (!pk) return;
+  try {
+    const j = await fetch(`${BYREAL_API}/api/balance?address=${pk}`).then(r => r.json());
+    if (j.sol != null) {
+      solBalance = Number(j.sol);
+      const el = document.getElementById('deposit-balance');
+      if (el) el.textContent = 'Balance: ' + solBalance.toFixed(4) + ' SOL';
+      loaded.balance = true; maybeAllLoaded();
+    }
+  } catch (e) { console.warn('[byreal] balance fetch failed:', e); }
+}
+
+// ─── OPEN POSITIONS (byreal-style, filtered to this pool) ──────────────
+let positionsIndex  = {};
+let pendingCloseBtn = null;
+
+async function loadPositions() {
+  const list = document.getElementById('positions-list');
+  const pk   = connectedPubkey();
+  if (!pk) { if (list) list.innerHTML = '<li class="empty-state">Connect your wallet to view positions.</li>'; return; }
+  if (list) list.innerHTML = '<li class="empty-state">Loading…</li>';
+  try {
+    const body = await fetch(`${BYREAL_API}/api/positions?userAddress=${pk}`).then(r => r.json());
+    const data    = body?.result?.data;
+    const poolMap = data?.poolMap ?? {};
+    // Only this page's pool
+    const positions = (data?.positions ?? []).filter(p => p.poolAddress === BYREAL_POOL);
+
+    positionsIndex = {};
+    investedUsd = positions.reduce((s, p) => s + (parseFloat(p.liquidityUsd) || 0), 0);
+    updateInvestedDisplay();
+    loaded.positions = true; maybeAllLoaded();
+
+    if (!positions.length) { if (list) list.innerHTML = '<li class="empty-state">No open positions in this pool.</li>'; return; }
+
+    if (list) list.innerHTML = positions.map(p => {
+      const pool = poolMap[p.poolAddress] || {};
+      const symA = pool.mintA?.symbol || pool.mintA?.mintInfo?.symbol || '?';
+      const symB = pool.mintB?.symbol || pool.mintB?.mintInfo?.symbol || '?';
+      const mintAddrA = pool.mintA?.mintInfo?.address || pool.mintA?.address || null;
+      const mintAddrB = pool.mintB?.mintInfo?.address || pool.mintB?.address || null;
+      const pair = `${symA}/${symB}`;
+      if (p.nftMintAddress) {
+        positionsIndex[p.nftMintAddress] = {
+          pair, mintA: { symbol: symA, address: mintAddrA }, mintB: { symbol: symB, address: mintAddrB },
+        };
+      }
+      const tvl    = p.liquidityUsd != null ? '$' + parseFloat(p.liquidityUsd).toFixed(2) : '—';
+      const apr    = p.apr          != null ? parseFloat(p.apr).toFixed(2) + '%'          : null;
+      const pnl    = p.pnlUsd       != null ? '$' + parseFloat(p.pnlUsd).toFixed(2)       : null;
+      const earned = p.earnedUsd    != null ? '$' + parseFloat(p.earnedUsd).toFixed(2)    : null;
+      const meta = [
+        `Ticks: ${p.lowerTick ?? '—'} → ${p.upperTick ?? '—'}`,
+        apr    && `APR: ${apr}`,
+        pnl    && `PnL: ${pnl}`,
+        earned && `Earned: ${earned}`,
+      ].filter(Boolean).join(' · ');
+      const closeBtn = p.nftMintAddress
+        ? `<button class="position-close-btn" onclick="openCloseOptions('${p.nftMintAddress}', this)">Close Position</button>`
+        : '';
+      return `<li class="position-item">
+        <div class="position-pair">${pair}</div>
+        <div class="position-tvl">${tvl}</div>
+        <div class="position-meta">${meta}</div>
+        <div class="position-nft">NFT: ${p.nftMintAddress ?? '—'}</div>
+        ${closeBtn}
+      </li>`;
+    }).join('');
+  } catch (e) {
+    if (list) list.innerHTML = `<li class="empty-state" style="color:#f87171">Failed to load: ${e.message}</li>`;
+  }
+}
+
+// Step 1: choose how to receive funds
+function openCloseOptions(nftMint, btnEl) {
+  if (!connectedPubkey()) { showToast('Connect your wallet first', 'red'); return; }
+  const info = positionsIndex[nftMint];
+  if (!info) { showToast('Position data not loaded — refresh', 'red'); return; }
+  pendingCloseBtn = btnEl || null;
+  document.getElementById('close-subtitle').textContent = info.pair;
+  const buttons = [];
+  buttons.push(`<button onclick="executeClose('${nftMint}', false, null, 'both tokens')">Receive both tokens<span class="opt-sub">Withdraw your ${info.pair} liquidity as-is (no swap)</span></button>`);
+  if (info.mintA.address) buttons.push(`<button onclick="executeClose('${nftMint}', true, '${info.mintA.address}', 'all ${info.mintA.symbol.replace(/'/g, '')}')">Receive all as ${info.mintA.symbol}<span class="opt-sub">Auto-swap the other side into ${info.mintA.symbol}</span></button>`);
+  if (info.mintB.address) buttons.push(`<button onclick="executeClose('${nftMint}', true, '${info.mintB.address}', 'all ${info.mintB.symbol.replace(/'/g, '')}')">Receive all as ${info.mintB.symbol}<span class="opt-sub">Auto-swap the other side into ${info.mintB.symbol}</span></button>`);
+  document.getElementById('close-options').innerHTML = buttons.join('');
+  document.getElementById('close-overlay').style.display = 'flex';
+}
+
+function hideCloseOptions() { document.getElementById('close-overlay').style.display = 'none'; }
+
+// Step 2: build → sign → simulate → submit
+async function executeClose(nftMint, autoSwap, outputMint, receiveLabel) {
+  hideCloseOptions();
+  if (!connectedPubkey()) { showToast('Connect your wallet first', 'red'); return; }
+  const info      = positionsIndex[nftMint] || {};
+  const pairLabel = info.pair || 'LP';
+  const btnEl     = pendingCloseBtn;
+  const origText  = btnEl?.textContent;
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Closing…'; }
+  try {
+    showToast('Building close transaction…');
+    const buildData = await fetch(`${BYREAL_API}/api/build-close-tx`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nftMint, walletAddress: connectedPubkey(), autoSwap, outputMint }),
+    }).then(r => r.json());
+    if (!buildData.unsignedTransactions?.length) throw new Error(buildData.error || 'Failed to build close transaction');
+    const { signature } = await signSimulateSubmitVerify(buildData.unsignedTransactions, 'close');
+    showToast(`Closed ${pairLabel} · ${signature.slice(0, 8)}… · received ${receiveLabel}`, 'green');
+    loadPositions();
+    fetchWalletBalance();
+  } catch (e) {
+    const rejected = e?.code === 4001 || /reject|denied|cancel/i.test(String(e?.message || e));
+    showToast(rejected ? 'Transaction cancelled' : ('Failed: ' + (e.message || e)), 'red');
+    if (btnEl) { btnEl.disabled = false; btnEl.textContent = origText || 'Close Position'; }
+  }
+}
+
+// Shared: deserialize → sign → simulate → submit. Returns { signature }.
+async function signSimulateSubmitVerify(unsignedTxsB64, verb) {
+  const web3     = window.solanaWeb3;
+  const provider = window.cainWallet?.provider;
+  if (!web3 || !provider) throw new Error('Wallet / web3 not ready');
+  const txs = unsignedTxsB64.map(b64 => web3.VersionedTransaction.deserialize(b64ToBytes(b64)));
+
+  showToast('Approve in wallet…');
+  let signed;
+  if (typeof provider.signAllTransactions === 'function') {
+    signed = await provider.signAllTransactions(txs);
+  } else {
+    signed = [];
+    for (const t of txs) signed.push(await provider.signTransaction(t));
+  }
+  const b64Txs = signed.map(tx => bytesToB64(tx.serialize()));
+
+  showToast('Simulating…');
+  for (const b64 of b64Txs) {
+    const sim = await fetch(`${BYREAL_API}/api/simulate-tx`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transaction: b64 }),
+    }).then(r => r.json());
+    if (sim.err) {
+      const insufficient = sim.logs?.find(l => l.includes('insufficient lamports'));
+      if (insufficient) throw new Error('Insufficient SOL for account rent — add a little SOL and retry.');
+      throw new Error('Simulation failed: ' + JSON.stringify(sim.err));
+    }
+  }
+
+  showToast('Submitting ' + verb + '…');
+  const sendData = await fetch(`${BYREAL_API}/api/send-tx`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ transactions: b64Txs }),
+  }).then(r => r.json());
+  let sig = sendData.signatures?.[sendData.signatures.length - 1];
+  if (!sig && sendData.error) {
+    try { const raw = JSON.parse(sendData.error); if (raw?.result?.data?.length) sig = raw.result.data[raw.result.data.length - 1]; } catch (_) {}
+  }
+  if (!sig) throw new Error(sendData.error || ('Failed to submit ' + verb + ' transaction'));
+  return { signature: sig };
+}
+
+function loadByrealData() {
+  fetchPoolPrice();
+  if (connectedPubkey()) { fetchWalletBalance(); loadPositions(); }
+}
+
+// ─── DEPOSIT CALCULATOR ──────────────────
+document.getElementById('deposit-amount').addEventListener('input', updateDeposit);
+
+function updateDeposit() {
+  const spreadEl = document.getElementById('deposit-lp-width');
+  if (spreadEl) spreadEl.textContent = currentSpreadLabel();
+  updateRangeDisplay();
+  updateSplitDisplay();
+}
+
+
+// ─── DEPOSIT ACTION (Byreal LP via Render backend) ──────────
+async function realDeposit() {
+  const btn = document.getElementById('deposit-btn');
+  const tokenSym = 'USDC'; // SPYx/USDC pool — USDC only
+  const amt = parseFloat(document.getElementById('deposit-amount').value);
+  if (!amt || amt <= 0) { showToast('Enter an amount to deposit', 'red'); return; }
+
+  const w = window.cainWallet;
+  const publicKey = w && w.provider && w.provider.publicKey;
+  if (!publicKey) { document.getElementById('connect-card-btn').click(); return; }
+  const owner = publicKey.toString();
+
+  const web3 = window.solanaWeb3;
+  if (!web3 || !web3.VersionedTransaction) { showToast('Solana web3 not loaded — refresh the page', 'red'); return; }
+
+  const setBusy = (label) => { btn.disabled = true; btn.textContent = label; };
+  const setIdle = () => { btn.disabled = false; btn.textContent = 'Deposit ' + tokenSym; };
+
+  try {
+    // 1. Current pool price → spread-based range bounds
+    setBusy('Fetching pool…');
+    const pd   = await fetch(`${BYREAL_API}/api/pool-details?poolAddress=${encodeURIComponent(BYREAL_POOL)}`).then(r => r.json());
+    const data = pd?.result?.data;
+    const baseMintPrice  = parseFloat(data?.baseMint?.price  || data?.mintA?.price  || '0');
+    const quoteMintPrice = parseFloat(data?.quoteMint?.price || data?.mintB?.price  || '0');
+    if (!baseMintPrice || !quoteMintPrice) { showToast('Pool price unavailable', 'red'); setIdle(); return; }
+    const currentPrice = baseMintPrice / quoteMintPrice;
+    const frac = spreadFraction();
+    const priceLower = (currentPrice * (1 - frac)).toFixed(6);
+    const priceUpper = (currentPrice * (1 + frac)).toFixed(6);
+
+    // 2. Build unsigned position tx (single-token auto-swap)
+    setBusy('Building transaction…');
+    const buildRes  = await fetch(`${BYREAL_API}/api/build-tx`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        poolAddress: BYREAL_POOL, priceLower, priceUpper, walletAddress: owner,
+        autoSwap: true, base: depositBase, amount: String(amt),
+      }),
+    });
+    const buildData = await buildRes.json();
+    if (!buildRes.ok || !buildData.unsignedTransactions?.length) {
+      const em = buildData.error || 'Failed to build transaction';
+      if (em.includes('40501') || /simulation failed/i.test(em)) {
+        throw new Error("You don't have enough tokens to complete this transaction, please try a smaller amount or deposit more tokens into your wallet.");
+      }
+      throw new Error(em);
+    }
+
+    // 3. Fetch recent blockhash for fee tx
+    setBusy('Fetching blockhash…');
+    const bhData = await fetch(`${BYREAL_API}/api/blockhash`).then(r => r.json());
+    if (!bhData.blockhash) throw new Error(bhData.error || 'Failed to fetch blockhash');
+
+    // 4. Build fee transfer VersionedTransaction (0.002 SOL → Cain multisig)
+    const { VersionedTransaction, TransactionMessage, SystemProgram, PublicKey } = web3;
+    const feePayer = new PublicKey(owner);
+    const feeMsg = new TransactionMessage({
+      payerKey:        feePayer,
+      recentBlockhash: bhData.blockhash,
+      instructions: [SystemProgram.transfer({
+        fromPubkey: feePayer,
+        toPubkey:   new PublicKey(FEE_WALLET),
+        lamports:   FEE_LAMPORTS,
+      })],
+    }).compileToV0Message();
+    const feeTx = new VersionedTransaction(feeMsg);
+
+    // 5. Send fee tx — prefer signAndSendTransaction (Phantom controls full lifecycle,
+    //    avoids the sign-then-relay warning). Falls back to sign+relay if unavailable.
+    setBusy('Approve fee in wallet…');
+    if (typeof w.provider.signAndSendTransaction === 'function') {
+      const feeResult = await w.provider.signAndSendTransaction(feeTx);
+      const feeSig = typeof feeResult === 'string' ? feeResult : feeResult.signature;
+      if (!feeSig) throw new Error('Failed to submit fee transaction');
+    } else {
+      const signedFee = await w.provider.signTransaction(feeTx);
+      const b64Fee = bytesToB64(signedFee.serialize());
+      const feeRes = await fetch(`${BYREAL_API}/api/send-fee-tx`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transaction: b64Fee }),
+      }).then(r => r.json());
+      if (!feeRes.signature) throw new Error(feeRes.error || 'Failed to submit fee transaction');
+    }
+
+    // 6. Sign position tx separately (must relay through Byreal)
+    setBusy('Approve deposit in wallet…');
+    const positionTx = web3.VersionedTransaction.deserialize(b64ToBytes(buildData.unsignedTransactions[0]));
+    const signedPosition = await w.provider.signTransaction(positionTx);
+    const b64 = bytesToB64(signedPosition.serialize());
+
+    // 7. Simulate position tx
+    setBusy('Simulating…');
+    const sim = await fetch(`${BYREAL_API}/api/simulate-tx`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transaction: b64 }),
+    }).then(r => r.json());
+    if (sim.err) {
+      const insufficient = sim.logs?.find(l => l.includes('insufficient lamports'));
+      if (insufficient) throw new Error('Insufficient SOL for account rent — add a little SOL and retry.');
+      throw new Error('Simulation failed: ' + JSON.stringify(sim.err));
+    }
+
+    // 8. Submit position tx to Byreal
+    setBusy('Submitting…');
+    const sendData = await fetch(`${BYREAL_API}/api/send-tx`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transactions: [b64] }),
+    }).then(r => r.json());
+    let sig = sendData.signatures?.[sendData.signatures.length - 1];
+    if (!sig && sendData.error) {
+      try { const raw = JSON.parse(sendData.error); if (raw?.result?.data?.length) sig = raw.result.data[raw.result.data.length - 1]; } catch (_) {}
+    }
+    if (!sig) throw new Error(sendData.error || 'Failed to submit transaction');
+
+    showToast('Position opened · ' + sig.slice(0, 8) + '… · spread ' + currentSpreadLabel(), 'green');
+    document.getElementById('deposit-amount').value = '';
+    updateDeposit();
+    loadPositions();
+    fetchWalletBalance();
+  } catch (e) {
+    const rejected = e?.code === 4001 || /reject|denied|cancel/i.test(String(e?.message || e));
+    showToast(rejected ? 'Transaction cancelled' : ('Failed: ' + (e.message || e)), 'red');
+  } finally {
+    setIdle();
+  }
+}
+
+document.getElementById('deposit-btn').addEventListener('click', realDeposit);
+document.getElementById('positions-refresh').addEventListener('click', loadPositions);
+
+// ─── COPY ADDRESS BUTTONS ────────────────
+document.querySelectorAll('.copy-addr-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(btn.dataset.addr).then(() => {
+      btn.textContent = 'Copied';
+      setTimeout(() => btn.textContent = 'Copy', 1500);
+    });
+  });
+});
+
+// ─── TOAST ───────────────────────────────
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (type ? ' ' + type : '');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => { t.className = ''; }, 3500);
+}
+
+// ══════════════════════════════════════════════════════════
+// PERFORMANCE DASHBOARD
+// ══════════════════════════════════════════════════════════
+
+const POOL_ID    = BYREAL_POOL;   // single source of truth — change BYREAL_POOL near the top
+const WORKER_URL = 'https://infofetchworker.doffecul.workers.dev';
+const SOL_WORKER = 'https://sp50033.aboodgoudagad.workers.dev/';
+
+let _poolData = null;
+let _solData  = null;
+
+function fmtUSD(n) {
+  if (n == null) return '—';
+  n = Number(n);
+  if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+  if (n >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
+  return '$' + n.toFixed(2);
+}
+
+async function fetchPoolData() {
+  try {
+    const res = await fetch(`${WORKER_URL}/pool?id=${POOL_ID}`);
+    const json = await res.json();
+    if (json && json.pool && json.pool.ok) {
+      _poolData = json.pool;
+      applyPoolToUI();
+    }
+  } catch(e) {
+    console.warn('[Perf] Pool fetch failed:', e);
+  }
+}
+
+function applyPoolToUI() {
+  const p = _poolData;
+  if (!p) return;
+
+  const pairBadge = document.getElementById('pool-pair-badge');
+  if (pairBadge && p.tokenASymbol && p.tokenBSymbol) {
+    pairBadge.textContent = p.tokenASymbol + ' · ' + p.tokenBSymbol;
+  }
+
+  document.getElementById('stat-fee24h').textContent = fmtUSD(p.fee24h);
+  document.getElementById('stat-fee7d').textContent  = fmtUSD(p.fee7d);
+  document.getElementById('stat-tvl').textContent    = fmtUSD(p.tvl);
+  document.getElementById('stat-apr').textContent    = p.apr ? p.apr + '%' : '—';
+
+  const aprDisplay = p.apr ? p.apr + '%' : '—';
+  const aprEl = [
+    document.getElementById('overview-apy'),
+    document.getElementById('deposit-apy'),
+    document.getElementById('ret-apy'),
+  ];
+  aprEl.forEach(el => { if (el) { el.textContent = aprDisplay; el.style.color = p.apr ? '#4ade80' : ''; } });
+
+  // Historical returns derived from live APR (daily compounding)
+  const aprNum = p.apr ? Number(p.apr) / 100 : null;
+  const ret = (days) => {
+    if (aprNum == null) return '—';
+    const v = (Math.pow(1 + aprNum / 365, days) - 1) * 100;
+    return (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+  };
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('ret-7d',  ret(7));
+  set('ret-30d', ret(30));
+  set('ret-90d', ret(90));
+  if (aprNum != null) {
+    const apy = (Math.pow(1 + aprNum / 365, 365) - 1) * 100;
+    set('ret-apy', '+' + apy.toFixed(2) + '%');
+    const apyEl = document.getElementById('ret-apy');
+    if (apyEl) apyEl.style.color = '#4ade80';
+  }
+
+  const tvlDisplay = fmtUSD(p.tvl);
+  [document.getElementById('overview-tvl'), document.getElementById('deposit-tvl')]
+    .forEach(el => { if (el) el.textContent = tvlDisplay; });
+
+  const badge = document.getElementById('simulate-apr-badge');
+  if (badge && p.apr) badge.textContent = `APR: ${p.apr}%`;
+
+  // Redraw chart now that APR is available, so the fee line appears
+  redrawPerfChart();
+
+  if (_simOpen) drawIncomeSimulator();
+}
+
+async function fetchSOL() {
+  // Per-pool price worker fetch disabled on dynamic vault page (test mode).
+  const statusEl = document.getElementById('sol-status');
+  if (statusEl) statusEl.textContent = '';
+  redrawPerfChart();
+  if (_simOpen) drawIncomeSimulator();
+  return;
+  // eslint-disable-next-line no-unreachable
+  try {
+    const res  = await fetch(SOL_WORKER);
+    const json = await res.json();
+    if (json && Array.isArray(json.prices) && json.prices.length) {
+      _solData = json.prices;
+
+      const last  = _solData[_solData.length - 1];
+      const first = _solData[0];
+      const priceEl  = document.getElementById('sol-price-display');
+      const volEl    = document.getElementById('sol-vol');
+      if (priceEl) priceEl.textContent = '$' + Number(last.close).toFixed(2);
+      if (volEl && json.volatility_7d_annualised != null) {
+        volEl.textContent = `7d volatility (annualised): ${Number(json.volatility_7d_annualised).toFixed(1)}%`;
+      }
+      document.getElementById('sol-status').textContent = 'SPX live';
+    } else {
+      document.getElementById('sol-status').textContent = 'SPX unavailable';
+    }
+  } catch(e) {
+    document.getElementById('sol-status').textContent = 'SPX unavailable';
+    console.warn('[Perf] SPX fetch failed:', e);
+  }
+  redrawPerfChart();
+  if (_simOpen) drawIncomeSimulator();
+}
+
+// ─── Draw S&P 500 price chart + fee accrual overlay ────────────
+function redrawPerfChart() {
+  const canvas = document.getElementById('perf-canvas');
+  if (!canvas) return;
+
+  const loading = document.getElementById('perf-loading');
+
+  if (!_solData || _solData.length < 2) {
+    if (loading) loading.style.display = 'flex';
+    return;
+  }
+  if (loading) loading.style.display = 'none';
+
+  const data   = _solData.slice(-14);
+  const closes = data.map(p => Number(p.close));
+
+  const ctx = canvas.getContext('2d');
+  const W = canvas.parentElement.clientWidth - 48;
+  const H = 200;
+  canvas.width  = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+
+  const pad = { top: 14, right: 48, bottom: 32, left: 54 };
+  const cW  = W - pad.left - pad.right;
+  const cH  = H - pad.top  - pad.bottom;
+
+  const rawMin = Math.min(...closes);
+  const rawMax = Math.max(...closes);
+  const padding = (rawMax - rawMin) * 0.12 || 1;
+  const min = rawMin - padding;
+  const max = rawMax + padding;
+
+  const xOf = i => pad.left + (i / (closes.length - 1)) * cW;
+  const yOf = v => pad.top + cH - ((v - min) / (max - min)) * cH;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid + y labels (SOL price, left axis)
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (cH / 4) * i;
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    const v = max - ((max - min) / 4) * i;
+    ctx.fillStyle = '#52525b';
+    ctx.font = '9px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('$' + v.toFixed(1), pad.left - 6, y + 3.5);
+  }
+
+  // X labels (dates)
+  ctx.fillStyle = '#52525b';
+  ctx.font = '9px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  const step = Math.max(1, Math.floor(data.length / 6));
+  data.forEach((p, i) => {
+    if (i % step !== 0 && i !== data.length - 1) return;
+    const d = new Date(p.date);
+    const lbl = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    ctx.fillText(lbl, xOf(i), H - pad.bottom + 14);
+  });
+
+  // SOL: filled area
+  const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + cH);
+  grad.addColorStop(0, 'rgba(167,139,250,0.15)');
+  grad.addColorStop(1, 'rgba(167,139,250,0)');
+  ctx.beginPath();
+  closes.forEach((v, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(v)) : ctx.lineTo(xOf(i), yOf(v)));
+  ctx.lineTo(xOf(closes.length - 1), pad.top + cH);
+  ctx.lineTo(xOf(0), pad.top + cH);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // SOL: price line (purple)
+  ctx.beginPath();
+  closes.forEach((v, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(v)) : ctx.lineTo(xOf(i), yOf(v)));
+  ctx.strokeStyle = '#a78bfa';
+  ctx.lineWidth   = 1.5;
+  ctx.lineJoin    = 'round';
+  ctx.stroke();
+
+  // SOL: end dot
+  ctx.beginPath();
+  ctx.arc(xOf(closes.length - 1), yOf(closes[closes.length - 1]), 4, 0, Math.PI * 2);
+  ctx.fillStyle   = '#a78bfa';
+  ctx.fill();
+  ctx.strokeStyle = '#060606';
+  ctx.lineWidth   = 2;
+  ctx.stroke();
+
+  // ── FEE ACCRUAL LINE (white) ────────────────────────────────────────
+  // Derived from live APR: cumulative fee index over the 14-day window.
+  // Plotted on a right-side secondary axis so it stays readable regardless
+  // of the SOL price range.
+  if (_poolData && _poolData.apr) {
+    const apr    = Number(_poolData.apr) / 100;
+    const dailyR = apr / 365;
+    const n      = closes.length;
+
+    // Build index: day 0 = 1.0000, grows by dailyR each step
+    const feeIdx = Array.from({ length: n }, (_, i) => Math.pow(1 + dailyR, i));
+    const fMin   = feeIdx[0];               // always 1.0
+    const fMax   = feeIdx[n - 1];
+    const fRange = (fMax - fMin) || 0.0001;
+
+    // Map fee index into the bottom-right 30% of the chart height so it
+    // sits clearly below the SOL line without overlapping
+    const fBandTop    = pad.top + cH * 0.62;   // top of fee band
+    const fBandBottom = pad.top + cH * 0.92;   // bottom of fee band
+    const fBandH      = fBandBottom - fBandTop;
+
+    const fXOf = i => pad.left + (i / (n - 1)) * cW;
+    const fYOf = v => fBandBottom - ((v - fMin) / fRange) * fBandH;
+
+    // Subtle fill under fee line
+    const fGrad = ctx.createLinearGradient(0, fBandTop, 0, fBandBottom);
+    fGrad.addColorStop(0, 'rgba(255,255,255,0.06)');
+    fGrad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.beginPath();
+    feeIdx.forEach((v, i) => i === 0 ? ctx.moveTo(fXOf(i), fYOf(v)) : ctx.lineTo(fXOf(i), fYOf(v)));
+    ctx.lineTo(fXOf(n - 1), fBandBottom);
+    ctx.lineTo(fXOf(0), fBandBottom);
+    ctx.closePath();
+    ctx.fillStyle = fGrad;
+    ctx.fill();
+
+    // Fee line (white)
+    ctx.beginPath();
+    feeIdx.forEach((v, i) => i === 0 ? ctx.moveTo(fXOf(i), fYOf(v)) : ctx.lineTo(fXOf(i), fYOf(v)));
+    ctx.strokeStyle = 'rgba(255,255,255,0.80)';
+    ctx.lineWidth   = 1.5;
+    ctx.lineJoin    = 'round';
+    ctx.setLineDash([]);
+    ctx.stroke();
+
+    // End dot
+    const fEndX = fXOf(n - 1);
+    const fEndY = fYOf(feeIdx[n - 1]);
+    ctx.beginPath();
+    ctx.arc(fEndX, fEndY, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle   = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#060606';
+    ctx.lineWidth   = 2;
+    ctx.stroke();
+
+    // Right-axis label: total accrual over window as a % (e.g. "+0.37%")
+    const totalPct = ((feeIdx[n - 1] - 1) * 100).toFixed(2);
+    ctx.fillStyle  = 'rgba(255,255,255,0.45)';
+    ctx.font       = '9px Inter, sans-serif';
+    ctx.textAlign  = 'left';
+    ctx.fillText('+' + totalPct + '%', fEndX + 6, fEndY + 3.5);
+
+    // Right-axis tick label at bottom of band: price line marker
+    ctx.fillStyle  = 'rgba(255,255,255,0.2)';
+    ctx.font       = '8px Inter, sans-serif';
+    ctx.textAlign  = 'left';
+    ctx.fillText('price', W - pad.right + 6, fBandBottom + 3);
+  }
+}
+
+// ─── INCOME SIMULATOR ──────────────────────────────────────
+let _simAmt  = 100;
+let _simOpen = false;
+
+document.getElementById('simulate-toggle').addEventListener('click', () => {
+  _simOpen = !_simOpen;
+  document.getElementById('simulate-panel').style.display = _simOpen ? 'block' : 'none';
+  document.getElementById('simulate-chevron').style.transform = _simOpen ? 'rotate(180deg)' : '';
+  document.getElementById('simulate-toggle').style.color = _simOpen ? '#e5e5e5' : '#a1a1aa';
+  document.getElementById('simulate-toggle').style.borderColor = _simOpen ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)';
+  if (_simOpen) drawIncomeSimulator();
+});
+
+document.querySelectorAll('.sim-amt-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sim-amt-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const customInput = document.getElementById('sim-custom-input');
+    if (btn.dataset.amt === 'custom') {
+      customInput.style.display = 'block';
+      customInput.focus();
+    } else {
+      customInput.style.display = 'none';
+      _simAmt = Number(btn.dataset.amt);
+      drawIncomeSimulator();
+    }
+  });
+});
+
+document.getElementById('sim-custom-input').addEventListener('input', function() {
+  const v = parseFloat(this.value);
+  if (v > 0) { _simAmt = v; drawIncomeSimulator(); }
+});
+
+function drawIncomeSimulator() {
+  const p = _poolData;
+  if (!p || !p.apr) return;
+
+  const apr      = Number(p.apr) / 100;
+  const deposit  = _simAmt;
+  const dailyR   = apr / 365;
+  const days     = 365;
+
+  document.getElementById('simulate-apr-badge').textContent = `APR: ${p.apr}%`;
+
+  const balances = [];
+  let bal = deposit;
+  for (let i = 0; i <= days; i++) {
+    balances.push(bal);
+    bal = bal * (1 + dailyR);
+  }
+
+  const annualIncome  = balances[days] - deposit;
+  const monthlyIncome = deposit * (Math.pow(1 + dailyR, 30) - 1);
+  const dailyIncome   = deposit * dailyR;
+
+  document.getElementById('sim-daily').textContent   = fmtUSD(dailyIncome);
+  document.getElementById('sim-monthly').textContent = fmtUSD(monthlyIncome);
+  document.getElementById('sim-annual').textContent  = fmtUSD(annualIncome);
+  document.getElementById('sim-endbal').textContent  = fmtUSD(balances[days]);
+  document.getElementById('sim-footnote').textContent =
+    `Based on ${p.apr}% APR (Byreal live) · $${deposit.toLocaleString()} deposit · daily compounding · fee income only, excludes S&amp;P 500 price movement (shown dashed)`;
+
+  const canvas = document.getElementById('sim-canvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const W = canvas.parentElement.clientWidth - 48;
+  const H = 180;
+  canvas.width  = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+
+  const pad = { top: 14, right: 12, bottom: 28, left: 60 };
+  const cW  = W - pad.left - pad.right;
+  const cH  = H - pad.top  - pad.bottom;
+  const minV = deposit;
+  const maxV = balances[days] * 1.02;
+
+  const xOf = i => pad.left + (i / (balances.length - 1)) * cW;
+  const yOf = v => pad.top  + cH - ((v - minV) / (maxV - minV)) * cH;
+
+  ctx.clearRect(0, 0, W, H);
+
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (cH / 4) * i;
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    const v = maxV - ((maxV - minV) / 4) * i;
+    ctx.fillStyle = '#52525b';
+    ctx.font = '9px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(fmtUSD(v), pad.left - 6, y + 3.5);
+  }
+
+  ctx.fillStyle = '#52525b';
+  ctx.font = '9px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].forEach((lbl, i) => {
+    ctx.fillText(lbl, xOf(Math.round((i / 11) * days)), H - pad.bottom + 14);
+  });
+
+  ctx.beginPath();
+  ctx.setLineDash([4, 4]);
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 1;
+  ctx.moveTo(pad.left, yOf(deposit)); ctx.lineTo(W - pad.right, yOf(deposit));
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + cH);
+  grad.addColorStop(0, 'rgba(74,222,128,0.15)');
+  grad.addColorStop(1, 'rgba(74,222,128,0)');
+  ctx.beginPath();
+  balances.forEach((v, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(v)) : ctx.lineTo(xOf(i), yOf(v)));
+  ctx.lineTo(xOf(balances.length - 1), yOf(deposit));
+  ctx.lineTo(xOf(0), yOf(deposit));
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  ctx.beginPath();
+  balances.forEach((v, i) => i === 0 ? ctx.moveTo(xOf(i), yOf(v)) : ctx.lineTo(xOf(i), yOf(v)));
+  ctx.strokeStyle = 'rgba(74,222,128,0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  const lastX = xOf(balances.length - 1);
+  const lastY = yOf(balances[balances.length - 1]);
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
+  ctx.fillStyle = '#4ade80';
+  ctx.fill();
+  ctx.strokeStyle = '#060606';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  if (_solData && _solData.length > 1) {
+    const sol = _solData.slice(-14).map(p => Number(p.close));
+    const sMin = Math.min(...sol);
+    const sMax = Math.max(...sol);
+    const sRange = (sMax - sMin) || 1;
+    const sYOf = v => pad.top + cH - ((v - sMin) / sRange) * cH;
+    const sXOf = i => pad.left + (i / (sol.length - 1)) * cW;
+
+    ctx.beginPath();
+    sol.forEach((v, i) => i === 0 ? ctx.moveTo(sXOf(i), sYOf(v)) : ctx.lineTo(sXOf(i), sYOf(v)));
+    ctx.strokeStyle = 'rgba(167,139,250,0.8)';
+    ctx.lineWidth = 1.5;
+    ctx.lineJoin = 'round';
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.beginPath();
+    ctx.arc(sXOf(sol.length - 1), sYOf(sol[sol.length - 1]), 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#a78bfa';
+    ctx.fill();
+    ctx.strokeStyle = '#060606';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+}
+
+// ─── PERFORMANCE TAB CHARTS (monthly bar) ──────────────────
+let perfChartsInit = false;
+function initPerfCharts() {
+  if (perfChartsInit) return;
+  perfChartsInit = true;
+  const yCtx = document.getElementById('yield-chart');
+  if (!yCtx) return;
+  const months = ['Jan','Feb','Mar','Apr','May'];
+  const yields = [0.95, 1.12, 1.08, 1.21, 1.34];
+  new Chart(yCtx, {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [{
+        data: yields,
+        backgroundColor: 'rgba(255,255,255,0.08)',
+        borderColor: 'rgba(255,255,255,0.25)',
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1a1a',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          titleColor: '#71717a',
+          bodyColor: '#e5e5e5',
+          callbacks: { label: c => '+' + c.parsed.y.toFixed(2) + '% monthly' }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#52525b', font: { size: 10, family: 'Inter' } }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          ticks: { color: '#52525b', font: { size: 10, family: 'Inter' }, callback: v => '+' + v + '%' }
+        }
+      }
+    }
+  });
+}
+
+// ─── Boot ─────────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  redrawPerfChart();
+  if (_simOpen) drawIncomeSimulator();
+});
+
+fetchPoolData();
+fetchSOL();
+loadByrealData();   // Byreal pool price (+ balance/positions once a wallet is connected)
+
+setInterval(() => { fetchPoolData(); fetchSOL(); }, 30 * 60 * 1000);
+
+// ─── LEGAL DROPDOWN ──────────────────────
+(function() {
+  const btn = document.getElementById('legal-dropdown-btn');
+  const dropdown = document.getElementById('legal-dropdown');
+  if (!btn || !dropdown) return;
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('hidden');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target) && e.target !== btn) {
+      dropdown.classList.add('hidden');
+    }
+  });
+})();
+
+// ─── COMMUNITY DROPDOWN ──────────────────
+(function() {
+  const btn = document.getElementById('community-dropdown-btn');
+  const dropdown = document.getElementById('community-dropdown');
+  if (!btn || !dropdown) return;
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('hidden');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+      dropdown.classList.add('hidden');
+    }
+  });
+})();
+
+// ─── SPREAD SELECTOR ─────────────────────
+(function() {
+  const pills       = document.querySelectorAll('.spread-pill');
+  const badge       = document.getElementById('spread-badge');
+  const customInput = document.getElementById('spread-custom-input');
+  const customApply = document.getElementById('spread-custom-apply');
+
+  pills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      pills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      badge.textContent = pill.dataset.spread;
+      customInput.value = '';
+      customInput.classList.remove('error');
+      if (typeof updateDeposit === 'function') updateDeposit();
+    });
+  });
+
+  function applyCustom() {
+    const raw = customInput.value.trim();
+    const val = parseFloat(raw);
+    if (!raw || isNaN(val) || val <= 0 || val > 100) {
+      customInput.classList.add('error');
+      setTimeout(() => customInput.classList.remove('error'), 1200);
+      return;
+    }
+    pills.forEach(p => p.classList.remove('active'));
+    const label = (val % 1 === 0 ? val.toFixed(0) : val.toString().replace(/\.?0+$/, '')) + '%';
+    badge.textContent = label;
+    customInput.classList.remove('error');
+    if (typeof updateDeposit === 'function') updateDeposit();
+  }
+
+  customApply.addEventListener('click', applyCustom);
+  customInput.addEventListener('keydown', e => { if (e.key === 'Enter') applyCustom(); });
+  customInput.addEventListener('input', () => customInput.classList.remove('error'));
+})();
+</script>
+
+<!-- ══ GLOBAL WALLET: Solana balance fetch (copied from index.html) ══ -->
+<script>
+(function () {
+  var SOLANA_RPC_URL = window.CAIN_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
+
+  window.fetchSolanaBalance = async function (address) {
+    if (!address) return;
+    try {
+      var res = await fetch(SOLANA_RPC_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getBalance', params: [address] }),
+      });
+      var data = await res.json();
+      var lamports = (data && data.result && data.result.value) || 0;
+      var sol = (lamports / 1e9).toFixed(4);
+      if (window.cainWallet) window.cainWallet.balance = sol;
+    } catch (e) {
+      console.warn('[CainWallet] Solana balance fetch failed:', e);
+    }
+  };
+
+  window.resetCainBalanceUI = function () { /* no balance display on this page */ };
+
+  window.addEventListener('cain:disconnected', window.resetCainBalanceUI);
+})();
+</script>
+
+<!-- ══ CAIN TREASURY + RPC GLOBALS (must load BEFORE the widget bundle) ══ -->
+<script>
+  window.CAIN_TREASURY_PUBKEY   = 'YOUR_TREASURY_SOL_ADDRESS';
+  window.CAIN_TREASURY_USDC_ATA = 'YOUR_TREASURY_USDC_TOKEN_ACCOUNT';
+</script>
+
+<!-- ══ GLOBAL WALLET: React Wallet Adapter widget (copied from index.html) ══ -->
+<script src="/wallet-widget/dist/cain-wallet-widget.iife.js" defer></script>
+
+</body>
+</html>

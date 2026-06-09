@@ -748,17 +748,18 @@
         <tbody id="vault-rows"></tbody>
         <script>
         (function(){var rows=[
-          {i:2,cls:'c-alpha',letter:'α',name:'Alpha',cat:'Diversified Index',token:'nALPHA',dots:[{bg:'#3b82f6',c:'#fff',l:'A'},{bg:'#7c3aed',c:'#fff',l:'X'},{bg:'#0d9488',c:'#fff',l:'U'},{bg:'#16a34a',c:'#fff',l:'B'}],pill:'+1'},
-          {i:3,cls:'c-opal',letter:'◈',name:'BlackOpal LiquidStone II',cat:'Payment financing',token:'nOPAL',dots:[{bg:'#3b82f6',c:'#fff',l:'B'},{bg:'#eab308',c:'#000',l:'T'}]},
-          {i:4,cls:'c-basis',letter:'B',name:'Basis',cat:'Crypto Basis',token:'nBASIS',dots:[{bg:'#f97316',c:'#fff',l:'B'},{bg:'#0d9488',c:'#fff',l:'E'}]},
-          {i:5,cls:'c-treasury',letter:'T',name:'Treasury',cat:'US Treasuries',token:'nTBILL',dots:[{bg:'#3b82f6',c:'#fff',l:'M'},{bg:'#16a34a',c:'#fff',l:'O'}]},
-          {i:6,cls:'c-wisdom',letter:'W',name:'WisdomTree CRDYX',cat:'Private Credit',token:'nWISDOM',dots:[{bg:'#38bdf8',c:'#0c2233',l:'W'},{bg:'#eab308',c:'#000',l:'T'}]},
-          {i:7,cls:'c-credit',letter:'C',name:'Credit',cat:'Private Credit',token:'nCREDIT',dots:[{bg:'#f87171',c:'#2a1212',l:'C'},{bg:'#f97316',c:'#fff',l:'R'}]},
-          {i:8,cls:'c-falcon',letter:'X',name:'FalconX Overcollateralized Loans',cat:'Prime Brokerage Lending',token:'nFALCON',dots:[{bg:'#1d4ed8',c:'#fff',l:'F'}]},
-          {i:9,cls:'c-acrdx',letter:'A',name:'ACRDX',cat:'Private Credit',token:'nACRDX',dots:[{bg:'#4ade80',c:'#122212',l:'A'}]}
+          {i:2,cls:'c-alpha',letter:'α',name:'MSTRx / USDC',cat:'Diversified Index',token:'MSTRX / USDC',pool:'DmHek82VP6HtBmSz56wDrfr4nJysmtGQhpY7D5HVkGnX',dots:[{bg:'#3b82f6',c:'#fff',l:'A'},{bg:'#7c3aed',c:'#fff',l:'X'},{bg:'#0d9488',c:'#fff',l:'U'},{bg:'#16a34a',c:'#fff',l:'B'}],pill:'+1'},
+          {i:3,cls:'c-opal',letter:'◈',name:'CRCLx / USDC',cat:'Payment financing',token:'CRCLX / USDC',pool:'Hv44BZaqT5URrrAtGk6jvfbWKL2PytWA4ur2r1QnvtQa',dots:[{bg:'#3b82f6',c:'#fff',l:'B'},{bg:'#eab308',c:'#000',l:'T'}]},
+          {i:4,cls:'c-basis',letter:'B',name:'SUI / USDC',cat:'Crypto Basis',token:'SUI / USDC',pool:'2AsusAS7VM9L1PV8QEJJk74eM667HH7NPq4rNr1Fde8y',dots:[{bg:'#f97316',c:'#fff',l:'B'},{bg:'#0d9488',c:'#fff',l:'E'}]},
+          {i:5,cls:'c-treasury',letter:'T',name:'COINx / USDC',cat:'US Treasuries',token:'COINX / USDC',pool:'5pobXosbeGSCRG3HdaRiw2TaihDDQMXkHFVbUTF24weM',dots:[{bg:'#3b82f6',c:'#fff',l:'M'},{bg:'#16a34a',c:'#fff',l:'O'}]},
+          {i:6,cls:'c-wisdom',letter:'W',name:'NVDAx / USDC',cat:'Private Credit',token:'NVDAX / USDC',pool:'GjLusGo2z3mnXPmebhhNt9ocMDJgfdxrDFctVF8Ev3Kg',dots:[{bg:'#38bdf8',c:'#0c2233',l:'W'},{bg:'#eab308',c:'#000',l:'T'}]},
+          {i:7,cls:'c-credit',letter:'C',name:'AMZNx / USDC',cat:'Private Credit',token:'AMZNX / USDC',pool:'5bWgqeKbHpxVGxdxSEJ9FGjU8AyNhCMuGGhHFBoakQvj',dots:[{bg:'#f87171',c:'#2a1212',l:'C'},{bg:'#f97316',c:'#fff',l:'R'}]},
+          {i:8,cls:'c-falcon',letter:'X',name:'SOL / USD1',cat:'Prime Brokerage Lending',token:'SOL / USD1',pool:'DyzGYEhdgSn5EEUt4XXviavZ7v7SV2YGrYV8HX3Aw5XT',dots:[{bg:'#1d4ed8',c:'#fff',l:'F'}]},
+          {i:9,cls:'c-acrdx',letter:'A',name:'WLFI / USDC',cat:'Private Credit',token:'WLFI / USDC',pool:'81sG64oGK7Z1nhwGRnTNCgJq2zHZL2J14uH29cokUUtn',dots:[{bg:'#4ade80',c:'#122212',l:'A'}]}
         ];var tb=document.getElementById('vault-rows');rows.forEach(function(r){
           var ds=r.dots.map(function(d){return '<div class="ad" style="background:'+d.bg+';color:'+d.c+';">'+d.l+'</div>';}).join('')+(r.pill?'<span class="count-pill">'+r.pill+'</span>':'');
           var tr=document.createElement('tr');tr.setAttribute('data-pool-index',r.i);
+          if(r.pool){tr.style.cursor='pointer';tr.addEventListener('click',function(){location.href='vault.html?pool='+r.pool;});}
           tr.innerHTML='<td><div class="row-flex"><div class="row-logo '+r.cls+'">'+r.letter+'</div><div><div class="rv-name" id="row-'+r.i+'-name">'+r.name+'</div><div class="rv-cat">'+r.cat+'</div></div></div></td><td><span class="token-badge" id="row-'+r.i+'-token">'+r.token+'</span></td><td><span class="apy-plain" id="row-'+r.i+'-apy">—</span></td><td class="tvl-val" id="row-'+r.i+'-tvl">—</td><td><div class="asset-dots">'+ds+'</div></td><td><div class="nets"><div class="nd nd-pu">S</div></div></td><td><div class="nets"><div class="nd nd-gr">☁</div></div></td>';
           tb.appendChild(tr);
         });})();
