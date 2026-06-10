@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cain Finance — Earn</title>
+<meta name="description" content="Cain, LP Yield Aggregator On Solana">
+<meta property="og:title" content="Cain">
+<meta property="og:description" content="Cain, LP Yield Aggregator On Solana">
+<meta property="og:image" content="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cain">
+<meta name="twitter:description" content="Cain, LP Yield Aggregator On Solana">
+<meta name="twitter:image" content="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<link rel="icon" type="image/png" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#060606; --bg-2:#0a0a0a; --bg-card:rgba(255,255,255,0.03); --bg-card2:#111111;
+    --bg-pill:#1a1a1a; --border:rgba(255,255,255,0.08); --border-bright:rgba(255,255,255,0.14);
+    --text:#f0ede6; --text-2:#888882; --text-3:#555550;
+    --gold:#c8b68a; --gold-bright:#e4d4a8; --gold-dim:rgba(200,182,138,0.15); --gold-glow:rgba(200,182,138,0.35);
+    --green:#00ffa3;
+    --font:'Inter','Geist',sans-serif; --mono:'Geist Mono','SF Mono',ui-monospace,monospace;
+  }
+  html { scroll-behavior:smooth; }
+  body {
+    background:var(--bg); color:var(--text); font-family:var(--font); font-weight:300;
+    overflow-x:hidden; cursor:none; -webkit-font-smoothing:antialiased;
+  }
+  body::after {
+    content:''; position:fixed; inset:0; z-index:1; pointer-events:none;
+    background-image:radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size:26px 26px;
+    mask-image:radial-gradient(ellipse 90% 70% at 50% 30%, #000 40%, transparent 100%);
+    -webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 30%, #000 40%, transparent 100%);
+  }
+  .cursor { position:fixed; width:8px; height:8px; background:var(--gold-bright); border-radius:50%;
+    pointer-events:none; z-index:9999; transform:translate(-50%,-50%);
+    transition:width .2s, height .2s; mix-blend-mode:screen; }
+  .cursor-ring { position:fixed; width:34px; height:34px; border:1px solid rgba(200,182,138,0.45);
+    border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%);
+    transition:transform .08s ease, width .3s, height .3s, border-color .3s, background .3s; }
+  @media (hover:none) { body{cursor:auto;} .cursor,.cursor-ring{display:none;} }
+
+  #bgCanvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
+  .spotlight { position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(120% 80% at 78% -10%, rgba(200,182,138,0.18) 0%, rgba(200,182,138,0.05) 30%, transparent 60%),
+      radial-gradient(80% 60% at 50% 120%, rgba(200,182,138,0.06) 0%, transparent 70%);
+  }
+
+  /* NAV */
+  nav { position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between; padding:16px 40px;
+    background:rgba(6,6,6,0.55); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid transparent; transition:border-color .3s, background .3s; }
+  nav.scrolled { border-bottom-color:var(--border); background:rgba(6,6,6,0.8); }
+  .nav-logo { display:flex; align-items:center; gap:9px; font-size:19px; font-weight:600;
+    letter-spacing:-0.01em; color:var(--text); text-decoration:none; }
+  .nav-logo-icon { width:30px; height:30px; border-radius:8px;
+    background:linear-gradient(135deg, var(--gold-bright), var(--gold));
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    box-shadow:0 0 18px rgba(200,182,138,0.4); }
+  .nav-logo-icon svg { width:16px; height:16px; }
+  .nav-sub { font-family:var(--mono); font-size:10px; color:var(--text-3);
+    background:var(--bg-pill); border:1px solid var(--border); padding:2px 7px; border-radius:6px;
+    letter-spacing:0.05em; text-transform:uppercase; margin-left:2px; }
+  .nav-center { display:flex; gap:6px; align-items:center; }
+  .nav-link { font-size:13px; font-weight:400; color:var(--text-2); text-decoration:none;
+    padding:8px 14px; border-radius:9px; transition:color .2s, background .2s; }
+  .nav-link:hover, .nav-link.active { color:var(--text); background:rgba(255,255,255,0.04); }
+  .nav-link.active { color:var(--gold); }
+  .nav-dd { position:relative; }
+  .nav-dd-menu { position:absolute; top:calc(100% + 10px); right:0; min-width:210px;
+    background:#0d0d0d; border:1px solid var(--border); border-radius:14px; padding:7px;
+    opacity:0; visibility:hidden; transform:translateY(-6px); transition:all .2s;
+    box-shadow:0 20px 50px rgba(0,0,0,0.7); z-index:120; }
+  .nav-dd:hover .nav-dd-menu { opacity:1; visibility:visible; transform:translateY(0); }
+  .nav-dd-menu a { display:flex; align-items:center; gap:10px; font-size:13px;
+    color:var(--text-2); text-decoration:none; padding:9px 12px; border-radius:9px;
+    transition:background .15s, color .15s; }
+  .nav-dd-menu a:hover { background:rgba(255,255,255,0.05); color:var(--text); }
+  .nav-dd-menu a svg { width:15px; height:15px; stroke:var(--gold); flex-shrink:0; }
+  .nav-right { display:flex; align-items:center; gap:8px; }
+  .icon-btn { width:36px; height:36px; display:flex; align-items:center; justify-content:center;
+    border-radius:9px; color:var(--text-2); text-decoration:none; border:1px solid transparent;
+    transition:all .2s; background:transparent; cursor:none; }
+  .icon-btn:hover { color:var(--text); background:rgba(255,255,255,0.05); border-color:var(--border); }
+  .icon-btn svg { width:17px; height:17px; }
+  .nav-cta { font-size:13px; font-weight:500; letter-spacing:0.01em; padding:9px 20px;
+    border-radius:10px; color:#0a0a0a; text-decoration:none;
+    background:linear-gradient(135deg, var(--gold-bright), var(--gold));
+    transition:transform .25s, box-shadow .25s; box-shadow:0 0 0 rgba(200,182,138,0); cursor:none; }
+  .nav-cta:hover { transform:translateY(-1px); box-shadow:0 8px 30px rgba(200,182,138,0.35); }
+
+  /* HERO BALANCE PANEL */
+  .hero-wrap { position:relative; z-index:2; padding:140px 40px 40px; max-width:1200px; margin:0 auto; }
+  .eyebrow { display:inline-flex; align-items:center; gap:10px; font-family:var(--mono);
+    font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--gold);
+    background:var(--gold-dim); border:1px solid rgba(200,182,138,0.22);
+    padding:7px 16px; border-radius:100px; margin-bottom:22px;
+    opacity:0; animation:fadeUp .8s .15s forwards; }
+  .eyebrow-dot { width:6px; height:6px; border-radius:50%; background:var(--green);
+    box-shadow:0 0 10px var(--green); animation:pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1; transform:scale(1);} 50%{opacity:.5; transform:scale(1.4);} }
+
+  /* Balance card with orbital animation */
+  .bal-card { position:relative; border:1px solid var(--border); border-radius:24px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.005));
+    backdrop-filter:blur(10px); padding:40px 44px; overflow:hidden;
+    opacity:0; animation:fadeUp .9s .3s forwards; }
+  .bal-card::before {
+    content:''; position:absolute; top:-50%; right:-10%; width:520px; height:520px; border-radius:50%;
+    background:radial-gradient(circle, rgba(200,182,138,0.14), transparent 65%);
+    pointer-events:none;
+  }
+  .bal-label { font-family:var(--mono); font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--text-3); margin-bottom:14px; }
+  .bal-value { font-size:clamp(48px,6vw,68px); font-weight:700; letter-spacing:-0.035em; line-height:1;
+    display:flex; align-items:center; gap:14px; }
+  .bal-value .grad {
+    background:linear-gradient(120deg, #f0ede6 0%, var(--gold-bright) 45%, var(--gold) 65%, #f0ede6 100%);
+    background-size:220% 220%;
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    animation:shimmer 7s ease infinite;
+  }
+  @keyframes shimmer { 0%,100%{background-position:0% 50%;} 50%{background-position:100% 50%;} }
+  .bal-delta { margin-top:10px; font-size:13px; color:var(--green); font-family:var(--mono); letter-spacing:0.04em; }
+
+  /* Orbit decoration around balance — animated ring with traveling node */
+  .orbit { position:absolute; top:50%; right:-90px; transform:translateY(-50%);
+    width:340px; height:340px; pointer-events:none; opacity:.85; }
+  .orbit-ring { position:absolute; inset:0; border-radius:50%;
+    border:1px dashed rgba(200,182,138,0.22); animation:spinSlow 40s linear infinite; }
+  .orbit-ring.inner { inset:40px; border-color:rgba(200,182,138,0.16); animation-duration:28s; animation-direction:reverse; }
+  .orbit-ring.core { inset:90px; border:1px solid rgba(200,182,138,0.35);
+    box-shadow:inset 0 0 30px rgba(200,182,138,0.18), 0 0 24px rgba(200,182,138,0.12); animation:none; }
+  .orbit-node { position:absolute; top:50%; left:50%; width:0; height:0;
+    transform-origin:0 0; animation:spinFast 14s linear infinite; }
+  .orbit-node::after { content:''; position:absolute; left:170px; top:-4px;
+    width:8px; height:8px; border-radius:50%;
+    background:var(--gold-bright); box-shadow:0 0 16px var(--gold-bright), 0 0 28px rgba(200,182,138,0.6); }
+  .orbit-node.n2 { animation-duration:22s; animation-direction:reverse; }
+  .orbit-node.n2::after { left:130px; width:6px; height:6px;
+    background:var(--gold); box-shadow:0 0 12px var(--gold); }
+  .orbit-node.n3 { animation-duration:18s; }
+  .orbit-node.n3::after { left:80px; width:4px; height:4px;
+    background:var(--green); box-shadow:0 0 10px var(--green); }
+  @keyframes spinSlow { from{transform:rotate(0);} to{transform:rotate(360deg);} }
+  @keyframes spinFast { from{transform:rotate(0);} to{transform:rotate(360deg);} }
+
+  .bal-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:0; margin-top:38px;
+    padding-top:30px; border-top:1px solid var(--border); position:relative; z-index:1; }
+  .bal-stat { padding:0 28px; border-right:1px solid var(--border); }
+  .bal-stat:first-child { padding-left:0; }
+  .bal-stat:last-child { border-right:none; padding-right:0; }
+  .bal-stat .lab { font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text-3); margin-bottom:10px; }
+  .bal-stat .val { font-size:20px; font-weight:600; letter-spacing:-0.01em; color:var(--text); }
+  .bal-stat .val.gold { color:var(--gold); }
+
+  .bal-actions { display:flex; gap:12px; margin-top:32px; position:relative; z-index:1; }
+  .btn-primary { font-size:14px; font-weight:500; letter-spacing:0.01em; padding:14px 30px;
+    border-radius:12px; text-decoration:none; color:#0a0a0a; display:inline-flex; align-items:center; gap:8px;
+    background:linear-gradient(135deg, var(--gold-bright), var(--gold));
+    transition:transform .25s, box-shadow .25s; border:none; cursor:none; }
+  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 16px 44px rgba(200,182,138,0.4); }
+  .btn-primary svg { width:15px; height:15px; transition:transform .25s; }
+  .btn-primary:hover svg { transform:translateX(4px); }
+  .btn-outline { font-size:14px; font-weight:400; padding:14px 26px; border-radius:12px;
+    text-decoration:none; color:var(--text); border:1px solid var(--border-bright);
+    background:rgba(255,255,255,0.02); display:inline-flex; align-items:center; gap:8px;
+    transition:border-color .25s, background .25s, transform .25s; cursor:none; }
+  .btn-outline:hover { border-color:var(--gold); background:var(--gold-dim); transform:translateY(-2px); }
+
+  /* MARQUEE */
+  .marquee { position:relative; z-index:2; overflow:hidden; margin-top:48px;
+    border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+    background:rgba(10,10,10,0.5); padding:16px 0;
+    -webkit-mask-image:linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    mask-image:linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+  .marquee-track { display:flex; gap:56px; width:max-content; animation:scroll 32s linear infinite; }
+  .marquee-item { display:flex; align-items:center; gap:11px; font-family:var(--mono); font-size:13px;
+    color:var(--text-2); letter-spacing:0.04em; white-space:nowrap; }
+  .marquee-item span { color:var(--gold); }
+  @keyframes scroll { from{transform:translateX(0);} to{transform:translateX(-50%);} }
+
+  /* STEPS / READY TO EARN */
+  .steps-wrap { max-width:1200px; margin:64px auto 0; padding:0 40px; position:relative; z-index:2; }
+  .steps-card { border:1px solid var(--border); border-radius:24px; padding:36px 40px;
+    background:linear-gradient(180deg, rgba(200,182,138,0.04), rgba(255,255,255,0.01));
+    position:relative; overflow:hidden; }
+  .steps-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:14px; }
+  .steps-head h3 { font-size:22px; font-weight:600; letter-spacing:-0.02em; }
+  .steps-progress { font-family:var(--mono); font-size:12px; color:var(--gold);
+    letter-spacing:0.1em; text-transform:uppercase; }
+  .steps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .step { display:flex; align-items:flex-start; gap:14px; padding:20px;
+    border:1px solid var(--border); border-radius:14px;
+    background:rgba(255,255,255,0.02); transition:border-color .3s, background .3s; }
+  .step:hover { border-color:rgba(200,182,138,0.3); background:rgba(255,255,255,0.04); }
+  .step-num { width:32px; height:32px; border-radius:50%; flex-shrink:0;
+    background:var(--bg-2); border:1px solid rgba(200,182,138,0.3); color:var(--gold);
+    font-family:var(--mono); font-size:13px; font-weight:500;
+    display:flex; align-items:center; justify-content:center; }
+  .step h4 { font-size:14px; font-weight:600; margin-bottom:4px; color:var(--text); }
+  .step p { font-size:12px; line-height:1.6; color:var(--text-2); }
+
+  /* SECTION */
+  .section { max-width:1200px; margin:0 auto; padding:90px 40px 40px; position:relative; z-index:2; }
+  .section-label { font-family:var(--mono); font-size:11px; letter-spacing:0.16em; text-transform:uppercase;
+    color:var(--gold); display:inline-flex; align-items:center; gap:10px; margin-bottom:18px; }
+  .section-label::before { content:''; width:22px; height:1px; background:var(--gold); opacity:.5; }
+  .section-title { font-size:clamp(28px,3.6vw,44px); font-weight:700; line-height:1.08;
+    letter-spacing:-0.03em; margin-bottom:14px; }
+  .section-title em { font-style:normal;
+    background:linear-gradient(120deg, var(--gold-bright), var(--gold));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .section-sub { font-size:15px; color:var(--text-2); max-width:560px; line-height:1.7; font-weight:300; }
+  .section-head { display:flex; align-items:flex-end; justify-content:space-between; gap:22px;
+    flex-wrap:wrap; margin-bottom:36px; }
+
+  /* FEATURED CARDS */
+  .featured-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .featured-card { position:relative; padding:30px; border-radius:22px;
+    border:1px solid var(--border); background:rgba(14,14,16,0.6); backdrop-filter:blur(8px);
+    text-decoration:none; color:inherit; display:block; overflow:hidden;
+    transition:border-color .35s, transform .35s, background .35s; cursor:none; }
+  .featured-card::after { content:''; position:absolute; inset:0; border-radius:inherit;
+    background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%), rgba(200,182,138,0.12), transparent 60%);
+    opacity:0; transition:opacity .4s; pointer-events:none; }
+  .featured-card:hover { border-color:rgba(200,182,138,0.3); transform:translateY(-4px); background:rgba(20,20,22,0.7); }
+  .featured-card:hover::after { opacity:1; }
+  .fc-head { display:flex; align-items:center; gap:14px; margin-bottom:18px; position:relative; z-index:1; }
+  .fc-icon { width:52px; height:52px; border-radius:14px; overflow:hidden; flex-shrink:0;
+    border:1px solid var(--border); }
+  .fc-icon img { width:100%; height:100%; object-fit:cover; }
+  .fc-name { font-size:17px; font-weight:600; letter-spacing:-0.01em; color:var(--text); }
+  .fc-cat { font-family:var(--mono); font-size:11px; color:var(--text-3); text-transform:uppercase;
+    letter-spacing:0.05em; margin-top:3px; }
+  .fc-desc { font-size:13px; line-height:1.7; color:var(--text-2); margin-bottom:22px; position:relative; z-index:1; }
+  .fc-stats { display:grid; grid-template-columns:1fr 1fr; gap:0; border-top:1px solid var(--border);
+    padding-top:18px; position:relative; z-index:1; }
+  .fc-stat { padding-right:18px; border-right:1px solid var(--border); }
+  .fc-stat:last-child { border-right:none; padding-right:0; padding-left:18px; }
+  .fc-stat .lab { font-family:var(--mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text-3); margin-bottom:8px; }
+  .fc-stat .val { font-size:22px; font-weight:700; letter-spacing:-0.02em; }
+  .fc-stat .val.gold { color:var(--gold); }
+  .fc-meta { display:flex; gap:18px; margin-top:14px; font-family:var(--mono); font-size:11px;
+    color:var(--text-3); position:relative; z-index:1; }
+  .fc-meta strong { color:var(--text-2); font-weight:500; }
+  .fc-footer { margin-top:14px; font-size:10px; color:var(--text-3); letter-spacing:0.04em;
+    display:flex; align-items:center; gap:8px; position:relative; z-index:1; }
+  .live-dot { width:6px; height:6px; border-radius:50%; background:var(--green);
+    box-shadow:0 0 8px var(--green); animation:pulse 2s ease-in-out infinite; }
+
+  /* VAULTS TABLE */
+  .table-wrap { position:relative; border:1px solid var(--border); border-radius:22px;
+    overflow:hidden; background:rgba(14,14,16,0.5); backdrop-filter:blur(8px); }
+  .pool-table { width:100%; border-collapse:collapse; }
+  .pool-table thead th { font-family:var(--mono); font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--text-3); font-weight:500; padding:18px 26px; text-align:left;
+    border-bottom:1px solid var(--border); background:rgba(255,255,255,0.015); }
+  .pool-table thead th:last-child { text-align:right; }
+  .pool-row td { padding:20px 26px; border-top:1px solid rgba(255,255,255,0.05);
+    font-size:14px; vertical-align:middle; }
+  .pool-row { transition:background .25s; cursor:none; }
+  .pool-row:hover { background:rgba(255,255,255,0.035); }
+  .pool-name { display:flex; align-items:center; gap:14px; font-weight:500; }
+  .pool-token-icon { width:38px; height:38px; border-radius:11px; display:flex;
+    align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0; }
+  .tok-a { background:#16184a; color:#818cf8; }
+  .tok-o { background:#2a1322; color:#f0a; }
+  .tok-b { background:#0c2233; color:#38bdf8; }
+  .tok-t { background:#122212; color:#4ade80; }
+  .tok-w { background:#1f1a08; color:#eab308; }
+  .tok-c { background:#2a1212; color:#f87171; }
+  .tok-x { background:#0d1f3a; color:#60a5fa; }
+  .tok-r { background:#1a0d2a; color:#a78bfa; }
+  .pool-cat { font-family:var(--mono); font-size:11px; color:var(--text-3); margin-top:3px;
+    text-transform:uppercase; letter-spacing:0.05em; }
+  .pair-pill { display:inline-flex; align-items:center; gap:6px; font-family:var(--mono);
+    font-size:12px; padding:5px 11px; border:1px solid var(--border); border-radius:100px;
+    color:var(--text-2); background:var(--bg-pill); }
+  .apy-val { font-family:var(--font); font-size:17px; font-weight:700; color:var(--gold); }
+  .tvl-val { font-family:var(--mono); font-size:14px; color:var(--text); }
+  .td-right { text-align:right; }
+  .pool-action { font-size:12px; font-weight:500; letter-spacing:0.02em; padding:8px 18px;
+    border:1px solid var(--border-bright); border-radius:10px; color:var(--text);
+    background:rgba(255,255,255,0.03); cursor:none; transition:all .25s;
+    text-decoration:none; display:inline-block; }
+  .pool-action:hover { background:var(--gold); color:#0a0a0a; border-color:var(--gold); }
+
+  /* PRIVATE VAULTS */
+  .pv-card { margin-top:80px; border:1px solid var(--border); border-radius:24px; padding:42px 44px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    position:relative; overflow:hidden; }
+  .pv-card::before { content:''; position:absolute; top:-40%; left:-10%; width:480px; height:480px;
+    border-radius:50%; background:radial-gradient(circle, rgba(200,182,138,0.08), transparent 65%);
+    pointer-events:none; }
+  .pv-empty { margin-top:24px; padding:34px; text-align:center; border:1px dashed var(--border);
+    border-radius:14px; color:var(--text-3); font-family:var(--mono); font-size:13px;
+    letter-spacing:0.08em; text-transform:uppercase; position:relative; z-index:1; }
+
+  /* TRUST STRIP */
+  .trust-strip { max-width:1200px; margin:80px auto 0; padding:0 40px; position:relative; z-index:2; }
+  .trust-inner { border:1px solid var(--border); border-radius:20px; padding:28px 36px;
+    background:rgba(10,10,10,0.4); backdrop-filter:blur(8px);
+    display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+  .trust-item { display:flex; align-items:center; gap:14px; }
+  .trust-icon { width:38px; height:38px; border-radius:10px; flex-shrink:0;
+    background:var(--gold-dim); border:1px solid rgba(200,182,138,0.22);
+    display:flex; align-items:center; justify-content:center; }
+  .trust-icon svg { width:18px; height:18px; stroke:var(--gold); fill:none; stroke-width:1.8; }
+  .trust-name { font-size:13px; font-weight:600; color:var(--text); }
+  .trust-desc { font-size:11px; color:var(--text-3); font-family:var(--mono); letter-spacing:0.04em; margin-top:2px; }
+
+  /* FOOTER */
+  footer { position:relative; z-index:2; padding:90px 40px 36px; margin-top:80px;
+    border-top:1px solid var(--border); background:rgba(8,8,8,0.5); }
+  .footer-grid { max-width:1200px; margin:0 auto; display:grid;
+    grid-template-columns:2fr 1fr 1fr 1fr; gap:50px; margin-bottom:56px; }
+  .footer-brand .nav-logo { margin-bottom:18px; }
+  .footer-brand p { font-size:14px; color:var(--text-2); line-height:1.7; max-width:290px; font-weight:300; }
+  .footer-socials { display:flex; gap:10px; margin-top:24px; }
+  .footer-socials a { width:38px; height:38px; border-radius:10px; border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center; color:var(--text-2);
+    transition:all .25s; text-decoration:none; cursor:none; }
+  .footer-socials a:hover { color:var(--gold); border-color:var(--gold); background:var(--gold-dim); transform:translateY(-2px); }
+  .footer-socials a svg { width:17px; height:17px; }
+  .footer-col h4 { font-family:var(--mono); font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--gold); margin-bottom:22px; font-weight:500; }
+  .footer-col ul { list-style:none; }
+  .footer-col ul li { margin-bottom:13px; }
+  .footer-col ul li a { font-size:14px; color:var(--text-2); text-decoration:none; transition:color .2s; font-weight:300; }
+  .footer-col ul li a:hover { color:var(--text); }
+  .footer-bottom { max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between;
+    padding-top:30px; border-top:1px solid var(--border); flex-wrap:wrap; gap:16px;
+    font-family:var(--mono); font-size:12px; color:var(--text-3); }
+  .footer-bottom a { color:var(--text-3); text-decoration:none; transition:color .2s; }
+  .footer-bottom a:hover { color:var(--text-2); }
+  .solana-badge { display:flex; align-items:center; gap:8px; }
+  .solana-dot { width:7px; height:7px; border-radius:50%;
+    background:linear-gradient(135deg,#9945ff,#14f195); animation:pulse 2s ease-in-out infinite; }
+
+  /* Reveal */
+  .reveal { opacity:0; transform:translateY(28px); transition:opacity .7s ease, transform .7s ease; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+  .reveal-1 { transition-delay:.08s; } .reveal-2 { transition-delay:.16s; }
+  .reveal-3 { transition-delay:.24s; } .reveal-4 { transition-delay:.32s; }
+  @keyframes fadeUp { from{opacity:0; transform:translateY(26px);} to{opacity:1; transform:translateY(0);} }
+
+  @media (max-width:1024px) {
+    .featured-grid { grid-template-columns:1fr; }
+    .steps-grid { grid-template-columns:1fr; }
+    .bal-stats { grid-template-columns:1fr 1fr; gap:24px 0; }
+    .bal-stat:nth-child(2) { border-right:none; }
+    .trust-inner { grid-template-columns:1fr 1fr; }
+    .footer-grid { grid-template-columns:1fr 1fr; gap:36px; }
+    .nav-center { display:none; }
+    .orbit { display:none; }
+  }
+  @media (max-width:768px) {
+    nav { padding:14px 20px; }
+    .hero-wrap, .steps-wrap, .section, .trust-strip { padding-left:22px; padding-right:22px; }
+    .bal-card { padding:30px 26px; }
+    .bal-stats { grid-template-columns:1fr 1fr; gap:24px 0; }
+    .footer-grid { grid-template-columns:1fr 1fr; }
+    .nav-sub { display:none; }
+    .pool-table thead { display:none; }
+    .pool-table, .pool-table tbody, .pool-row, .pool-row td { display:block; width:100%; }
+    .pool-row td { border:none; padding:6px 20px; }
+    .pool-row { border-bottom:1px solid var(--border); padding:14px 0; }
+    .td-right { text-align:left; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<canvas id="bgCanvas"></canvas>
+<div class="spotlight"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="/index.html" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" fill="#0a0a0a"/></svg>
+    </div>
+    cain<span class="nav-sub">finance</span>
+  </a>
+  <div class="nav-center">
+    <a href="/potential.html" class="nav-link active">Earn</a>
+    <a href="/solusdcvault.html" class="nav-link">Vaults</a>
+    <a href="/Swap.html" class="nav-link">Swap</a>
+    <a href="/faucet.html" class="nav-link">Faucet</a>
+    <a href="/Tokenomics.html" class="nav-link">Tokenomics</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-dd">
+      <button class="icon-btn" aria-label="Community">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="https://github.com/Invinciblebond/cainfin" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12a12 12 0 008.21 11.39c.6.11.82-.26.82-.58v-2c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5.99.11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 016 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.82.58A12 12 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>GitHub</a>
+        <a href="https://x.com/CainFinance" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>X</a>
+        <a href="https://discord.gg/k8STqQgFuM" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37A19.8 19.8 0 0015.45 3c-.2.36-.44.85-.6 1.23a18.3 18.3 0 00-5.7 0C8.98 3.85 8.73 3.36 8.53 3a19.7 19.7 0 00-4.87 1.37C.55 9 .04 13.51.3 17.96a19.9 19.9 0 006.07 3.06c.49-.67.93-1.38 1.3-2.13-.71-.27-1.39-.6-2.04-.99.17-.13.34-.26.5-.4a14.2 14.2 0 0012.1 0c.16.14.33.27.5.4-.65.39-1.33.72-2.04.99.37.75.81 1.46 1.3 2.13a19.8 19.8 0 006.07-3.06c.3-5.15-.51-9.62-2.84-13.59z"/></svg>Discord</a>
+        <a href="https://www.reddit.com/r/CainFinance/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 11.78a2.6 2.6 0 00-2.6-2.6c-.68 0-1.3.27-1.76.7a12.7 12.7 0 00-6.85-2.16l1.17-5.48 3.83.82a1.86 1.86 0 103.66-.5 1.86 1.86 0 00-3.5-.86l-4.27-.9a.43.43 0 00-.51.34l-1.3 6.1a12.8 12.8 0 00-6.96 2.15A2.6 2.6 0 002.6 9.18 2.6 2.6 0 001 13.95c0 4.05 4.71 7.32 10.52 7.32 5.81 0 10.52-3.27 10.52-7.32.62-.42 1.08-1.13 1.08-2.17z"/></svg>Reddit</a>
+        <a href="mailto:cain@cain.finance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z"/><polyline points="22,6 12,13 2,6"/></svg>Contact</a>
+      </div>
+    </div>
+    <a href="/Swap.html" class="nav-cta">Launch App</a>
+  </div>
+</nav>
+
+<!-- HERO BALANCE -->
+<section class="hero-wrap">
+  <div class="eyebrow"><span class="eyebrow-dot"></span>Live · Solana Mainnet</div>
+
+  <div class="bal-card">
+    <div class="orbit" aria-hidden="true">
+      <div class="orbit-ring"></div>
+      <div class="orbit-ring inner"></div>
+      <div class="orbit-ring core"></div>
+      <div class="orbit-node"></div>
+      <div class="orbit-node n2"></div>
+      <div class="orbit-node n3"></div>
+    </div>
+
+    <div class="bal-label">Your Balance</div>
+    <div class="bal-value"><span class="grad" id="hero-balance">$0.00</span></div>
+    <div class="bal-delta" id="bal-delta">+$0.00 (0.00%) · Last 30 days</div>
+
+    <div class="bal-stats">
+      <div class="bal-stat"><div class="lab">Current APY</div><div class="val gold">0.00%</div></div>
+      <div class="bal-stat"><div class="lab">Total Earnings</div><div class="val">$0.00</div></div>
+      <div class="bal-stat"><div class="lab">Active Redemptions</div><div class="val">$0.00</div></div>
+      <div class="bal-stat"><div class="lab">Available to Invest</div><div class="val" id="available-balance">$0.00</div></div>
+    </div>
+
+    <div class="bal-actions">
+      <a href="#vaults" class="btn-primary">Start Earning
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="/Swap.html" class="btn-outline">Get USDC</a>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee">
+  <div class="marquee-track" id="marqueeTrack">
+    <div class="marquee-item"><span>◎</span> SOL / USDC Vault</div>
+    <div class="marquee-item"><span>✦</span> US Treasuries</div>
+    <div class="marquee-item"><span>◈</span> Private Credit</div>
+    <div class="marquee-item"><span>α</span> Diversified Index</div>
+    <div class="marquee-item"><span>B</span> Crypto Basis</div>
+    <div class="marquee-item"><span>X</span> Prime Brokerage Lending</div>
+    <div class="marquee-item"><span>W</span> WisdomTree CRDYX</div>
+    <div class="marquee-item"><span>⬡</span> Auto-Compounding</div>
+  </div>
+</div>
+
+<!-- STEPS -->
+<section class="steps-wrap">
+  <div class="steps-card reveal">
+    <div class="steps-head">
+      <h3>Get ready to start earning</h3>
+      <span class="steps-progress">0 / 3 completed</span>
+    </div>
+    <div class="steps-grid">
+      <div class="step"><div class="step-num">I</div><div><h4>Connect your wallet</h4><p>Link a supported Solana wallet — Phantom, Backpack, Solflare. One click and you're in.</p></div></div>
+      <div class="step"><div class="step-num">II</div><div><h4>Claim from the faucet</h4><p>Grab complimentary tokens daily. Test every vault risk-free before committing capital.</p></div></div>
+      <div class="step"><div class="step-num">III</div><div><h4>Deposit into a vault</h4><p>Pick a strategy and let Cain auto-compound yield across real-world and on-chain markets.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED -->
+<section class="section" id="featured">
+  <div class="section-head">
+    <div>
+      <div class="section-label reveal">Featured Strategies</div>
+      <h2 class="section-title reveal reveal-1">Hand-Picked <em>Opportunities</em></h2>
+      <p class="section-sub reveal reveal-2">Curated by Cain's research team — the highest-conviction vaults across real-world assets and Solana's deepest liquidity.</p>
+    </div>
+  </div>
+
+  <div class="featured-grid">
+    <a href="/solusdcvault.html" class="featured-card reveal reveal-1" id="pool-card-0">
+      <div class="fc-head">
+        <div class="fc-icon"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDaXSd9q5FkYGspNsuTsCI9XJgEbMNYjbgEwtfpGnHjyssY_FgU-3GKbl1GRVAYPdvFF-nGuL2P1mkcfhsOvHKpK-IWc9Gh7cDc2y3lXan3aS2DEZ9vKnx03KcoRfTFPCoJKJx2OG31OR5aYJtYpgZHc-KdjkhyR31DwZZb77YOkixPIR0niu9sD6Deh-wt6wDQcz2ERthdBG2cu4EaF0OrpZpq5D77lsQ03Ibtg0Xlm85NLXq8-4OjevN8IBFXAwTxYts6Ea9MY39" alt="BlackOpal"></div>
+        <div><div class="fc-name">BlackOpal LiquidStone II</div><div class="fc-cat">Payment Financing</div></div>
+      </div>
+      <p class="fc-desc">Investment-grade short-duration payment receivables. Designed for consistent, risk-adjusted income with institutional underwriting.</p>
+      <div class="fc-stats">
+        <div class="fc-stat"><div class="lab">APR</div><div class="val gold" id="pool-0-apr">—</div></div>
+        <div class="fc-stat"><div class="lab">TVL</div><div class="val" id="pool-0-tvl">—</div></div>
+      </div>
+      <div class="fc-meta">
+        <span>Fees 7d: <strong id="pool-0-fee7d">—</strong></span>
+        <span>Vol 24h: <strong id="pool-0-vol">—</strong></span>
+      </div>
+      <div class="fc-footer"><span class="live-dot"></span><span id="pool-0-meta">Loading live data…</span></div>
+    </a>
+
+    <a href="/sp500lp.html" class="featured-card reveal reveal-2" id="pool-card-1">
+      <div class="fc-head">
+        <div class="fc-icon" style="background:#000"><img src="https://i.postimg.cc/P5zN3JyD/spyx-usdc-sw-ap-200x200.png" alt="Alpha"></div>
+        <div><div class="fc-name">Alpha</div><div class="fc-cat">Diversified Index</div></div>
+      </div>
+      <p class="fc-desc">Cain's flagship real-world yield vault. Passive exposure to a diversified portfolio of top yield-generating assets, auto-compounded daily.</p>
+      <div class="fc-stats">
+        <div class="fc-stat"><div class="lab">APR</div><div class="val gold" id="pool-1-apr">—</div></div>
+        <div class="fc-stat"><div class="lab">TVL</div><div class="val" id="pool-1-tvl">—</div></div>
+      </div>
+      <div class="fc-meta">
+        <span>Fees 7d: <strong id="pool-1-fee7d">—</strong></span>
+        <span>Vol 24h: <strong id="pool-1-vol">—</strong></span>
+      </div>
+      <div class="fc-footer"><span class="live-dot"></span><span id="pool-1-meta">Loading live data…</span></div>
+    </a>
+  </div>
+</section>
+
+<!-- VAULTS TABLE -->
+<section class="section" id="vaults">
+  <div class="section-head">
+    <div>
+      <div class="section-label reveal">Live Vaults</div>
+      <h2 class="section-title reveal reveal-1">Explore Our <em>Vaults</em></h2>
+      <p class="section-sub reveal reveal-2">Eight active liquidity pools streaming real-time APY and TVL via on-chain data. Click any row to open the deposit interface.</p>
+    </div>
+  </div>
+
+  <div class="table-wrap reveal reveal-2">
+    <table class="pool-table">
+      <thead>
+        <tr><th>Vault</th><th>Token Pair</th><th>APY</th><th>TVL</th><th class="td-right">Action</th></tr>
+      </thead>
+      <tbody id="vault-rows"></tbody>
+    </table>
+  </div>
+
+  <!-- PRIVATE VAULTS -->
+  <div class="pv-card">
+    <div class="section-label">Private Vaults</div>
+    <h2 class="section-title">Built for <em>Institutions</em></h2>
+    <p class="section-sub">Private investment strategies backed by large institutions and built on Cain. Reach out to us on <a href="https://discord.gg/k8STqQgFuM" target="_blank" rel="noopener" style="color:var(--gold); text-decoration:none; border-bottom:1px solid rgba(200,182,138,0.4);">Discord</a> or <a href="https://x.com/CainFinance" target="_blank" rel="noopener" style="color:var(--gold); text-decoration:none; border-bottom:1px solid rgba(200,182,138,0.4);">X</a> to work with us on creating a new vault.</p>
+    <div class="pv-empty">No vaults yet</div>
+  </div>
+</section>
+
+<!-- TRUST STRIP -->
+<div class="trust-strip">
+  <div class="trust-inner">
+    <div class="trust-item">
+      <div class="trust-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div><div class="trust-name">Audited Contracts</div><div class="trust-desc">Open-source on GitHub</div></div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path d="M9 12l2 2 4-4"/></svg></div>
+      <div><div class="trust-name">Non-Custodial</div><div class="trust-desc">You hold your keys</div></div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+      <div><div class="trust-name">Real-Time Data</div><div class="trust-desc">On-chain transparency</div></div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+      <div><div class="trust-name">Institutional Rails</div><div class="trust-desc">RWA-backed strategies</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="/index.html" class="nav-logo">
+        <div class="nav-logo-icon"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" fill="#0a0a0a"/></svg></div>
+        cain<span class="nav-sub">finance</span>
+      </a>
+      <p>A yield aggregation protocol routing capital into real-world assets and Solana's deepest liquidity. Built for those who play the long game.</p>
+      <div class="footer-socials">
+        <a href="https://github.com/Invinciblebond/cainfin" target="_blank" rel="noopener" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12a12 12 0 008.21 11.39c.6.11.82-.26.82-.58v-2c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5.99.11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 016 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.82.58A12 12 0 0024 12c0-6.63-5.37-12-12-12z"/></svg></a>
+        <a href="https://x.com/CainFinance" target="_blank" rel="noopener" aria-label="X"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+        <a href="https://discord.gg/k8STqQgFuM" target="_blank" rel="noopener" aria-label="Discord"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37A19.8 19.8 0 0015.45 3c-.2.36-.44.85-.6 1.23a18.3 18.3 0 00-5.7 0C8.98 3.85 8.73 3.36 8.53 3a19.7 19.7 0 00-4.87 1.37C.55 9 .04 13.51.3 17.96a19.9 19.9 0 006.07 3.06c.49-.67.93-1.38 1.3-2.13-.71-.27-1.39-.6-2.04-.99.17-.13.34-.26.5-.4a14.2 14.2 0 0012.1 0c.16.14.33.27.5.4-.65.39-1.33.72-2.04.99.37.75.81 1.46 1.3 2.13a19.8 19.8 0 006.07-3.06c.3-5.15-.51-9.62-2.84-13.59z"/></svg></a>
+        <a href="https://www.reddit.com/r/CainFinance/" target="_blank" rel="noopener" aria-label="Reddit"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 11.78a2.6 2.6 0 00-2.6-2.6c-.68 0-1.3.27-1.76.7a12.7 12.7 0 00-6.85-2.16l1.17-5.48 3.83.82a1.86 1.86 0 103.66-.5 1.86 1.86 0 00-3.5-.86l-4.27-.9a.43.43 0 00-.51.34l-1.3 6.1a12.8 12.8 0 00-6.96 2.15A2.6 2.6 0 002.6 9.18 2.6 2.6 0 001 13.95c0 4.05 4.71 7.32 10.52 7.32 5.81 0 10.52-3.27 10.52-7.32.62-.42 1.08-1.13 1.08-2.17z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Product</h4><ul>
+      <li><a href="/potential.html">Earn</a></li>
+      <li><a href="/solusdcvault.html">Vaults</a></li>
+      <li><a href="/Swap.html">Swap</a></li>
+      <li><a href="/faucet.html">Faucet</a></li>
+      <li><a href="/Tokenomics.html">Cain Token</a></li>
+    </ul></div>
+    <div class="footer-col"><h4>Legal</h4><ul>
+      <li><a href="/termsofservice.html">Terms of Service</a></li>
+      <li><a href="/termsandconditions.html">Terms &amp; Conditions</a></li>
+      <li><a href="/Riskdisclosurestatement.html">Risk Disclosure</a></li>
+      <li><a href="/BorrowTerms.html">Borrow Terms</a></li>
+      <li><a href="/Earnterms.html">Earn Terms</a></li>
+    </ul></div>
+    <div class="footer-col"><h4>Community</h4><ul>
+      <li><a href="https://github.com/Invinciblebond/cainfin" target="_blank" rel="noopener">GitHub</a></li>
+      <li><a href="https://x.com/CainFinance" target="_blank" rel="noopener">X</a></li>
+      <li><a href="https://discord.gg/k8STqQgFuM" target="_blank" rel="noopener">Discord</a></li>
+      <li><a href="https://www.reddit.com/r/CainFinance/" target="_blank" rel="noopener">Reddit</a></li>
+      <li><a href="mailto:cain@cain.finance">Contact</a></li>
+    </ul></div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 Cain Finance. All rights reserved.</span>
+    <div class="solana-badge"><div class="solana-dot"></div>Built on Solana</div>
+    <span><a href="/termsofservice.html">Privacy</a> · <a href="/termsandconditions.html">Terms</a></span>
+  </div>
+</footer>
+
+<script>
+// ─── Custom Cursor ───
+const cursor = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursorRing');
+let mx = innerWidth/2, my = innerHeight/2, rx = mx, ry = my;
+addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+});
+(function ring() {
+  rx += (mx - rx) * 0.14; ry += (my - ry) * 0.14;
+  cursorRing.style.left = rx + 'px'; cursorRing.style.top = ry + 'px';
+  requestAnimationFrame(ring);
+})();
+document.querySelectorAll('a, button').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.width = '14px'; cursor.style.height = '14px';
+    cursorRing.style.width = '50px'; cursorRing.style.height = '50px';
+    cursorRing.style.borderColor = 'rgba(200,182,138,0.8)';
+    cursorRing.style.background = 'rgba(200,182,138,0.06)';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.width = '8px'; cursor.style.height = '8px';
+    cursorRing.style.width = '34px'; cursorRing.style.height = '34px';
+    cursorRing.style.borderColor = 'rgba(200,182,138,0.45)';
+    cursorRing.style.background = 'transparent';
+  });
+});
+
+// ─── Nav scroll ───
+const nav = document.getElementById('nav');
+addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 30));
+
+// ─── Featured card spotlight follow ───
+document.querySelectorAll('.featured-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+});
+
+// ─── Marquee seamless ───
+const mt = document.getElementById('marqueeTrack');
+mt.innerHTML += mt.innerHTML;
+
+// ─── Liquidity Network Canvas Background ───
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let W, H, DPR;
+function resize() {
+  DPR = Math.min(devicePixelRatio || 1, 2);
+  W = canvas.width = innerWidth * DPR; H = canvas.height = innerHeight * DPR;
+  canvas.style.width = innerWidth + 'px'; canvas.style.height = innerHeight + 'px';
+}
+resize(); addEventListener('resize', resize);
+const N = Math.min(70, Math.floor(innerWidth / 22));
+const nodes = Array.from({length: N}, () => ({
+  x: Math.random() * W, y: Math.random() * H,
+  vx: (Math.random() - 0.5) * 0.25 * DPR, vy: (Math.random() - 0.5) * 0.25 * DPR,
+  r: (Math.random() * 1.6 + 0.6) * DPR
+}));
+const rising = Array.from({length: 40}, () => ({
+  x: Math.random() * W, y: Math.random() * H,
+  r: (Math.random() * 1.4 + 0.4) * DPR,
+  s: (Math.random() * 0.4 + 0.15) * DPR, a: Math.random()
+}));
+let pmx = -9999, pmy = -9999;
+addEventListener('mousemove', e => { pmx = e.clientX * DPR; pmy = e.clientY * DPR; });
+const LINK = 150 * DPR; let t = 0;
+function draw() {
+  t += 0.006; ctx.clearRect(0, 0, W, H);
+  const rg = ctx.createRadialGradient(W*0.7, -H*0.1, 0, W*0.7, -H*0.1, W*0.7);
+  rg.addColorStop(0, 'rgba(200,182,138,0.07)'); rg.addColorStop(1, 'transparent');
+  ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
+  rising.forEach(p => {
+    p.y -= p.s; p.x += Math.sin(t + p.a * 6) * 0.2 * DPR;
+    if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
+    const alpha = (Math.sin(t * 1.5 + p.a * 6) * 0.3 + 0.45) * 0.5;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(200,182,138,${alpha})`; ctx.fill();
+  });
+  for (let i = 0; i < nodes.length; i++) {
+    const a = nodes[i];
+    a.x += a.vx; a.y += a.vy;
+    if (a.x < 0 || a.x > W) a.vx *= -1;
+    if (a.y < 0 || a.y > H) a.vy *= -1;
+    const dxm = pmx - a.x, dym = pmy - a.y; const dm = Math.hypot(dxm, dym);
+    if (dm < 200 * DPR && dm > 1) { a.x += dxm / dm * 0.4 * DPR; a.y += dym / dm * 0.4 * DPR; }
+    for (let j = i + 1; j < nodes.length; j++) {
+      const b = nodes[j];
+      const dx = a.x - b.x, dy = a.y - b.y; const d = Math.hypot(dx, dy);
+      if (d < LINK) {
+        const o = (1 - d / LINK) * 0.16;
+        ctx.strokeStyle = `rgba(200,182,138,${o})`; ctx.lineWidth = DPR * 0.6;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
+    }
+    ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(200,182,138,0.55)'; ctx.fill();
+  }
+  if (pmx > -1000) {
+    const cg = ctx.createRadialGradient(pmx, pmy, 0, pmx, pmy, 120 * DPR);
+    cg.addColorStop(0, 'rgba(200,182,138,0.12)'); cg.addColorStop(1, 'transparent');
+    ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(pmx, pmy, 120 * DPR, 0, Math.PI * 2); ctx.fill();
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+
+// ─── Reveal ───
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// ─── Render vault rows ───
+(function(){
+  var rows = [
+    {i:2, cls:'tok-a', letter:'α', name:'MSTRx / USDC', cat:'Diversified Index', pool:'DmHek82VP6HtBmSz56wDrfr4nJysmtGQhpY7D5HVkGnX'},
+    {i:3, cls:'tok-o', letter:'◈', name:'CRCLx / USDC', cat:'Payment Financing',  pool:'Hv44BZaqT5URrrAtGk6jvfbWKL2PytWA4ur2r1QnvtQa'},
+    {i:4, cls:'tok-b', letter:'B', name:'SUI / USDC',    cat:'Crypto Basis',       pool:'2AsusAS7VM9L1PV8QEJJk74eM667HH7NPq4rNr1Fde8y'},
+    {i:5, cls:'tok-t', letter:'T', name:'COINx / USDC',  cat:'US Treasuries',      pool:'5pobXosbeGSCRG3HdaRiw2TaihDDQMXkHFVbUTF24weM'},
+    {i:6, cls:'tok-w', letter:'W', name:'NVDAx / USDC',  cat:'Private Credit',     pool:'GjLusGo2z3mnXPmebhhNt9ocMDJgfdxrDFctVF8Ev3Kg'},
+    {i:7, cls:'tok-c', letter:'C', name:'AMZNx / USDC',  cat:'Private Credit',     pool:'5bWgqeKbHpxVGxdxSEJ9FGjU8AyNhCMuGGhHFBoakQvj'},
+    {i:8, cls:'tok-x', letter:'X', name:'SOL / USD1',    cat:'Prime Brokerage',    pool:'DyzGYEhdgSn5EEUt4XXviavZ7v7SV2YGrYV8HX3Aw5XT'},
+    {i:9, cls:'tok-r', letter:'A', name:'WLFI / USDC',   cat:'Private Credit',     pool:'81sG64oGK7Z1nhwGRnTNCgJq2zHZL2J14uH29cokUUtn'}
+  ];
+  var tb = document.getElementById('vault-rows');
+  rows.forEach(function(r){
+    var tr = document.createElement('tr');
+    tr.className = 'pool-row';
+    tr.addEventListener('click', function(){ location.href = 'vault.html?pool=' + r.pool; });
+    tr.innerHTML =
+      '<td><div class="pool-name"><div class="pool-token-icon '+r.cls+'">'+r.letter+'</div>' +
+      '<div><div id="row-'+r.i+'-name">'+r.name+'</div><div class="pool-cat">'+r.cat+'</div></div></div></td>' +
+      '<td><span class="pair-pill" id="row-'+r.i+'-token">'+r.name+'</span></td>' +
+      '<td><span class="apy-val" id="row-'+r.i+'-apy">—</span></td>' +
+      '<td class="tvl-val" id="row-'+r.i+'-tvl">—</td>' +
+      '<td class="td-right"><a href="vault.html?pool='+r.pool+'" class="pool-action" onclick="event.stopPropagation();">Deposit</a></td>';
+    tb.appendChild(tr);
+  });
+})();
+
+// ─── Live pool data ───
+(function(){
+  var POOLS_PROXY = 'https://infofetchworker.doffecul.workers.dev';
+  var FEATURED_POOLS = [
+    { id:'9GTj99g9tbz9U6UYDsX6YeRTgUnkYG6GTnHv3qLa5aXq', card:0 },
+    { id:'27x6aSxcAm6SoazoxmmTtFg6fWMQuNmdKJmHagq1DUZy', card:1 }
+  ];
+  var POOL_IDS = [
+    'DmHek82VP6HtBmSz56wDrfr4nJysmtGQhpY7D5HVkGnX',
+    'Hv44BZaqT5URrrAtGk6jvfbWKL2PytWA4ur2r1QnvtQa',
+    '2AsusAS7VM9L1PV8QEJJk74eM667HH7NPq4rNr1Fde8y',
+    '5pobXosbeGSCRG3HdaRiw2TaihDDQMXkHFVbUTF24weM',
+    'GjLusGo2z3mnXPmebhhNt9ocMDJgfdxrDFctVF8Ev3Kg',
+    '5bWgqeKbHpxVGxdxSEJ9FGjU8AyNhCMuGGhHFBoakQvj',
+    'DyzGYEhdgSn5EEUt4XXviavZ7v7SV2YGrYV8HX3Aw5XT',
+    '81sG64oGK7Z1nhwGRnTNCgJq2zHZL2J14uH29cokUUtn'
+  ];
+  function num(v){ if (v==null) return null; var n = typeof v==='string' ? parseFloat(v.replace(/[^0-9.\-]/g,'')) : Number(v); return isNaN(n)?null:n; }
+  function fmtUSD(v){ var n=num(v); if (n==null) return null;
+    if (n>=1e9) return '$'+(n/1e9).toFixed(2)+'B';
+    if (n>=1e6) return '$'+(n/1e6).toFixed(2)+'M';
+    if (n>=1e3) return '$'+(n/1e3).toFixed(1)+'K';
+    return '$'+n.toLocaleString('en-US',{maximumFractionDigits:2}); }
+  function pairOf(p){ return (p.tokenASymbol && p.tokenBSymbol) ? p.tokenASymbol+' / '+p.tokenBSymbol : null; }
+  function setText(id,v){ var el=document.getElementById(id); if (el && v!=null) el.textContent = v; }
+
+  function applyCard(i,pool){
+    if (!pool || pool.ok===false){ setText('pool-'+i+'-meta','Live data unavailable'); return; }
+    setText('pool-'+i+'-apr', pool.apr ? pool.apr+'%' : '—');
+    var tvl = fmtUSD(pool.tvl); if (tvl) setText('pool-'+i+'-tvl', tvl);
+    setText('pool-'+i+'-fee7d', fmtUSD(pool.fee7d) || '—');
+    setText('pool-'+i+'-vol', fmtUSD(pool.volume24h) || '—');
+    var pair = pairOf(pool);
+    setText('pool-'+i+'-meta', (pair ? pair+' · ' : '') + 'Live via Byreal');
+  }
+  function applyRow(i,pool){
+    if (!pool || pool.ok===false){ setText('row-'+i+'-apy','N/A'); setText('row-'+i+'-tvl','N/A'); return; }
+    var pair = pairOf(pool);
+    if (pair){ setText('row-'+i+'-name',pair); setText('row-'+i+'-token',pair); }
+    if (pool.apr!=null) setText('row-'+i+'-apy', Number(pool.apr).toFixed(2)+'%');
+    else if (pool.feeTier) setText('row-'+i+'-apy', pool.feeTier);
+    else setText('row-'+i+'-apy','—');
+    setText('row-'+i+'-tvl', fmtUSD(pool.tvl) || '—');
+  }
+
+  FEATURED_POOLS.forEach(function(fp){
+    fetch(POOLS_PROXY+'/pool?id='+fp.id)
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(function(j){ applyCard(fp.card, j && j.pool); })
+      .catch(function(err){ setText('pool-'+fp.card+'-meta','Live data unavailable'); console.error(err); });
+  });
+  fetch(POOLS_PROXY+'/pools?ids='+POOL_IDS.join(','))
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(d){
+      var pools = (d && d.pools) || [];
+      POOL_IDS.forEach(function(id,i){
+        var p = pools.find(function(x){ return x && (x.id===id || x.requestId===id); }) || pools[i];
+        applyRow(i+2, p);
+      });
+    })
+    .catch(function(err){
+      console.error('[CainPools] table fetch failed:', err);
+      for (var i=2;i<=9;i++){ setText('row-'+i+'-apy','N/A'); setText('row-'+i+'-tvl','N/A'); }
+    });
+})();
+</script>
+</body>
+</html>
