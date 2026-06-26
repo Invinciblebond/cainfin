@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cain Finance 320x50</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html,body{
+    width:320px;
+    height:50px;
+    overflow:hidden;
+    font-family:Inter,Arial,sans-serif;
+}
+
+body{
+    background:#060606;
+}
+
+.banner{
+    width:320px;
+    height:50px;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 10px;
+    gap:8px;
+    border:1px solid rgba(200,182,138,.18);
+    background:
+        radial-gradient(circle at 92% 50%, rgba(200,182,138,.14), transparent 65%),
+        linear-gradient(180deg,#090909,#050505);
+    text-decoration:none;
+    color:inherit;
+}
+
+.banner:before{
+    content:"";
+    position:absolute;
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(200,182,138,.3), transparent 70%);
+    right:-32px;
+    top:-36px;
+    animation:float 8s ease-in-out infinite;
+}
+
+@keyframes float{
+    50%{
+        transform:translate(-8px,4px);
+    }
+}
+
+.line{
+    position:absolute;
+    left:-90px;
+    top:0;
+    width:90px;
+    height:100%;
+    background:linear-gradient(90deg,
+        transparent,
+        rgba(228,212,168,.18),
+        transparent);
+    transform:skewX(-25deg);
+    animation:sweep 5s linear infinite;
+}
+
+@keyframes sweep{
+    to{
+        left:400px;
+    }
+}
+
+.left{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    z-index:2;
+    min-width:0;
+}
+
+.icon{
+    flex:none;
+    width:28px;
+    height:28px;
+    border-radius:8px;
+    background:linear-gradient(135deg,#e4d4a8,#c8b68a);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#111;
+    font-weight:bold;
+    font-size:13px;
+    box-shadow:0 0 14px rgba(200,182,138,.4);
+}
+
+.text{
+    min-width:0;
+    overflow:hidden;
+}
+
+.brand{
+    color:#fff;
+    font-size:8.5px;
+    font-weight:700;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    white-space:nowrap;
+}
+
+.brand span{
+    color:#c8b68a;
+    font-weight:400;
+}
+
+.headline{
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:-.02em;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    margin-top:1px;
+}
+
+.gold{
+    color:#c8b68a;
+}
+
+.button{
+    flex:none;
+    z-index:2;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:7px 12px;
+    background:linear-gradient(135deg,#e4d4a8,#c8b68a);
+    color:#090909;
+    border-radius:7px;
+    text-decoration:none;
+    font-weight:700;
+    font-size:11px;
+    white-space:nowrap;
+    box-shadow:0 0 14px rgba(200,182,138,.25);
+}
+</style>
+</head>
+
+<body>
+
+<a class="banner" href="https://cain.finance" target="_blank">
+
+<div class="line"></div>
+
+<div class="left">
+    <div class="icon">C</div>
+    <div class="text">
+        <div class="brand">cain <span>finance</span></div>
+        <div class="headline">Earn Yield on <span class="gold">Solana</span></div>
+    </div>
+</div>
+
+<div class="button">
+    Launch →
+</div>
+
+</a>
+
+</body>
+</html>

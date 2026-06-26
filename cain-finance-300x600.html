@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cain Finance 300x600</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html,body{
+    width:300px;
+    height:600px;
+    overflow:hidden;
+    font-family:Inter,Arial,sans-serif;
+}
+
+body{
+    background:#060606;
+}
+
+.banner{
+    width:300px;
+    height:600px;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    gap:42px;
+    padding:32px 28px;
+    border:1px solid rgba(200,182,138,.18);
+    background:
+        radial-gradient(circle at 80% 8%, rgba(200,182,138,.14), transparent 55%),
+        linear-gradient(180deg,#090909,#050505);
+    text-decoration:none;
+    color:inherit;
+}
+
+/* subtle animated glow */
+.banner:before{
+    content:"";
+    position:absolute;
+    width:260px;
+    height:260px;
+    border-radius:50%;
+    background:radial-gradient(circle,
+    rgba(200,182,138,.22),
+    transparent 70%);
+    right:-110px;
+    top:-95px;
+    animation:float 9s ease-in-out infinite;
+}
+
+@keyframes float{
+    50%{
+        transform:translate(-25px,15px);
+    }
+}
+
+/* animated accent */
+.line{
+    position:absolute;
+    left:-170px;
+    top:0;
+    width:170px;
+    height:100%;
+    background:linear-gradient(90deg,
+        transparent,
+        rgba(228,212,168,.15),
+        transparent);
+    transform:skewX(-25deg);
+    animation:sweep 6s linear infinite;
+}
+
+@keyframes sweep{
+    to{
+        left:420px;
+    }
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    z-index:2;
+}
+
+.icon{
+    width:44px;
+    height:44px;
+    border-radius:12px;
+    background:linear-gradient(135deg,#e4d4a8,#c8b68a);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#111;
+    font-weight:bold;
+    font-size:21px;
+    box-shadow:0 0 26px rgba(200,182,138,.45);
+}
+
+.brand{
+    color:#fff;
+    font-size:21px;
+    font-weight:700;
+}
+
+.brand span{
+    color:#c8b68a;
+    font-weight:400;
+}
+
+.content{
+    z-index:2;
+}
+
+.headline{
+    color:#fff;
+    font-size:30px;
+    font-weight:700;
+    letter-spacing:-.03em;
+    line-height:1.18;
+}
+
+.sub{
+    color:#999;
+    font-size:13.5px;
+    margin-top:14px;
+    line-height:1.6;
+}
+
+.gold{
+    color:#c8b68a;
+}
+
+.features{
+    z-index:2;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
+
+.feature{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:#ccc;
+    font-size:13px;
+}
+
+.dot{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#e4d4a8,#c8b68a);
+    flex:none;
+    box-shadow:0 0 8px rgba(200,182,138,.5);
+}
+
+.cta{
+    z-index:2;
+    margin-top:auto;
+}
+
+.button{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:100%;
+    padding:16px 22px;
+    background:linear-gradient(135deg,#e4d4a8,#c8b68a);
+    color:#090909;
+    border-radius:11px;
+    text-decoration:none;
+    font-weight:700;
+    font-size:15px;
+    box-shadow:0 0 22px rgba(200,182,138,.28);
+}
+</style>
+</head>
+
+<body>
+
+<a class="banner" href="https://cain.finance" target="_blank">
+
+<div class="line"></div>
+
+<div class="logo">
+    <div class="icon">C</div>
+    <div class="brand">
+        cain <span>finance</span>
+    </div>
+</div>
+
+<div class="content">
+    <div class="headline">
+        Earn Institutional Yield on <span class="gold">Solana</span>
+    </div>
+    <div class="sub">
+        Put your assets to work with vaults built for serious capital.
+    </div>
+</div>
+
+<div class="features">
+    <div class="feature"><div class="dot"></div>Auto-compounding vaults</div>
+    <div class="feature"><div class="dot"></div>Real-world assets</div>
+    <div class="feature"><div class="dot"></div>Non-custodial by design</div>
+</div>
+
+<div class="cta">
+    <div class="button">
+        Launch App →
+    </div>
+</div>
+
+</a>
+
+</body>
+</html>
