@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cain Finance — Shop</title>
+<meta name="description" content="Support Cain Finance and unlock perks: free swaps, Discord roles, and supporter tags.">
+<meta property="og:title" content="Cain Finance — Shop">
+<meta property="og:description" content="Support Cain Finance and unlock perks: free swaps, Discord roles, and supporter tags.">
+<meta property="og:image" content="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cain Finance — Shop">
+<meta name="twitter:image" content="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<link rel="icon" type="image/png" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/blog/blog.css">
+<!-- @solana/web3.js — for VersionedTransaction / SystemProgram.transfer (same as byreal.html) -->
+<script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
+<script>window.solanaWeb3 = solanaWeb3;</script>
+<style>
+  /* ── Shop-specific styles (built on blog.css tokens) ── */
+  .shop-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:22px; align-items:stretch;
+    max-width:1100px; margin:0 auto; }
+  .tier { position:relative; display:flex; flex-direction:column; border:1px solid var(--border);
+    border-radius:22px; background:rgba(20,20,22,0.45); padding:32px 28px 30px;
+    transition:border-color .25s, transform .25s, background .25s; }
+  .tier:hover { border-color:rgba(200,182,138,0.3); transform:translateY(-4px); background:rgba(24,24,26,0.7); }
+  .tier.featured { border-color:rgba(200,182,138,0.45);
+    background:linear-gradient(180deg, rgba(200,182,138,0.06), rgba(255,255,255,0.01)); }
+  .tier.featured::before { content:'Most popular'; position:absolute; top:-11px; left:50%;
+    transform:translateX(-50%); font-family:var(--mono); font-size:10px; letter-spacing:0.12em;
+    text-transform:uppercase; color:#0a0a0a; background:linear-gradient(135deg,var(--gold-bright),var(--gold));
+    padding:5px 14px; border-radius:100px; white-space:nowrap; }
+  .tier-name { font-size:14px; font-family:var(--mono); letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--gold); margin-bottom:14px; }
+  .tier-price { display:flex; align-items:flex-end; gap:6px; margin-bottom:6px; }
+  .tier-price .amt { font-size:46px; font-weight:700; letter-spacing:-0.02em; color:var(--text); line-height:1; }
+  .tier-price .per { font-size:13px; color:var(--text-3); margin-bottom:6px; }
+  .tier-sol { font-family:var(--mono); font-size:12px; color:var(--text-2); margin-bottom:22px; min-height:16px; }
+  .tier-sol .live-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--green);
+    box-shadow:0 0 8px var(--green); margin-right:6px; vertical-align:middle; }
+  .tier-feats { list-style:none; padding:0; margin:0 0 26px; flex:1; }
+  .tier-feats li { display:flex; align-items:flex-start; gap:11px; font-size:14px; line-height:1.5;
+    color:#d9d6cf; font-weight:300; padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .tier-feats li:last-child { border-bottom:none; }
+  .tier-feats svg { width:17px; height:17px; flex-shrink:0; margin-top:1px; stroke:var(--gold); }
+  .tier-feats li.muted { color:var(--text-3); }
+  .tier-feats li.muted svg { stroke:var(--text-3); }
+  .buy-btn { width:100%; font-size:14px; font-weight:600; letter-spacing:0.01em; padding:14px 20px;
+    border-radius:12px; border:none; cursor:none; color:#0a0a0a;
+    background:linear-gradient(135deg, var(--gold-bright), var(--gold));
+    transition:transform .25s, box-shadow .25s, opacity .2s; }
+  .buy-btn:hover { transform:translateY(-1px); box-shadow:0 8px 30px rgba(200,182,138,0.35); }
+  .buy-btn:disabled { opacity:0.55; cursor:not-allowed; transform:none; box-shadow:none; }
+  .tier:not(.featured) .buy-btn { background:transparent; color:var(--gold);
+    border:1px solid rgba(200,182,138,0.4); }
+  .tier:not(.featured) .buy-btn:hover { background:var(--gold-dim); border-color:var(--gold);
+    box-shadow:none; }
+  .shop-note { max-width:1100px; margin:30px auto 0; font-size:12.5px; color:var(--text-3);
+    line-height:1.7; text-align:center; }
+  .shop-note a { color:var(--gold); text-decoration:none; border-bottom:1px solid rgba(200,182,138,0.3); }
+  .wallet-pill { display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12px;
+    color:var(--text-2); background:var(--bg-pill); border:1px solid var(--border);
+    padding:8px 16px; border-radius:100px; margin:0 auto 4px; }
+  .wallet-pill .dot { width:7px; height:7px; border-radius:50%; background:var(--text-3); }
+  .wallet-pill.connected .dot { background:var(--green); box-shadow:0 0 8px var(--green); }
+
+  /* ── Status / success modal ── */
+  .modal-overlay { position:fixed; inset:0; z-index:9000; display:none; align-items:center;
+    justify-content:center; padding:24px; background:rgba(4,4,4,0.78); backdrop-filter:blur(8px); }
+  .modal-overlay.open { display:flex; }
+  .modal { position:relative; max-width:440px; width:100%; border:1px solid var(--border);
+    border-radius:22px; background:#0c0c0c; padding:38px 34px 34px; text-align:center;
+    box-shadow:0 30px 80px rgba(0,0,0,0.7); }
+  .modal-icon { width:60px; height:60px; border-radius:50%; margin:0 auto 20px; display:flex;
+    align-items:center; justify-content:center; }
+  .modal-icon.success { background:rgba(0,255,163,0.12); border:1px solid rgba(0,255,163,0.3); }
+  .modal-icon.success svg { width:30px; height:30px; stroke:var(--green); }
+  .modal-icon.working { background:var(--gold-dim); border:1px solid rgba(200,182,138,0.3); }
+  .modal-icon.working svg { width:28px; height:28px; stroke:var(--gold); animation:loaderSpin .8s linear infinite; }
+  .modal-icon.error { background:rgba(255,85,85,0.12); border:1px solid rgba(255,85,85,0.3); }
+  .modal-icon.error svg { width:28px; height:28px; stroke:#ff5555; }
+  @keyframes loaderSpin { to { transform:rotate(360deg); } }
+  .modal h3 { font-size:23px; font-weight:700; letter-spacing:-0.01em; color:var(--text); margin-bottom:10px; }
+  .modal p { font-size:14px; line-height:1.6; color:var(--text-2); margin-bottom:8px; font-weight:300; }
+  .modal .tx-link { font-family:var(--mono); font-size:11.5px; color:var(--text-3); word-break:break-all;
+    display:inline-block; margin:6px 0 18px; }
+  .modal .tx-link a { color:var(--gold); text-decoration:none; }
+  .modal-cta { display:inline-flex; align-items:center; justify-content:center; gap:10px; width:100%;
+    font-size:15px; font-weight:600; padding:14px 20px; border-radius:12px; text-decoration:none;
+    color:#fff; background:#5865F2; transition:transform .2s, box-shadow .2s; margin-top:8px; }
+  .modal-cta:hover { transform:translateY(-1px); box-shadow:0 8px 26px rgba(88,101,242,0.45); }
+  .modal-cta svg { width:20px; height:20px; fill:#fff; }
+  .modal-close { position:absolute; top:16px; right:16px; width:30px; height:30px; border:none;
+    background:transparent; color:var(--text-3); cursor:none; border-radius:8px; display:flex;
+    align-items:center; justify-content:center; transition:color .2s, background .2s; }
+  .modal-close:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+  .modal-close svg { width:16px; height:16px; }
+  .modal-sub { font-size:12px; color:var(--text-3); margin-top:16px; }
+
+  @media (max-width:860px) {
+    .shop-grid { grid-template-columns:1fr; max-width:420px; }
+    .tier.featured { order:-1; }
+  }
+</style>
+</head>
+<body>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="spotlight"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="/index.html" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" fill="#0a0a0a"/></svg>
+    </div>
+    cain<span class="nav-sub">finance</span>
+  </a>
+  <div class="nav-center">
+    <a href="/potential.html" class="nav-link">Earn</a>
+    <a href="/solusdcvault.html" class="nav-link">Vaults</a>
+    <a href="/Swap.html" class="nav-link">Swap</a>
+    <a href="/faucet.html" class="nav-link">Faucet</a>
+    <a href="/Tokenomics.html" class="nav-link">Tokenomics</a>
+    <a href="/blog.html" class="nav-link">Blog</a>
+    <a href="/shop.html" class="nav-link active">Shop</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-dd">
+      <button class="icon-btn" aria-label="Community">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+      </button>
+      <div class="nav-dd-menu">
+        <a href="https://github.com/Invinciblebond/cainfin" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12a12 12 0 008.21 11.39c.6.11.82-.26.82-.58v-2c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5.99.11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 016 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.82.58A12 12 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>GitHub</a>
+        <a href="https://x.com/CainFinance" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>X</a>
+        <a href="https://discord.gg/vMMXpMHeZz" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37A19.8 19.8 0 0015.45 3c-.2.36-.44.85-.6 1.23a18.3 18.3 0 00-5.7 0C8.98 3.85 8.73 3.36 8.53 3a19.7 19.7 0 00-4.87 1.37C.55 9 .04 13.51.3 17.96a19.9 19.9 0 006.07 3.06c.49-.67.93-1.38 1.3-2.13-.71-.27-1.39-.6-2.04-.99.17-.13.34-.26.5-.4a14.2 14.2 0 0012.1 0c.16.14.33.27.5.4-.65.39-1.33.72-2.04.99.37.75.81 1.46 1.3 2.13a19.8 19.8 0 006.07-3.06c.3-5.15-.51-9.62-2.84-13.59z"/></svg>Discord</a>
+        <a href="https://www.reddit.com/r/CainFinance/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 11.78a2.6 2.6 0 00-2.6-2.6c-.68 0-1.3.27-1.76.7a12.7 12.7 0 00-6.85-2.16l1.17-5.48 3.83.82a1.86 1.86 0 103.66-.5 1.86 1.86 0 00-3.5-.86l-4.27-.9a.43.43 0 00-.51.34l-1.3 6.1a12.8 12.8 0 00-6.96 2.15A2.6 2.6 0 002.6 9.18 2.6 2.6 0 001 13.95c0 4.05 4.71 7.32 10.52 7.32 5.81 0 10.52-3.27 10.52-7.32.62-.42 1.08-1.13 1.08-2.17z"/></svg>Reddit</a>
+        <a href="mailto:cain@cain.finance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z"/><polyline points="22,6 12,13 2,6"/></svg>Contact</a>
+      </div>
+    </div>
+    <button id="connect-btn" class="nav-cta" onclick="connectWallet()">Connect Wallet</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero-wrap" style="text-align:center;">
+  <span class="eyebrow" style="margin-left:auto;margin-right:auto;"><span class="eyebrow-dot"></span>Support Cain</span>
+  <h1 class="hero-title">Back the protocol. <em>Unlock perks.</em></h1>
+  <p class="hero-sub" style="margin-left:auto;margin-right:auto;">Support Cain Finance with a one-time contribution and unlock free swaps, Discord roles, and supporter status. Paid on-chain — straight from your wallet.</p>
+</header>
+
+<!-- TIERS -->
+<section class="section">
+  <div style="text-align:center; margin-bottom:18px;">
+    <span class="wallet-pill" id="wallet-pill"><span class="dot"></span><span id="wallet-pill-text">Wallet not connected</span></span>
+  </div>
+  <div class="shop-grid">
+
+    <!-- Tier 1 -->
+    <div class="tier" data-tier="supporter">
+      <div class="tier-name">Swapper</div>
+      <div class="tier-price"><span class="amt">$4.99</span><span class="per">one-time</span></div>
+      <div class="tier-sol" id="sol-supporter"><span class="live-dot"></span>Calculating SOL…</div>
+      <ul class="tier-feats">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>Free swaps on Cain</li>
+        <li class="muted"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>Discord tag + moderator powers</li>
+        <li class="muted"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>Special supporter tag</li>
+      </ul>
+      <button class="buy-btn" data-tier="supporter" data-usd="4.99" onclick="buyTier('supporter')">Get Swapper</button>
+    </div>
+
+    <!-- Tier 2 (featured) -->
+    <div class="tier featured" data-tier="mod">
+      <div class="tier-name">Moderator</div>
+      <div class="tier-price"><span class="amt">$9.99</span><span class="per">one-time</span></div>
+      <div class="tier-sol" id="sol-mod"><span class="live-dot"></span>Calculating SOL…</div>
+      <ul class="tier-feats">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>Free swaps on Cain</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>Discord tag + moderator powers</li>
+        <li class="muted"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>Special supporter tag</li>
+      </ul>
+      <button class="buy-btn" data-tier="mod" data-usd="9.99" onclick="buyTier('mod')">Get Moderator</button>
+    </div>
+
+    <!-- Tier 3 -->
+    <div class="tier" data-tier="patron">
+      <div class="tier-name">Supporter</div>
+      <div class="tier-price"><span class="amt">$14.99</span><span class="per">one-time</span></div>
+      <div class="tier-sol" id="sol-patron"><span class="live-dot"></span>Calculating SOL…</div>
+      <ul class="tier-feats">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>Free swaps on Cain</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>Discord tag + moderator powers</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>Special supporter tag</li>
+      </ul>
+      <button class="buy-btn" data-tier="patron" data-usd="14.99" onclick="buyTier('patron')">Get Supporter</button>
+    </div>
+
+  </div>
+  <p class="shop-note">
+    Payments are made in SOL on Solana, converted from the USD price at the live rate.
+    After a confirmed payment you'll be prompted to join our <a href="https://discord.gg/vMMXpMHeZz" target="_blank" rel="noopener">Discord</a>,
+    where roles and tags are assigned. Need a wallet? Install <a href="https://phantom.app" target="_blank" rel="noopener">Phantom</a> or <a href="https://solflare.com" target="_blank" rel="noopener">Solflare</a>.
+  </p>
+</section>
+
+<!-- STATUS / SUCCESS MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" id="modal-close" onclick="closeModal()" style="display:none;" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="modal-icon working" id="modal-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="modal-icon-svg"><path d="M21 12a9 9 0 11-6.219-8.56" stroke-linecap="round"/></svg>
+    </div>
+    <h3 id="modal-title">Processing…</h3>
+    <p id="modal-message">Confirm the transaction in your wallet.</p>
+    <span class="tx-link" id="modal-tx" style="display:none;"></span>
+    <div id="modal-action" style="display:none;">
+      <a class="modal-cta" href="https://discord.gg/vMMXpMHeZz" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M20.32 4.37A19.8 19.8 0 0015.45 3c-.2.36-.44.85-.6 1.23a18.3 18.3 0 00-5.7 0C8.98 3.85 8.73 3.36 8.53 3a19.7 19.7 0 00-4.87 1.37C.55 9 .04 13.51.3 17.96a19.9 19.9 0 006.07 3.06c.49-.67.93-1.38 1.3-2.13-.71-.27-1.39-.6-2.04-.99.17-.13.34-.26.5-.4a14.2 14.2 0 0012.1 0c.16.14.33.27.5.4-.65.39-1.33.72-2.04.99.37.75.81 1.46 1.3 2.13a19.8 19.8 0 006.07-3.06c.3-5.15-.51-9.62-2.84-13.59z"/></svg>
+        Join the Discord
+      </a>
+      <p class="modal-sub">Open a ticket or check #roles to claim your perks.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="/index.html" class="nav-logo">
+        <div class="nav-logo-icon"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" fill="#0a0a0a"/></svg></div>
+        cain<span class="nav-sub">finance</span>
+      </a>
+      <p>A yield aggregation protocol routing capital into real-world assets and Solana's deepest liquidity. Built for those who play the long game.</p>
+      <div class="footer-socials">
+        <a href="https://github.com/Invinciblebond/cainfin" target="_blank" rel="noopener" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12a12 12 0 008.21 11.39c.6.11.82-.26.82-.58v-2c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5.99.11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 016 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.49 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.82.58A12 12 0 0024 12c0-6.63-5.37-12-12-12z"/></svg></a>
+        <a href="https://x.com/CainFinance" target="_blank" rel="noopener" aria-label="X"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+        <a href="https://discord.gg/vMMXpMHeZz" target="_blank" rel="noopener" aria-label="Discord"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.32 4.37A19.8 19.8 0 0015.45 3c-.2.36-.44.85-.6 1.23a18.3 18.3 0 00-5.7 0C8.98 3.85 8.73 3.36 8.53 3a19.7 19.7 0 00-4.87 1.37C.55 9 .04 13.51.3 17.96a19.9 19.9 0 006.07 3.06c.49-.67.93-1.38 1.3-2.13-.71-.27-1.39-.6-2.04-.99.17-.13.34-.26.5-.4a14.2 14.2 0 0012.1 0c.16.14.33.27.5.4-.65.39-1.33.72-2.04.99.37.75.81 1.46 1.3 2.13a19.8 19.8 0 006.07-3.06c.3-5.15-.51-9.62-2.84-13.59z"/></svg></a>
+        <a href="https://www.reddit.com/r/CainFinance/" target="_blank" rel="noopener" aria-label="Reddit"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 11.78a2.6 2.6 0 00-2.6-2.6c-.68 0-1.3.27-1.76.7a12.7 12.7 0 00-6.85-2.16l1.17-5.48 3.83.82a1.86 1.86 0 103.66-.5 1.86 1.86 0 00-3.5-.86l-4.27-.9a.43.43 0 00-.51.34l-1.3 6.1a12.8 12.8 0 00-6.96 2.15A2.6 2.6 0 002.6 9.18 2.6 2.6 0 001 13.95c0 4.05 4.71 7.32 10.52 7.32 5.81 0 10.52-3.27 10.52-7.32.62-.42 1.08-1.13 1.08-2.17z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Product</h4><ul>
+      <li><a href="/potential.html">Earn</a></li>
+      <li><a href="/solusdcvault.html">Vaults</a></li>
+      <li><a href="/Swap.html">Swap</a></li>
+      <li><a href="/faucet.html">Faucet</a></li>
+      <li><a href="/Tokenomics.html">Cain Token</a></li>
+    </ul></div>
+    <div class="footer-col"><h4>Legal</h4><ul>
+      <li><a href="/termsofservice.html">Terms of Service</a></li>
+      <li><a href="/termsandconditions.html">Terms &amp; Conditions</a></li>
+      <li><a href="/Riskdisclosurestatement.html">Risk Disclosure</a></li>
+      <li><a href="/BorrowTerms.html">Borrow Terms</a></li>
+      <li><a href="/Earnterms.html">Earn Terms</a></li>
+    </ul></div>
+    <div class="footer-col"><h4>Community</h4><ul>
+      <li><a href="https://github.com/Invinciblebond/cainfin" target="_blank" rel="noopener">GitHub</a></li>
+      <li><a href="https://x.com/CainFinance" target="_blank" rel="noopener">X</a></li>
+      <li><a href="https://discord.gg/vMMXpMHeZz" target="_blank" rel="noopener">Discord</a></li>
+      <li><a href="https://www.reddit.com/r/CainFinance/" target="_blank" rel="noopener">Reddit</a></li>
+      <li><a href="mailto:cain@cain.finance">Contact</a></li>
+    </ul></div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 Cain Finance. All rights reserved.</span>
+    <div class="solana-badge"><div class="solana-dot"></div>Built on Solana</div>
+    <span><a href="/termsofservice.html">Privacy</a> · <a href="/termsandconditions.html">Terms</a></span>
+  </div>
+</footer>
+
+<script>
+// ── Custom cursor (matches site) ──
+const cursor = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursorRing');
+let mx = innerWidth/2, my = innerHeight/2, rx = mx, ry = my;
+addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx+'px'; cursor.style.top = my+'px'; });
+(function ring(){ rx += (mx-rx)*0.14; ry += (my-ry)*0.14;
+  cursorRing.style.left = rx+'px'; cursorRing.style.top = ry+'px';
+  requestAnimationFrame(ring); })();
+addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('scrolled', scrollY > 10);
+});
+</script>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+//  Cain Shop — on-chain payment
+//  Uses the SAME transfer method as byreal.html:
+//   detectWallet → /api/blockhash → SystemProgram.transfer → signAllTransactions
+//   → /api/send-fee-tx → /api/verify-tx
+// ═══════════════════════════════════════════════════════════════════════════
+(function () {
+  // ── Config (mirrors byreal.html) ──
+  const BYREAL_API_URL = 'https://cainfin.onrender.com';
+  const SERVER = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? 'http://localhost:3000'
+    : BYREAL_API_URL;
+  const TREASURY = 'Kd3Rfno1ja3ABNhWEFDBmb2FEzXPBSiUooopm98xHwZ';
+  const LAMPORTS_PER_SOL = 1000000000;
+
+  const TIERS = {
+    supporter: { usd: 4.99,  label: 'Swapper'   },
+    mod:       { usd: 9.99,  label: 'Moderator' },
+    patron:    { usd: 14.99, label: 'Supporter' },
+  };
+
+  // ── State ──
+  let walletPubkey  = null;
+  let walletAdapter = null;
+  let solUsd        = null;   // live SOL price in USD
+  let busy          = false;
+
+  // ── web3 + helpers (identical to byreal.html) ──
+  function loadWeb3() { return Promise.resolve(window.solanaWeb3); }
+  function b64ToBytes(b64) {
+    const bin = atob(b64); const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function bytesToB64(bytes) {
+    let bin = ''; for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+
+  // ── Wallet detection (identical to byreal.html) ──
+  function detectWallet() {
+    if (window.phantom?.solana?.isPhantom) return window.phantom.solana;
+    if (window.solana?.isPhantom)          return window.solana;
+    if (window.solflare?.isSolflare)       return window.solflare;
+    return null;
+  }
+
+  function setConnected(pubkey) {
+    const btn = document.getElementById('connect-btn');
+    btn.textContent = pubkey.slice(0, 4) + '…' + pubkey.slice(-4);
+    const pill = document.getElementById('wallet-pill');
+    pill.classList.add('connected');
+    document.getElementById('wallet-pill-text').textContent = 'Connected · ' + pubkey.slice(0,4) + '…' + pubkey.slice(-4);
+  }
+
+  window.connectWallet = async function () {
+    const adapter = detectWallet();
+    if (!adapter) {
+      showModal('error', 'No wallet found', 'Install Phantom or Solflare to continue.');
+      return;
+    }
+    try {
+      const resp = await adapter.connect();
+      walletAdapter = adapter;
+      walletPubkey  = (resp?.publicKey || adapter.publicKey).toString();
+      setConnected(walletPubkey);
+    } catch (e) {
+      showModal('error', 'Connection rejected', e.message || 'Wallet connection was rejected.');
+    }
+  };
+
+  // ── Live SOL/USD price (for USD→SOL conversion) ──
+  async function fetchSolPrice() {
+    // Primary: Jupiter price API. Fallback: CoinGecko.
+    const SOL_MINT = 'So11111111111111111111111111111111111111112';
+    try {
+      const r = await fetch('https://price.jup.ag/v6/price?ids=SOL');
+      if (r.ok) {
+        const j = await r.json();
+        const p = j?.data?.SOL?.price;
+        if (p) return Number(p);
+      }
+    } catch (_) {}
+    try {
+      const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+      if (r.ok) {
+        const j = await r.json();
+        const p = j?.solana?.usd;
+        if (p) return Number(p);
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  function usdToLamports(usd) {
+    if (!solUsd) return null;
+    const sol = usd / solUsd;
+    return Math.round(sol * LAMPORTS_PER_SOL);
+  }
+
+  function renderSolPrices() {
+    Object.keys(TIERS).forEach(key => {
+      const el = document.getElementById('sol-' + key);
+      if (!el) return;
+      if (!solUsd) { el.innerHTML = '<span class="live-dot"></span>SOL price unavailable'; return; }
+      const sol = TIERS[key].usd / solUsd;
+      el.innerHTML = '<span class="live-dot"></span>≈ ' + sol.toFixed(4) + ' SOL';
+    });
+  }
+
+  async function refreshPrice() {
+    solUsd = await fetchSolPrice();
+    renderSolPrices();
+  }
+
+  // ── Modal helpers ──
+  function showModal(kind, title, message, opts) {
+    opts = opts || {};
+    const overlay = document.getElementById('modal-overlay');
+    const icon = document.getElementById('modal-icon');
+    const iconSvg = document.getElementById('modal-icon-svg');
+    icon.className = 'modal-icon ' + (kind === 'success' ? 'success' : kind === 'error' ? 'error' : 'working');
+    if (kind === 'success') {
+      iconSvg.innerHTML = '<path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/>';
+    } else if (kind === 'error') {
+      iconSvg.innerHTML = '<path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/>';
+    } else {
+      iconSvg.innerHTML = '<path d="M21 12a9 9 0 11-6.219-8.56" stroke-linecap="round"/>';
+    }
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-message').textContent = message;
+    // tx link
+    const txEl = document.getElementById('modal-tx');
+    if (opts.signature) {
+      txEl.style.display = 'inline-block';
+      txEl.innerHTML = 'Tx: <a href="https://solscan.io/tx/' + opts.signature + '" target="_blank" rel="noopener">' +
+        opts.signature.slice(0, 8) + '…' + opts.signature.slice(-8) + '</a>';
+    } else {
+      txEl.style.display = 'none';
+    }
+    // discord action
+    document.getElementById('modal-action').style.display = (kind === 'success') ? 'block' : 'none';
+    // close button: only when not mid-flight
+    document.getElementById('modal-close').style.display = (kind === 'working') ? 'none' : 'flex';
+    overlay.classList.add('open');
+  }
+  window.closeModal = function () {
+    if (busy) return;
+    document.getElementById('modal-overlay').classList.remove('open');
+  };
+
+  // ── Verify the tx landed (poll /api/verify-tx, same backend as byreal.html) ──
+  async function pollVerify(signature, attempts) {
+    attempts = attempts || 14; // ~20s at 1.5s
+    for (let i = 0; i < attempts; i++) {
+      try {
+        const r = await fetch(SERVER + '/api/verify-tx?signature=' + encodeURIComponent(signature));
+        const j = await r.json();
+        if (j.found && j.status === 'confirmed') return true;
+        if (j.found && j.status === 'failed') return false;
+      } catch (_) {}
+      await new Promise(res => setTimeout(res, 1500));
+    }
+    return null; // unknown — still likely indexing
+  }
+
+  // ── Buy flow — the SAME send method as byreal.html's fee transfer ──
+  window.buyTier = async function (tierKey) {
+    if (busy) return;
+    const tier = TIERS[tierKey];
+    if (!tier) return;
+
+    // Ensure wallet
+    if (!walletAdapter || !walletPubkey) {
+      const adapter = detectWallet();
+      if (!adapter) { showModal('error', 'No wallet found', 'Install Phantom or Solflare to continue.'); return; }
+      try {
+        const resp = await adapter.connect();
+        walletAdapter = adapter;
+        walletPubkey  = (resp?.publicKey || adapter.publicKey).toString();
+        setConnected(walletPubkey);
+      } catch (e) {
+        showModal('error', 'Connection rejected', e.message || 'Wallet connection was rejected.');
+        return;
+      }
+    }
+
+    // Ensure price → lamports
+    if (!solUsd) { await refreshPrice(); }
+    const lamports = usdToLamports(tier.usd);
+    if (!lamports || lamports <= 0) {
+      showModal('error', 'Price unavailable', 'Could not fetch the SOL price right now. Please try again in a moment.');
+      return;
+    }
+
+    busy = true;
+    setButtonsDisabled(true);
+    showModal('working', 'Approve in your wallet', 'Sending ' + (lamports / LAMPORTS_PER_SOL).toFixed(4) + ' SOL for the ' + tier.label + ' tier ($' + tier.usd.toFixed(2) + ').');
+
+    try {
+      const { VersionedTransaction, TransactionMessage, SystemProgram, PublicKey } = await loadWeb3();
+
+      // 1. Recent blockhash via server proxy (same endpoint as byreal.html)
+      const bhRes  = await fetch(SERVER + '/api/blockhash');
+      const bhData = await bhRes.json();
+      if (!bhRes.ok || !bhData.blockhash) throw new Error(bhData.error || 'Failed to fetch blockhash');
+
+      // 2. Build transfer as a V0 VersionedTransaction (identical pattern to byreal.html)
+      const feePayer = new PublicKey(walletPubkey);
+      const msg = new TransactionMessage({
+        payerKey:        feePayer,
+        recentBlockhash: bhData.blockhash,
+        instructions: [SystemProgram.transfer({
+          fromPubkey: feePayer,
+          toPubkey:   new PublicKey(TREASURY),
+          lamports:   lamports,
+        })],
+      }).compileToV0Message();
+      const tx = new VersionedTransaction(msg);
+
+      // 3. Sign (wallet prompt)
+      const signed = await walletAdapter.signAllTransactions([tx]);
+
+      // 4. Submit via the same /api/send-fee-tx proxy byreal.html uses for SOL transfers
+      showModal('working', 'Submitting…', 'Broadcasting your transaction to Solana.');
+      const serialized = signed[0].serialize();
+      const sendRes  = await fetch(SERVER + '/api/send-fee-tx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transaction: bytesToB64(serialized) }),
+      });
+      const sendData = await sendRes.json();
+      if (!sendRes.ok || !sendData.signature) throw new Error(sendData.error || 'Failed to submit transaction');
+      const signature = sendData.signature;
+
+      // 5. Verify on-chain
+      showModal('working', 'Confirming…', 'Waiting for on-chain confirmation.', { signature });
+      const ok = await pollVerify(signature);
+      if (ok === false) throw new Error('Transaction failed on-chain. No funds were moved for the purchase.');
+
+      // 6. Success → prompt Discord invite
+      showModal('success', 'Payment received', 'Thank you for supporting Cain! Your ' + tier.label + ' tier is confirmed. Join the Discord to claim your perks.', { signature });
+    } catch (e) {
+      const msg = (e && e.message) ? e.message : String(e);
+      // user-rejected is common — make it friendly
+      if (/reject|denied|cancel/i.test(msg)) {
+        showModal('error', 'Cancelled', 'You cancelled the transaction. No funds were sent.');
+      } else {
+        showModal('error', 'Payment failed', msg);
+      }
+    } finally {
+      busy = false;
+      setButtonsDisabled(false);
+    }
+  };
+
+  function setButtonsDisabled(d) {
+    document.querySelectorAll('.buy-btn').forEach(b => { b.disabled = d; });
+  }
+
+  // ── Startup ──
+  window.addEventListener('load', () => {
+    loadWeb3();
+    refreshPrice();
+    setInterval(refreshPrice, 60 * 1000); // refresh price each minute
+    // auto-reconnect if already authorized
+    const adapter = detectWallet();
+    if (adapter?.isConnected && adapter.publicKey) {
+      walletAdapter = adapter;
+      walletPubkey  = adapter.publicKey.toString();
+      setConnected(walletPubkey);
+    }
+  });
+})();
+</script>
+</body>
+</html>
