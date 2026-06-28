@@ -1047,10 +1047,29 @@
     setText('row-' + i + '-tvl', tvl || '—');
   }
 
-  // ── Single fetch for all pools (featured cards + table rows) ──
-  function loadAllPools() {
-    var allIds = FEATURED_POOLS.map(function (fp) { return fp.id; }).concat(POOL_IDS);
-    var url = POOLS_PROXY + '/pools?ids=' + allIds.join(',');
+  // ── Featured cards: fetch each pool individually via /pool?id= ──
+  // (the combined /pools?ids= endpoint doesn't return these two; the
+  //  single-pool endpoint does, so each card gets its own request.)
+  function loadFeaturedCard(fp) {
+    var url = POOLS_PROXY + '/pool?id=' + encodeURIComponent(fp.id);
+    fetch(url)
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (data) {
+        applyCard(fp.card, (data && data.pool) || null);
+      })
+      .catch(function (err) {
+        console.error('[CainPools] card ' + fp.card + ' fetch failed:', err);
+        setText('pool-' + fp.card + '-meta', 'Live data unavailable · ' + err.message);
+      });
+  }
+
+  function loadFeaturedCards() {
+    FEATURED_POOLS.forEach(loadFeaturedCard);
+  }
+
+  // ── Vault-table rows: combined fetch via /pools?ids= (unchanged) ──
+  function loadRows() {
+    var url = POOLS_PROXY + '/pools?ids=' + POOL_IDS.join(',');
     fetch(url)
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function (data) {
@@ -1058,26 +1077,22 @@
         function findPool(id) {
           return pools.find(function (x) { return x && (x.id === id || x.requestId === id); });
         }
-        // Apply featured cards
-        FEATURED_POOLS.forEach(function (fp) {
-          var pool = findPool(fp.id);
-          applyCard(fp.card, pool || null);
-        });
-        // Apply table rows
         POOL_IDS.forEach(function (id, i) {
-          applyRow(i + 2, findPool(id) || pools[FEATURED_POOLS.length + i] || null);
+          applyRow(i + 2, findPool(id) || pools[i] || null);
         });
       })
       .catch(function (err) {
-        console.error('[CainPools] fetch failed:', err);
-        FEATURED_POOLS.forEach(function (fp) {
-          setText('pool-' + fp.card + '-meta', 'Live data unavailable · ' + err.message);
-        });
+        console.error('[CainPools] rows fetch failed:', err);
         for (var i = 2; i <= 9; i++) {
           setText('row-' + i + '-apy', 'N/A');
           setText('row-' + i + '-tvl', 'N/A');
         }
       });
+  }
+
+  function loadAllPools() {
+    loadFeaturedCards();
+    loadRows();
   }
 
   loadAllPools();
