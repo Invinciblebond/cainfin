@@ -1,0 +1,34 @@
+{
+  "generated": "2026-06-28T13:52:58.434Z",
+  "count": 2,
+  "posts": [
+    {
+      "slug": "introducing-the-cain-blog",
+      "file": "introducing-the-cain-blog.md",
+      "title": "Introducing the Cain Finance Blog",
+      "subtitle": "A new home for protocol updates, strategy breakdowns, and the thinking behind the vaults.",
+      "author": "Cain Finance",
+      "date": "2026-06-28",
+      "categories": [
+        "Announcements",
+        "Protocol"
+      ],
+      "thumbnail": "https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png",
+      "excerpt": "A new home for protocol updates, strategy breakdowns, and the thinking behind the vaults."
+    },
+    {
+      "slug": "how-cain-vaults-source-yield",
+      "file": "how-cain-vaults-source-yield.md",
+      "title": "How Cain Vaults Source Yield",
+      "subtitle": "A plain-language look at where the returns come from — and where they don't.",
+      "author": "Cain Research",
+      "date": "2026-06-20",
+      "categories": [
+        "Strategy",
+        "Education"
+      ],
+      "thumbnail": "https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png",
+      "excerpt": "A plain-language look at where the returns come from — and where they don't."
+    }
+  ]
+}
