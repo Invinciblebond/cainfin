@@ -1,0 +1,928 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<link rel="apple-touch-icon" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Cain — Lending</title>
+<meta name="description" content="Lend and borrow on Solana via Jupiter Lend — powered by Cain.">
+<meta name="theme-color" content="#060606">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Wallet Adapter widget styles -->
+<link rel="stylesheet" href="/wallet-widget/dist/wallet-widget.css">
+<!-- @solana/web3.js — deserialize + sign lend transactions (no Connection) -->
+<script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
+<script>window.solanaWeb3 = solanaWeb3;</script>
+<!-- Lend engine -->
+<script src="/js/lend.js" defer></script>
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'sans-serif'] },
+        colors: {
+          'cain-black':    '#060606',
+          'cain-sidebar':  '#0a0a0a',
+          'cain-gray-text':'#888888',
+          'cain-border':   'rgba(255,255,255,0.1)',
+          'cain-green':    '#00ffa3',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; height:100%; }
+  body { background-color:#060606; color:white; -webkit-font-smoothing:antialiased; font-family:'Inter',sans-serif; }
+  .dot-grid {
+    background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* ── Layout ── */
+  .app-shell { display:flex; height:100vh; overflow:hidden; }
+
+  /* ── Sidebar (identical to index/Swap) ── */
+  #sidebar {
+    width: 220px;
+    transition: width 0.25s ease;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #0a0a0a;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    flex-direction: column;
+  }
+  #sidebar.collapsed { width: 56px; }
+  #sidebar nav a, #sidebar nav button { white-space: nowrap; }
+  #sidebar .sidebar-label, #sidebar .sidebar-wordmark {
+    transition: opacity 0.18s ease, max-width 0.25s ease;
+    opacity: 1; max-width: 160px; overflow: hidden; white-space: nowrap;
+  }
+  #sidebar.collapsed .sidebar-label, #sidebar.collapsed .sidebar-wordmark {
+    opacity: 0; max-width: 0; pointer-events: none;
+  }
+  #sidebar.collapsed .p-4 { padding-left: 0; padding-right: 0; }
+  #sidebar.collapsed nav a, #sidebar.collapsed nav button, #sidebar.collapsed #sidebar-toggle {
+    justify-content: center; gap: 0; padding-left: 0; padding-right: 0;
+  }
+  #sidebar.collapsed .p-4 > .flex.items-center { justify-content: center; }
+  #collapse-icon { transition: transform 0.25s ease; }
+  #sidebar.collapsed #collapse-icon { transform: rotate(180deg); }
+
+  /* ── Dropdown ── */
+  .dropdown { position:relative; display:inline-block; }
+  .dropdown-menu { display:none; position:absolute; right:0; top:calc(100% + 8px); background:#141414; border:1px solid #2a2a2a; border-radius:10px; min-width:160px; z-index:50; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.5); }
+  .dropdown-menu.open { display:block; }
+  .dropdown-menu a { display:block; padding:10px 16px; font-size:13px; color:#bbb; text-decoration:none; transition:background 0.12s,color 0.12s; }
+  .dropdown-menu a:hover { background:#1e1e1e; color:#fff; }
+
+  /* ── Wallet widget button ── */
+  #wallet-btn {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+    padding: 8px 16px; border-radius: 12px; font-size: 12px; font-weight: 600;
+    color: white; cursor: pointer; display: flex; align-items: center; gap: 8px;
+    transition: background 0.15s; white-space: nowrap;
+  }
+  #wallet-btn:hover { background: rgba(255,255,255,0.14); }
+  #wallet-dropdown {
+    position: absolute; right: 0; top: calc(100% + 8px);
+    background: #111; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
+    min-width: 190px; z-index: 200; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+  }
+  #wallet-dropdown.hidden { display: none; }
+  #wallet-dropdown a { display:block; padding:11px 16px; font-size:13px; color:#aaa; text-decoration:none; transition:background 0.12s,color 0.12s; }
+  #wallet-dropdown a:hover { background: rgba(255,255,255,0.05); color:#fff; }
+
+  /* ── Wallet Adapter modal theming (same as index/Swap) ── */
+  .wallet-adapter-modal-overlay { background: rgba(0,0,0,0.7) !important; backdrop-filter: blur(6px); }
+  .wallet-adapter-modal-wrapper {
+    background: #0f0f0f !important; border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 24px !important; box-shadow: 0 24px 64px rgba(0,0,0,0.7) !important;
+    font-family: 'Inter', sans-serif !important; padding: 28px 24px 24px !important;
+    max-width: 400px !important; width: calc(100% - 32px) !important; box-sizing: border-box !important;
+  }
+  .wallet-adapter-modal-title { color:#fff !important; font-size:18px !important; font-weight:600 !important; line-height:1.4 !important; text-align:center !important; padding:0 36px !important; margin:2px 0 22px !important; }
+  .wallet-adapter-modal-list { margin:0 !important; padding:0 !important; list-style:none !important; display:flex !important; flex-direction:column !important; gap:10px !important; width:100% !important; }
+  .wallet-adapter-modal-list li { margin:0 !important; padding:0 !important; }
+  .wallet-adapter-modal-list .wallet-adapter-button {
+    width:100% !important; height:52px !important; display:flex !important; align-items:center !important;
+    justify-content:flex-start !important; gap:12px !important; padding:0 18px !important; margin:0 !important;
+    background:rgba(255,255,255,0.03) !important; border:1px solid rgba(255,255,255,0.07) !important;
+    border-radius:14px !important; font-size:15px !important; font-weight:500 !important; color:#f5f5f5 !important;
+    transition:background .15s, border-color .15s !important;
+  }
+  .wallet-adapter-modal-list .wallet-adapter-button:hover { background:rgba(255,255,255,0.07) !important; border-color:rgba(255,255,255,0.14) !important; }
+  .wallet-adapter-modal-list .wallet-adapter-button-start-icon,
+  .wallet-adapter-modal-list .wallet-adapter-button-start-icon img,
+  .wallet-adapter-modal-list .wallet-adapter-button-start-icon svg { width:26px !important; height:26px !important; margin:0 !important; }
+  .wallet-adapter-modal-list .wallet-adapter-button-end-icon,
+  .wallet-adapter-modal-list .wallet-adapter-button span:last-child:not(:first-child) { margin-left:auto !important; }
+  .wallet-adapter-modal-list-more { display:flex !important; align-items:center !important; justify-content:center !important; gap:6px !important; margin:16px auto 0 !important; color:#888 !important; font-size:13px !important; cursor:pointer !important; }
+  .wallet-adapter-modal-list-more svg { fill:#888 !important; }
+  .wallet-adapter-modal-button-close { background:rgba(255,255,255,0.05) !important; top:18px !important; right:18px !important; padding:8px !important; border-radius:10px !important; transition:background .15s !important; }
+  .wallet-adapter-modal-button-close:hover { background:rgba(255,255,255,0.1) !important; }
+
+  /* ── Tabs ── */
+  .lend-tabs { display:flex; gap:6px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:14px; padding:4px; width:fit-content; }
+  .lend-tab {
+    padding:8px 22px; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer;
+    border:none; background:transparent; color:#666; transition:all 0.15s; font-family:'Inter',sans-serif;
+  }
+  .lend-tab.active { background:rgba(255,255,255,0.1); color:#fff; }
+  .lend-tab:hover:not(.active) { color:#aaa; }
+
+  /* ── Table (index.html table-wrap style) ── */
+  .table-wrap {
+    position: relative; border: 1px solid rgba(255,255,255,0.06); border-radius: 24px;
+    overflow: hidden; isolation: isolate; background: transparent;
+  }
+  .table-wrap::before {
+    content:""; position:absolute; inset:0; z-index:-2; background:rgba(14,14,16,0.50);
+    -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); border-radius:inherit;
+  }
+  .table-wrap::after {
+    content:""; position:absolute; inset:0; z-index:-1;
+    background-image:radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
+    background-size:24px 24px; pointer-events:none; border-radius:inherit;
+  }
+  .table-wrap > .refraction {
+    position:absolute; inset:0; z-index:0; border-radius:inherit; pointer-events:none;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), inset 0 0 0 1px rgba(255,255,255,0.04), inset 0 -1px 24px rgba(255,255,255,0.02);
+    background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 22%),
+                radial-gradient(120% 60% at 50% -10%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 60%);
+  }
+  .table-wrap table { width:100%; border-collapse:collapse; position:relative; z-index:1; }
+  .table-wrap thead th { font-size:11px; color:#777; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; padding:16px 24px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.015); }
+  .table-wrap tbody td { padding:20px 24px; border-top:1px solid rgba(255,255,255,0.05); vertical-align:middle; font-size:13px; background:transparent; }
+  .table-wrap tbody tr:first-child td { border-top:none; }
+  .table-wrap tbody tr:hover td { background:rgba(255,255,255,0.04); }
+
+  .row-flex { display:flex; align-items:center; gap:14px; }
+  .row-logo { width:40px; height:40px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0; overflow:hidden; background:#1a1a1a; color:#ccc; }
+  .row-logo img { width:100%; height:100%; object-fit:cover; }
+  .rv-name { font-size:14px; font-weight:600; color:#e8e8e8; }
+  .rv-cat { font-size:11px; color:#555; margin-top:3px; }
+  .mono-val { font-family:'SF Mono','Fira Mono',ui-monospace,monospace; font-size:13px; color:#ccc; }
+  .apy-green { color:#4ade80; font-weight:600; }
+  .apy-red { color:#f87171; font-weight:600; }
+  .pair-icons { display:flex; align-items:center; }
+  .pair-icon { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; border:2px solid #060606; overflow:hidden; background:#1a1a1a; color:#aaa; flex-shrink:0; }
+  .pair-icon img { width:100%; height:100%; object-fit:cover; }
+  .pair-icon:not(:first-child) { margin-left:-8px; }
+
+  .act-btn {
+    padding:7px 16px; border-radius:10px; font-size:12px; font-weight:600; cursor:pointer;
+    border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.07); color:#ddd;
+    transition:background 0.15s,color 0.15s; font-family:'Inter',sans-serif; white-space:nowrap;
+  }
+  .act-btn:hover { background:rgba(255,255,255,0.14); color:#fff; }
+  .act-btn.primary { background:#fff; color:#000; border-color:#fff; }
+  .act-btn.primary:hover { background:#e8e8e8; }
+  .act-btn:disabled { opacity:0.4; cursor:not-allowed; }
+  .act-btn.small { padding:5px 12px; font-size:11px; }
+
+  .section-label { font-size:10px; color:#444; text-transform:uppercase; letter-spacing:0.1em; margin:26px 0 10px; }
+  .empty-note { padding:26px; text-align:center; font-size:12px; color:#444; }
+
+  .health-pill { font-size:10px; font-weight:600; border-radius:100px; padding:3px 9px; display:inline-block; }
+  .health-safe { background:rgba(74,222,128,0.12); color:#4ade80; border:1px solid rgba(74,222,128,0.2); }
+  .health-warn { background:rgba(250,204,21,0.1); color:#facc15; border:1px solid rgba(250,204,21,0.2); }
+  .health-risk { background:rgba(248,113,113,0.12); color:#f87171; border:1px solid rgba(248,113,113,0.25); }
+
+  /* ── Action modal ── */
+  .lend-modal { display:none; position:fixed; inset:0; z-index:100; background:rgba(0,0,0,0.75); backdrop-filter:blur(4px); align-items:center; justify-content:center; }
+  .lend-modal.open { display:flex; }
+  .lend-modal-inner { background:#0f0f0f; border:1px solid rgba(255,255,255,0.1); border-radius:24px; padding:26px; width:380px; max-width:calc(100vw - 32px); }
+  .lm-title { font-size:15px; font-weight:700; color:#fff; }
+  .lm-sub { font-size:11px; color:#555; margin-top:3px; }
+  .lm-close { float:right; background:none; border:none; color:#555; cursor:pointer; font-size:18px; line-height:1; padding:0; }
+  .lm-close:hover { color:#fff; }
+  .amount-box { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:16px 18px; margin-top:18px; transition:border-color 0.15s; }
+  .amount-box:focus-within { border-color:rgba(255,255,255,0.15); }
+  .amount-box input { background:transparent; border:none; outline:none; color:#fff; font-size:28px; font-weight:600; width:100%; letter-spacing:-0.5px; min-width:0; font-family:'Inter',sans-serif; }
+  .amount-box input::placeholder { color:rgba(255,255,255,0.15); }
+  .amount-box input::-webkit-outer-spin-button, .amount-box input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  .lm-detail { display:flex; justify-content:space-between; font-size:12px; color:#555; padding:4px 0; }
+  .lm-detail .val { color:#999; font-weight:500; }
+  .lm-cta { width:100%; padding:14px; border-radius:14px; font-size:14px; font-weight:600; cursor:pointer; margin-top:18px; border:none; font-family:'Inter',sans-serif; transition:all 0.15s; }
+  .lm-cta.on { background:#fff; color:#000; }
+  .lm-cta.on:hover { background:#e8e8e8; }
+  .lm-cta.off { background:rgba(255,255,255,0.06); color:#444; cursor:not-allowed; }
+  .lm-err { font-size:11px; color:#f87171; margin-top:10px; line-height:1.5; display:none; }
+  .lm-note { font-size:11px; color:#666; margin-top:12px; line-height:1.6; }
+  .max-btn { font-size:10px; color:#555; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:6px; padding:2px 8px; cursor:pointer; font-family:'Inter',sans-serif; }
+  .max-btn:hover { color:#aaa; }
+
+  /* ── Toast ── */
+  #lend-toast {
+    position:fixed; top:76px; right:20px; z-index:999; display:none;
+    background:rgba(18,18,18,0.97); border:1px solid rgba(255,255,255,0.1);
+    border-radius:12px; padding:13px 16px; max-width:340px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.6); animation:toastIn .3s ease;
+  }
+  #lend-toast.show { display:block; }
+  #lend-toast .t-msg { font-size:12px; font-weight:500; color:#e2e2e2; line-height:1.5; }
+  #lend-toast a { color:#4ade80; text-decoration:underline; }
+  @keyframes toastIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+
+  .spinner { display:inline-block; width:12px; height:12px; border:2px solid rgba(255,255,255,0.15); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:-2px; margin-right:7px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .info-note { margin-top:14px; padding:14px 16px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:14px; display:flex; gap:10px; align-items:flex-start; }
+</style>
+</head>
+<body class="h-full font-sans">
+<div class="app-shell">
+
+<!-- ══ SIDEBAR ══ -->
+<aside id="sidebar" class="bg-cain-sidebar border-r border-cain-border flex flex-col shrink-0">
+  <div class="p-4">
+    <div class="flex items-center mb-10" style="min-height:32px;">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-[#c9b87a] rounded-lg flex items-center justify-center flex-shrink-0 cursor-pointer">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" style="transition:transform 0.6s cubic-bezier(0.4,0,0.2,1);" onmouseenter="this.style.transform='rotate(180deg)'" onmouseleave="this.style.transform='rotate(0)'">
+            <polygon points="50,7 89,28.5 89,71.5 50,93 11,71.5 11,28.5" fill="#1a1610"/>
+          </svg>
+        </div>
+        <div class="sidebar-wordmark">
+          <h1 class="text-xl font-bold tracking-tight leading-none">Cain</h1>
+          <p class="text-[10px] text-cain-gray-text uppercase tracking-widest">by Cain</p>
+        </div>
+      </div>
+    </div>
+
+    <nav class="space-y-1">
+      <a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="/">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        <span class="sidebar-label">Earn</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="/Swap.html">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        <span class="sidebar-label">Swap</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 bg-white/5 rounded-lg text-white font-medium" href="#">
+        <svg class="w-5 h-5 text-cain-gray-text flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        <span class="sidebar-label">Lending</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="/Portfolio.html">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        <span class="sidebar-label">Portfolio</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="/Tokenomics.html">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 7h.01M2 2h8l12 12-8 8L2 10V2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        <span class="sidebar-label">Token</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="/blog.html">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20V2H6.5A2.5 2.5 0 004 4.5v15z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        <span class="sidebar-label">Blog</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="/shop.html">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.3 2.3a1 1 0 00.7 1.7H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        <span class="sidebar-label">Shop</span>
+      </a>
+      <a class="flex items-center gap-3 px-3 py-2 text-cain-gray-text hover:text-white transition-colors" href="/faucet.html">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        <span class="sidebar-label">Faucet</span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="mt-auto p-4 border-t border-cain-border">
+    <button id="sidebar-toggle" onclick="toggleSidebar()" aria-label="Collapse sidebar"
+            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-cain-gray-text hover:text-white hover:bg-white/5 transition-colors">
+      <svg id="collapse-icon" class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 6l-6 6 6 6"/>
+      </svg>
+      <span class="sidebar-label">Collapse</span>
+    </button>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<main style="flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden;" class="dot-grid">
+
+  <!-- Topbar -->
+  <header style="height:64px; padding:0 32px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; border-bottom:1px solid rgba(255,255,255,0.05);">
+    <div style="flex:1; max-width:420px;">
+      <div style="position:relative;">
+        <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#555; display:flex;">
+          <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </span>
+        <input id="lend-search" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:8px 16px 8px 38px; font-size:13px; color:#fff; outline:none; font-family:'Inter',sans-serif;" placeholder="Search lending markets" type="text" oninput="filterRows(this.value)" onfocus="this.style.borderColor='rgba(255,255,255,0.2)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <a href="/Riskdisclosurestatement.html" style="padding:8px; color:#555; border-radius:8px; display:flex; transition:color 0.15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#555'">
+        <svg style="width:20px; height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+      </a>
+      <div class="dropdown">
+        <button onclick="toggleDropdown()" style="padding:8px; color:#555; border-radius:8px; background:none; border:none; cursor:pointer; display:flex;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#555'">
+          <svg style="width:20px; height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </button>
+        <div id="community-dropdown" class="dropdown-menu">
+          <a href="https://github.com/Invinciblebond/cainfin" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://x.com/CainFinance" target="_blank" rel="noopener">X</a>
+          <a href="https://discord.gg/k8STqQgFuM" target="_blank" rel="noopener">Discord</a>
+          <a href="https://www.reddit.com/r/CainFinance/" target="_blank" rel="noopener">Reddit</a>
+          <a href="/Tokenomics">Cain Token</a>
+          <a href="mailto:cain@cain.finance">Contact</a>
+        </div>
+      </div>
+      <div style="width:1px; height:32px; background:rgba(255,255,255,0.1);"></div>
+      <!-- Wallet widget mounts here -->
+      <div style="position:relative;">
+        <div id="cain-wallet-root"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ CONTENT ══ -->
+  <div style="flex:1; overflow-y:auto; padding:40px 32px 80px;">
+    <div style="max-width:1080px; margin:0 auto;">
+
+      <div style="display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:26px;">
+        <div>
+          <h2 style="font-size:26px; font-weight:700; letter-spacing:-0.5px; margin:0 0 6px;">Lending</h2>
+          <p style="font-size:12px; color:#555; margin:0;">Earn yield on deposits or borrow against collateral — powered by <span style="color:#888; font-weight:500;">Jupiter Lend</span>.</p>
+        </div>
+        <div class="lend-tabs">
+          <button class="lend-tab active" id="tab-earn" onclick="switchTab('earn')">Earn</button>
+          <button class="lend-tab" id="tab-borrow" onclick="switchTab('borrow')">Borrow</button>
+        </div>
+      </div>
+
+      <!-- ═══ EARN VIEW ═══ -->
+      <div id="view-earn">
+        <div class="section-label">Your deposits</div>
+        <div class="table-wrap" id="earn-positions-wrap">
+          <div class="refraction"></div>
+          <div class="empty-note" id="earn-positions-empty">Connect a Solana wallet to see your deposits</div>
+          <table id="earn-positions-table" style="display:none;">
+            <thead><tr><th>Asset</th><th>Deposited</th><th>Value</th><th>APY</th><th style="text-align:right;">Actions</th></tr></thead>
+            <tbody id="earn-positions-body"></tbody>
+          </table>
+        </div>
+
+        <div class="section-label">Markets</div>
+        <div class="table-wrap">
+          <div class="refraction"></div>
+          <div class="empty-note" id="earn-markets-loading"><span class="spinner"></span>Loading markets…</div>
+          <table id="earn-markets-table" style="display:none;">
+            <thead><tr><th>Asset</th><th>Deposit APY</th><th>Total deposits</th><th>Liquidity</th><th style="text-align:right;">Actions</th></tr></thead>
+            <tbody id="earn-markets-body"></tbody>
+          </table>
+        </div>
+
+        <div class="info-note">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <p style="font-size:11px; color:#444; line-height:1.7; margin:0;">Deposits route through <span style="color:#777; font-weight:500;">Jupiter Lend</span>. You receive jl-tokens representing your share; interest accrues automatically. Withdrawals are subject to available liquidity. See the <a href="/Earnterms.html" style="color:#777;">Earn Terms</a>.</p>
+        </div>
+      </div>
+
+      <!-- ═══ BORROW VIEW ═══ -->
+      <div id="view-borrow" style="display:none;">
+        <div class="section-label">Your positions</div>
+        <div class="table-wrap">
+          <div class="refraction"></div>
+          <div class="empty-note" id="borrow-positions-empty">Connect a Solana wallet to see your positions</div>
+          <table id="borrow-positions-table" style="display:none;">
+            <thead><tr><th>Position</th><th>Collateral</th><th>Debt</th><th>LTV / Health</th><th style="text-align:right;">Actions</th></tr></thead>
+            <tbody id="borrow-positions-body"></tbody>
+          </table>
+        </div>
+
+        <div class="section-label">Borrow markets</div>
+        <div class="table-wrap">
+          <div class="refraction"></div>
+          <div class="empty-note" id="borrow-markets-loading"><span class="spinner"></span>Loading vaults…</div>
+          <table id="borrow-markets-table" style="display:none;">
+            <thead><tr><th>Market</th><th>Max LTV</th><th>Borrow rate</th><th>Available</th><th style="text-align:right;">Actions</th></tr></thead>
+            <tbody id="borrow-markets-body"></tbody>
+          </table>
+        </div>
+
+        <div class="info-note">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <p style="font-size:11px; color:#444; line-height:1.7; margin:0;">Borrow positions are NFTs on <span style="color:#777; font-weight:500;">Jupiter Lend</span>. If your LTV crosses the liquidation threshold your collateral may be liquidated with a penalty. Interest accrues per-second. See the <a href="/BorrowTerms.html" style="color:#777;">Borrow Terms</a> and <a href="/Riskdisclosurestatement.html" style="color:#777;">Risk Disclosure</a>.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- ══ ACTION MODAL ══ -->
+<div class="lend-modal" id="lend-modal" onclick="if(event.target===this)closeLendModal()">
+  <div class="lend-modal-inner">
+    <button class="lm-close" onclick="closeLendModal()">✕</button>
+    <div class="lm-title" id="lm-title">Deposit</div>
+    <div class="lm-sub" id="lm-sub">—</div>
+
+    <div class="amount-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span style="font-size:11px; color:#444; text-transform:uppercase; letter-spacing:0.07em;" id="lm-amount-label">Amount</span>
+        <span style="font-size:11px; color:#444;">
+          <button class="max-btn" onclick="lmSetMax()">MAX</button>
+          <span style="margin-left:6px;">Avail: <span id="lm-avail" style="color:#666;">—</span></span>
+        </span>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <input id="lm-input" type="number" placeholder="0.00" oninput="lmValidate()">
+        <span style="font-size:14px; font-weight:600; color:#888; flex-shrink:0;" id="lm-symbol">—</span>
+      </div>
+      <div style="margin-top:6px; font-size:12px; color:#3a3a3a;" id="lm-usd">$0.00</div>
+    </div>
+
+    <div id="lm-details" style="margin-top:14px; padding:12px 14px; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06); border-radius:12px;"></div>
+
+    <button class="lm-cta off" id="lm-cta" onclick="lmSubmit()">Enter an amount</button>
+    <div class="lm-err" id="lm-err"></div>
+    <div class="lm-note" id="lm-note"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="lend-toast"><div class="t-msg" id="lend-toast-msg"></div></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// Cain Lending page — UI layer over window.cainLend (js/lend.js)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Shell helpers ──
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+function toggleDropdown() { document.getElementById('community-dropdown').classList.toggle('open'); }
+document.addEventListener('click', (e) => {
+  const dd = document.getElementById('community-dropdown');
+  if (dd && !e.target.closest('.dropdown')) dd.classList.remove('open');
+});
+
+// ── State ──
+let earnTokens = [];     // /earn/tokens items
+let earnPositions = [];  // /earn/positions items
+let borrowVaults = [];   // /borrow/vaults items
+let borrowPositions = []; // /borrow/positions items
+let activeTab = 'earn';
+let lastAddress = null;
+
+const fmtUsd = (n) => '$' + Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
+const fmtCompactUsd = (n) => {
+  n = Number(n);
+  if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+  if (n >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
+  return fmtUsd(n);
+};
+const ratePct = (r) => (Number(r) / 100); // API rates are in 1e4 basis (100 = 1%)
+const ltvPct  = (r) => (Number(r) / 10);  // collateralFactor 800 = 80%
+const uiAmt = (raw, dec, price, maxFrac) => window.cainLend.fromBaseUnits(String(raw || '0'), dec, maxFrac ?? 6);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function toast(msg, ms = 7000) {
+  const t = document.getElementById('lend-toast');
+  document.getElementById('lend-toast-msg').innerHTML = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), ms);
+}
+
+function logoHtml(url, symbol, cls) {
+  const letter = esc((symbol || '?')[0].toUpperCase());
+  return url
+    ? `<div class="${cls}"><img src="${esc(url)}" alt="" onerror="this.remove()"></div>`
+    : `<div class="${cls}">${letter}</div>`;
+}
+
+// ── Tabs ──
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tab-earn').classList.toggle('active', tab === 'earn');
+  document.getElementById('tab-borrow').classList.toggle('active', tab === 'borrow');
+  document.getElementById('view-earn').style.display = tab === 'earn' ? '' : 'none';
+  document.getElementById('view-borrow').style.display = tab === 'borrow' ? '' : 'none';
+}
+
+// ── Search filter (both tables of the active tab) ──
+function filterRows(q) {
+  q = q.trim().toLowerCase();
+  const bodies = activeTab === 'earn'
+    ? ['earn-markets-body', 'earn-positions-body']
+    : ['borrow-markets-body', 'borrow-positions-body'];
+  bodies.forEach((id) => {
+    document.querySelectorAll(`#${id} tr`).forEach((tr) => {
+      tr.style.display = !q || tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+}
+
+// ═══ EARN rendering ═══
+function renderEarnMarkets() {
+  const body = document.getElementById('earn-markets-body');
+  body.innerHTML = earnTokens.map((t, i) => {
+    const a = t.asset || {};
+    const dec = a.decimals ?? 6;
+    const price = Number(a.price || 0);
+    const tvl = Number(uiAmt(t.totalAssets, dec)) * price;
+    const liq = Number(uiAmt(t.liquiditySupplyData?.withdrawable || '0', dec)) * price;
+    return `<tr>
+      <td><div class="row-flex">${logoHtml(a.logo_url, a.symbol, 'row-logo')}
+        <div><div class="rv-name">${esc(a.symbol)}</div><div class="rv-cat">${esc(a.name)} · ${esc(t.symbol)}</div></div></div></td>
+      <td><span class="apy-green">${ratePct(t.totalRate).toFixed(2)}%</span></td>
+      <td><span class="mono-val">${fmtCompactUsd(tvl)}</span></td>
+      <td><span class="mono-val">${fmtCompactUsd(liq)}</span></td>
+      <td style="text-align:right;"><button class="act-btn primary" onclick="openEarnModal(${i}, 'deposit')">Deposit</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('earn-markets-loading').style.display = 'none';
+  document.getElementById('earn-markets-table').style.display = '';
+}
+
+function renderEarnPositions() {
+  const emptyEl = document.getElementById('earn-positions-empty');
+  const tableEl = document.getElementById('earn-positions-table');
+  const active = earnPositions.filter((p) => p.shares && p.shares !== '0');
+  if (!window.cainWallet?.ready) {
+    emptyEl.textContent = 'Connect a Solana wallet to see your deposits';
+    emptyEl.style.display = ''; tableEl.style.display = 'none'; return;
+  }
+  if (!active.length) {
+    emptyEl.textContent = 'No deposits yet — pick a market below to start earning';
+    emptyEl.style.display = ''; tableEl.style.display = 'none'; return;
+  }
+  const body = document.getElementById('earn-positions-body');
+  body.innerHTML = active.map((p) => {
+    const t = p.token, a = t.asset || {};
+    const dec = a.decimals ?? 6;
+    const price = Number(a.price || 0);
+    const amt = uiAmt(p.underlyingAssets, dec);
+    const idx = earnTokens.findIndex((x) => x.address === t.address);
+    return `<tr>
+      <td><div class="row-flex">${logoHtml(a.logo_url, a.symbol, 'row-logo')}
+        <div><div class="rv-name">${esc(a.symbol)}</div><div class="rv-cat">${esc(t.symbol)}</div></div></div></td>
+      <td><span class="mono-val">${amt}</span></td>
+      <td><span class="mono-val">${fmtUsd(Number(amt) * price)}</span></td>
+      <td><span class="apy-green">${ratePct(t.totalRate).toFixed(2)}%</span></td>
+      <td style="text-align:right; white-space:nowrap;">
+        <button class="act-btn small" onclick="openEarnModal(${idx}, 'deposit')">Deposit</button>
+        <button class="act-btn small" onclick="openEarnModal(${idx}, 'withdraw')" style="margin-left:6px;">Withdraw</button>
+      </td>
+    </tr>`;
+  }).join('');
+  emptyEl.style.display = 'none'; tableEl.style.display = '';
+}
+
+// ═══ BORROW rendering ═══
+function renderBorrowMarkets() {
+  const body = document.getElementById('borrow-markets-body');
+  body.innerHTML = borrowVaults.map((v, i) => {
+    const s = v.supplyToken, b = v.borrowToken;
+    const bDec = b.decimals ?? 6;
+    const avail = Number(uiAmt(v.borrowable || '0', bDec)) * Number(b.price || 0);
+    return `<tr>
+      <td><div class="row-flex">
+        <div class="pair-icons">${logoHtml(s.logoUrl, s.uiSymbol || s.symbol, 'pair-icon')}${logoHtml(b.logoUrl, b.uiSymbol || b.symbol, 'pair-icon')}</div>
+        <div><div class="rv-name">${esc(s.uiSymbol || s.symbol)} / ${esc(b.uiSymbol || b.symbol)}</div>
+        <div class="rv-cat">Collateral ${esc(s.uiSymbol || s.symbol)} → borrow ${esc(b.uiSymbol || b.symbol)}</div></div></div></td>
+      <td><span class="mono-val">${ltvPct(v.collateralFactor).toFixed(0)}%</span></td>
+      <td><span class="apy-red">${ratePct(v.borrowRate).toFixed(2)}%</span></td>
+      <td><span class="mono-val">${fmtCompactUsd(avail)}</span></td>
+      <td style="text-align:right;"><button class="act-btn primary" onclick="openBorrowModal(${i}, null, 'depositCol')">Open position</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('borrow-markets-loading').style.display = 'none';
+  document.getElementById('borrow-markets-table').style.display = '';
+}
+
+function positionHealth(p) {
+  const v = p.vault;
+  const sPrice = Number(v.supplyToken.price || 0), bPrice = Number(v.borrowToken.price || 0);
+  const colUsd = Number(uiAmt(p.supply, v.supplyToken.decimals)) * sPrice;
+  const debtUsd = Number(uiAmt(p.borrow, v.borrowToken.decimals)) * bPrice;
+  const ltv = colUsd > 0 ? (debtUsd / colUsd) * 100 : 0;
+  const liqAt = ltvPct(v.liquidationThreshold);
+  let cls = 'health-safe', label = 'Healthy';
+  if (liqAt > 0 && ltv > liqAt * 0.85) { cls = 'health-risk'; label = 'At risk'; }
+  else if (liqAt > 0 && ltv > liqAt * 0.6) { cls = 'health-warn'; label = 'Caution'; }
+  return { colUsd, debtUsd, ltv, liqAt, cls, label };
+}
+
+function renderBorrowPositions() {
+  const emptyEl = document.getElementById('borrow-positions-empty');
+  const tableEl = document.getElementById('borrow-positions-table');
+  const active = borrowPositions.filter((p) => (p.supply && p.supply !== '0') || (p.borrow && p.borrow !== '0'));
+  if (!window.cainWallet?.ready) {
+    emptyEl.textContent = 'Connect a Solana wallet to see your positions';
+    emptyEl.style.display = ''; tableEl.style.display = 'none'; return;
+  }
+  if (!active.length) {
+    emptyEl.textContent = 'No borrow positions — open one from the markets below';
+    emptyEl.style.display = ''; tableEl.style.display = 'none'; return;
+  }
+  const body = document.getElementById('borrow-positions-body');
+  body.innerHTML = active.map((p) => {
+    const v = p.vault, s = v.supplyToken, b = v.borrowToken;
+    const h = positionHealth(p);
+    const vIdx = borrowVaults.findIndex((x) => x.id === v.id);
+    return `<tr>
+      <td><div class="row-flex">
+        <div class="pair-icons">${logoHtml(s.logoUrl, s.uiSymbol || s.symbol, 'pair-icon')}${logoHtml(b.logoUrl, b.uiSymbol || b.symbol, 'pair-icon')}</div>
+        <div><div class="rv-name">${esc(s.uiSymbol || s.symbol)} / ${esc(b.uiSymbol || b.symbol)}</div><div class="rv-cat">Position #${p.id}</div></div></div></td>
+      <td><span class="mono-val">${uiAmt(p.supply, s.decimals)} ${esc(s.uiSymbol || s.symbol)}</span><div class="rv-cat">${fmtUsd(h.colUsd)}</div></td>
+      <td><span class="mono-val">${uiAmt(p.borrow, b.decimals)} ${esc(b.uiSymbol || b.symbol)}</span><div class="rv-cat">${fmtUsd(h.debtUsd)}</div></td>
+      <td><span class="mono-val">${h.ltv.toFixed(1)}%</span> <span class="rv-cat" style="display:inline;">/ liq ${h.liqAt.toFixed(0)}%</span><div style="margin-top:4px;"><span class="health-pill ${h.cls}">${h.label}</span></div></td>
+      <td style="text-align:right; white-space:nowrap;">
+        <button class="act-btn small" onclick="openBorrowModal(${vIdx}, ${p.id}, 'depositCol')">Deposit</button>
+        <button class="act-btn small" onclick="openBorrowModal(${vIdx}, ${p.id}, 'borrow')" style="margin-left:4px;">Borrow</button>
+        <button class="act-btn small" onclick="openBorrowModal(${vIdx}, ${p.id}, 'repay')" style="margin-left:4px;">Repay</button>
+        <button class="act-btn small" onclick="openBorrowModal(${vIdx}, ${p.id}, 'withdrawCol')" style="margin-left:4px;">Withdraw</button>
+      </td>
+    </tr>`;
+  }).join('');
+  emptyEl.style.display = 'none'; tableEl.style.display = '';
+}
+
+// ═══ Data loading ═══
+async function loadMarkets() {
+  try {
+    const [tokens, vaults] = await Promise.all([
+      window.cainLend.earn.tokens(),
+      window.cainLend.borrow.vaults(),
+    ]);
+    earnTokens = Array.isArray(tokens) ? tokens : (tokens.items || []);
+    borrowVaults = Array.isArray(vaults) ? vaults : (vaults.items || []);
+    renderEarnMarkets();
+    renderBorrowMarkets();
+  } catch (e) {
+    document.getElementById('earn-markets-loading').textContent = 'Failed to load markets — ' + e.message;
+    document.getElementById('borrow-markets-loading').textContent = 'Failed to load vaults — ' + e.message;
+  }
+}
+
+async function loadPositions() {
+  const w = window.cainWallet;
+  if (!w?.ready || w.chain !== 'solana') { renderEarnPositions(); renderBorrowPositions(); return; }
+  try {
+    const [ep, bp] = await Promise.all([
+      window.cainLend.earn.positions(w.address).catch(() => []),
+      window.cainLend.borrow.positions(w.address).catch(() => []),
+    ]);
+    earnPositions = Array.isArray(ep) ? ep : (ep.items || []);
+    borrowPositions = Array.isArray(bp) ? bp : (bp.items || []);
+  } catch (_) {}
+  renderEarnPositions();
+  renderBorrowPositions();
+}
+
+// Poll wallet connection (widget sets window.cainWallet asynchronously)
+setInterval(() => {
+  const addr = window.cainWallet?.ready ? window.cainWallet.address : null;
+  if (addr !== lastAddress) { lastAddress = addr; loadPositions(); }
+}, 1200);
+
+// ═══ Modal ═══
+// modalCtx: { kind:'earn'|'borrow', mode, token/vault, positionId, decimals, price, symbol, availRaw }
+let modalCtx = null;
+
+function lmOpen() { document.getElementById('lend-modal').classList.add('open'); }
+function closeLendModal() { document.getElementById('lend-modal').classList.remove('open'); modalCtx = null; }
+
+function lmSetup({ title, sub, symbol, amountLabel, availUi, price, note, details }) {
+  document.getElementById('lm-title').textContent = title;
+  document.getElementById('lm-sub').textContent = sub;
+  document.getElementById('lm-symbol').textContent = symbol;
+  document.getElementById('lm-amount-label').textContent = amountLabel || 'Amount';
+  document.getElementById('lm-avail').textContent = availUi;
+  document.getElementById('lm-note').innerHTML = note || '';
+  document.getElementById('lm-details').innerHTML = details || '';
+  document.getElementById('lm-input').value = '';
+  document.getElementById('lm-usd').textContent = '$0.00';
+  const err = document.getElementById('lm-err'); err.style.display = 'none'; err.textContent = '';
+  lmValidate();
+  lmOpen();
+}
+
+function lmSetMax() {
+  if (!modalCtx) return;
+  document.getElementById('lm-input').value = modalCtx.availUi;
+  lmValidate();
+}
+
+function lmValidate() {
+  const cta = document.getElementById('lm-cta');
+  const v = document.getElementById('lm-input').value;
+  const n = Number(v);
+  const ok = modalCtx && v && n > 0 && (!modalCtx.maxUi || n <= Number(modalCtx.maxUi) * 1.0000001);
+  document.getElementById('lm-usd').textContent = fmtUsd((n || 0) * (modalCtx?.price || 0));
+  if (!window.cainWallet?.ready || window.cainWallet.chain !== 'solana') {
+    cta.className = 'lm-cta off'; cta.textContent = 'Connect a Solana wallet'; return;
+  }
+  if (!v || n <= 0) { cta.className = 'lm-cta off'; cta.textContent = 'Enter an amount'; return; }
+  if (modalCtx?.maxUi && n > Number(modalCtx.maxUi) * 1.0000001) {
+    cta.className = 'lm-cta off'; cta.textContent = 'Insufficient balance'; return;
+  }
+  cta.className = 'lm-cta on';
+  cta.textContent = modalCtx.ctaLabel;
+}
+
+// ── Earn modal ──
+async function openEarnModal(tokenIdx, mode) {
+  const t = earnTokens[tokenIdx];
+  if (!t) return;
+  const a = t.asset || {};
+  const dec = a.decimals ?? 6;
+  const pos = earnPositions.find((p) => p.token?.address === t.address);
+
+  let availRaw = '0';
+  if (mode === 'deposit') {
+    availRaw = pos?.underlyingBalance ?? null;
+    if (availRaw == null && window.cainWallet?.ready) {
+      availRaw = a.address === window.cainLend.WSOL_MINT
+        ? await window.cainLend.getSolBalance(window.cainWallet.address).catch(() => '0')
+        : await window.cainLend.getTokenBalance(window.cainWallet.address, a.address).catch(() => '0');
+    }
+  } else {
+    availRaw = pos?.underlyingAssets ?? '0';
+  }
+  const availUi = uiAmt(availRaw ?? '0', dec);
+
+  modalCtx = {
+    kind: 'earn', mode, token: t, decimals: dec, price: Number(a.price || 0),
+    availUi, maxUi: availUi, sharesRaw: pos?.shares || '0',
+    ctaLabel: mode === 'deposit' ? `Deposit ${a.symbol}` : `Withdraw ${a.symbol}`,
+  };
+
+  lmSetup({
+    title: mode === 'deposit' ? `Deposit ${a.symbol}` : `Withdraw ${a.symbol}`,
+    sub: `Jupiter Lend Earn · ${t.symbol}`,
+    symbol: a.symbol,
+    availUi,
+    price: Number(a.price || 0),
+    details: `
+      <div class="lm-detail"><span>Deposit APY</span><span class="val" style="color:#4ade80;">${ratePct(t.totalRate).toFixed(2)}%</span></div>
+      <div class="lm-detail"><span>You ${mode === 'deposit' ? 'receive' : 'burn'}</span><span class="val">${esc(t.symbol)} shares</span></div>
+      <div class="lm-detail"><span>Network fee</span><span class="val">~0.000005 SOL</span></div>`,
+    note: mode === 'withdraw' ? 'Withdrawing your full balance redeems all shares to avoid interest dust.' : '',
+  });
+}
+
+// ── Borrow modal ──
+const BORROW_MODES = {
+  depositCol:  { title: 'Deposit collateral', side: 'supply' },
+  borrow:      { title: 'Borrow',             side: 'borrow' },
+  repay:       { title: 'Repay',              side: 'borrow' },
+  withdrawCol: { title: 'Withdraw collateral',side: 'supply' },
+};
+
+async function openBorrowModal(vaultIdx, positionId, mode) {
+  const v = borrowVaults[vaultIdx];
+  if (!v) return;
+  const m = BORROW_MODES[mode];
+  const tok = m.side === 'supply' ? v.supplyToken : v.borrowToken;
+  const dec = tok.decimals ?? 6;
+  const sym = tok.uiSymbol || tok.symbol;
+  const pos = positionId != null ? borrowPositions.find((p) => p.id === positionId && p.vaultId === v.id) : null;
+  const isWsol = tok.address === window.cainLend.WSOL_MINT;
+
+  let availUi = '';
+  if (window.cainWallet?.ready) {
+    if (mode === 'depositCol' || mode === 'repay') {
+      // wallet balance of the token (for WSOL: native SOL, we auto-wrap)
+      const raw = isWsol
+        ? await window.cainLend.getSolBalance(window.cainWallet.address).catch(() => '0')
+        : await window.cainLend.getTokenBalance(window.cainWallet.address, tok.address).catch(() => '0');
+      availUi = uiAmt(raw, dec);
+      if (mode === 'repay' && pos) {
+        const debtUi = uiAmt(pos.borrow, dec);
+        if (Number(debtUi) < Number(availUi)) availUi = debtUi;
+      }
+    } else if (mode === 'borrow') {
+      // cap: what keeps LTV under collateralFactor, and vault liquidity
+      let cap = Number(uiAmt(v.borrowable || '0', dec));
+      if (pos) {
+        const h = positionHealth(pos);
+        const maxDebtUsd = h.colUsd * (ltvPct(v.collateralFactor) / 100);
+        const room = Math.max(0, (maxDebtUsd - h.debtUsd) / (Number(tok.price) || 1));
+        cap = Math.min(cap, room);
+      }
+      availUi = (Math.floor(cap * 10 ** Math.min(dec, 6)) / 10 ** Math.min(dec, 6)).toString();
+    } else if (mode === 'withdrawCol') {
+      availUi = pos ? uiAmt(pos.supply, dec) : '0';
+    }
+  }
+
+  const minBorrowUi = uiAmt(v.minimumBorrowing || '0', v.borrowToken.decimals ?? 6);
+
+  modalCtx = {
+    kind: 'borrow', mode, vault: v, positionId: positionId ?? 0, pos,
+    decimals: dec, price: Number(tok.price || 0), availUi, maxUi: availUi || null, isWsol,
+    ctaLabel: `${m.title} ${sym}`,
+  };
+
+  lmSetup({
+    title: m.title,
+    sub: `${v.supplyToken.uiSymbol || v.supplyToken.symbol} / ${v.borrowToken.uiSymbol || v.borrowToken.symbol} · ${pos ? 'Position #' + pos.id : 'New position'}`,
+    symbol: sym,
+    availUi: availUi || '—',
+    price: Number(tok.price || 0),
+    details: `
+      <div class="lm-detail"><span>Max LTV</span><span class="val">${ltvPct(v.collateralFactor).toFixed(0)}%</span></div>
+      <div class="lm-detail"><span>Liquidation threshold</span><span class="val">${ltvPct(v.liquidationThreshold).toFixed(0)}%</span></div>
+      <div class="lm-detail"><span>Borrow rate</span><span class="val" style="color:#f87171;">${ratePct(v.borrowRate).toFixed(2)}%</span></div>
+      ${mode === 'borrow' ? `<div class="lm-detail"><span>Minimum borrow</span><span class="val">${minBorrowUi} ${esc(v.borrowToken.uiSymbol || v.borrowToken.symbol)}</span></div>` : ''}`,
+    note: [
+      isWsol && mode === 'depositCol' ? 'This vault uses wrapped SOL — your SOL is wrapped automatically first (one extra signature).' : '',
+      mode === 'repay' ? 'Repaying your full debt clears interest dust automatically.' : '',
+      mode === 'withdrawCol' ? 'Withdrawing your full collateral closes out the position (debt must be repaid first).' : '',
+    ].filter(Boolean).join('<br>'),
+  });
+}
+
+// ── Submit ──
+async function lmSubmit() {
+  if (!modalCtx) return;
+  const cta = document.getElementById('lm-cta');
+  if (!cta.classList.contains('on')) return;
+  const errEl = document.getElementById('lm-err');
+  errEl.style.display = 'none';
+  const amount = document.getElementById('lm-input').value.trim();
+  const c = modalCtx;
+  const isMax = c.maxUi && Number(amount) >= Number(c.maxUi) * 0.999999;
+
+  cta.className = 'lm-cta off';
+  cta.innerHTML = '<span class="spinner"></span>Waiting for wallet…';
+
+  try {
+    let sig, label;
+
+    if (c.kind === 'earn') {
+      const mint = c.token.asset.address;
+      if (c.mode === 'deposit') {
+        sig = await window.cainLend.earn.deposit(mint, amount, c.decimals);
+        label = `Deposited ${amount} ${c.token.asset.symbol}`;
+      } else if (isMax && c.sharesRaw !== '0') {
+        sig = await window.cainLend.earn.withdrawAll(mint, c.sharesRaw);
+        label = `Withdrew all ${c.token.asset.symbol}`;
+      } else {
+        sig = await window.cainLend.earn.withdraw(mint, amount, c.decimals);
+        label = `Withdrew ${amount} ${c.token.asset.symbol}`;
+      }
+    } else {
+      const raw = window.cainLend.toBaseUnits(amount, c.decimals);
+      let colAmount = '0', debtAmount = '0';
+
+      if (c.mode === 'depositCol') {
+        if (c.isWsol) {
+          cta.innerHTML = '<span class="spinner"></span>Wrapping SOL…';
+          // wrap a hair extra: exact-balance WSOL deposits can fail on rounding
+          const extra = BigInt(raw) + 20000n;
+          await window.cainLend.wrapSol(extra.toString());
+          cta.innerHTML = '<span class="spinner"></span>Waiting for wallet…';
+        }
+        colAmount = raw;
+      } else if (c.mode === 'borrow') {
+        debtAmount = raw;
+      } else if (c.mode === 'repay') {
+        debtAmount = (c.pos && isMax) ? window.cainLend.MIN_I128 : '-' + raw;
+      } else if (c.mode === 'withdrawCol') {
+        colAmount = (c.pos && isMax) ? window.cainLend.MIN_I128 : '-' + raw;
+      }
+
+      const res = await window.cainLend.borrow.operate({
+        vaultId: c.vault.id,
+        positionId: c.positionId,
+        colAmount,
+        debtAmount,
+      });
+      sig = res.signature;
+      const verb = { depositCol: 'Deposited', borrow: 'Borrowed', repay: 'Repaid', withdrawCol: 'Withdrew' }[c.mode];
+      label = `${verb} ${amount} — position #${res.nftId ?? c.positionId}`;
+    }
+
+    window.cainLend.record({ label, sig });
+    toast(`✅ ${esc(label)}<br><a href="https://solscan.io/tx/${sig}" target="_blank" rel="noopener">View on Solscan</a>`);
+    closeLendModal();
+    setTimeout(loadPositions, 2500);
+    setTimeout(loadMarkets, 2500);
+  } catch (e) {
+    errEl.textContent = e.message || String(e);
+    errEl.style.display = 'block';
+    lmValidate();
+  }
+}
+
+// ── Boot ──
+(function boot() {
+  const start = () => { if (window.cainLend) { loadMarkets(); } else { setTimeout(start, 150); } };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+</script>
+
+<!-- Wallet widget (renders Connect button into #cain-wallet-root, sets window.cainWallet) -->
+<script src="/wallet-widget/dist/cain-wallet-widget.iife.js" defer></script>
+</body></html>
