@@ -48,10 +48,20 @@
 
   <header class="cain-topbar">
     <div class="cain-search-wrap">
-      <span class="cain-search-icon">
-        <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
-      </span>
-      <input class="cain-search" id="pool-search" placeholder="Search project or token" type="text">
+      <div class="cain-field" id="search-field">
+        <span class="cain-field-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </span>
+        <input class="cain-field-input" id="pool-search" type="text" autocomplete="off" spellcheck="false"
+               placeholder="Search project or token" aria-label="Search pools">
+        <span class="cain-field-tail">
+          <span class="cain-field-count" id="search-count"></span>
+          <button class="cain-field-btn" id="search-clear" type="button" aria-label="Clear search">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" stroke-width="2.5"/></svg>
+          </button>
+          <span class="cain-field-kbd"><kbd id="kbd-mod">⌘</kbd><kbd>K</kbd></span>
+        </span>
+      </div>
     </div>
     <div class="cain-topbar-actions">
       <button class="btn" id="refresh-btn" style="padding:7px 14px;font-size:12px;">Refresh</button>
@@ -250,6 +260,10 @@
     document.getElementById('row-count').textContent =
       shown.length.toLocaleString() + ' of ' + rows.length.toLocaleString() + ' pools';
 
+    /* Echo the match count inside the field itself while a query is active. */
+    var cEl = document.getElementById('search-count');
+    if (cEl) cEl.textContent = q ? rows.length.toLocaleString() + ' match' + (rows.length === 1 ? '' : 'es') : '';
+
     var body = document.getElementById('pool-body');
     if (!shown.length) {
       body.innerHTML = '<tr><td colspan="7" class="state">No pools match those filters.</td></tr>';
@@ -302,9 +316,44 @@
     });
   });
 
+  /* ── Search field behaviour ───────────────────────────────────────────── */
+  var field   = document.getElementById('search-field');
+  var input   = document.getElementById('pool-search');
+  var clearBt = document.getElementById('search-clear');
+
+  /* Show the platform's real modifier key rather than assuming Mac. */
+  if (!/Mac|iPhone|iPad/.test(navigator.platform || '')) {
+    document.getElementById('kbd-mod').textContent = 'Ctrl';
+  }
+
+  input.addEventListener('focus', function () { field.classList.add('is-focused'); });
+  input.addEventListener('blur',  function () { field.classList.remove('is-focused'); });
+
+  function syncClear() { clearBt.classList.toggle('show', input.value.length > 0); }
+
   var t;
-  document.getElementById('pool-search').addEventListener('input', function () {
+  input.addEventListener('input', function () {
+    syncClear();
     clearTimeout(t); t = setTimeout(renderTable, 160);   /* debounce, no refetch */
+  });
+
+  clearBt.addEventListener('click', function () {
+    input.value = ''; syncClear(); renderTable(); input.focus();
+  });
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      if (input.value) { input.value = ''; syncClear(); renderTable(); }
+      else input.blur();
+    }
+  });
+
+  /* ⌘K / Ctrl+K focuses search, matching the shortcut index.html advertises. */
+  document.addEventListener('keydown', function (e) {
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+      e.preventDefault();
+      input.focus(); input.select();
+    }
   });
   document.getElementById('f-tvl').addEventListener('change', renderTable);
   document.getElementById('f-limit').addEventListener('change', renderTable);

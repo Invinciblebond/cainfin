@@ -25,14 +25,7 @@
     border-radius: 20px; padding: 22px; margin-bottom: 26px;
   }
   .search-row { display: flex; gap: 10px; flex-wrap: wrap; }
-  .addr-input {
-    flex: 1; min-width: 260px; background: rgba(0,0,0,0.35);
-    border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
-    padding: 12px 16px; font-size: 13px; color: #fff; outline: none;
-    font-family: 'Inter', sans-serif; transition: border-color .15s;
-  }
-  .addr-input:focus { border-color: rgba(255,255,255,0.25); }
-  .addr-input::placeholder { color: #4a4a4a; }
+  .search-row > .cain-field { flex: 1; min-width: 260px; }
   .chip-row { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
   .chip {
     padding: 5px 11px; border-radius: 999px; font-size: 11px; cursor: pointer;
@@ -79,11 +72,26 @@
       <!-- ═══ SEARCH ═══ -->
       <div class="search-hero">
         <div class="search-row">
-          <input class="addr-input" id="addr" type="text" spellcheck="false" autocomplete="off"
-                 placeholder="Solana address, or 0x… Polygon address">
+          <div class="cain-field cain-field-lg" id="addr-field">
+            <span class="cain-field-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            </span>
+            <input class="cain-field-input" id="addr" type="text" spellcheck="false" autocomplete="off"
+                   autocapitalize="off" aria-label="Wallet address"
+                   placeholder="Solana address, or 0x… Polygon address">
+            <span class="cain-field-tail">
+              <span class="cain-field-chip" id="chain-chip" style="display:none;"></span>
+              <button class="cain-field-btn" id="addr-clear" type="button" aria-label="Clear address">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round" stroke-width="2.5"/></svg>
+              </button>
+              <span class="cain-field-kbd"><kbd id="kbd-mod">⌘</kbd><kbd>K</kbd></span>
+            </span>
+          </div>
           <button class="btn btn-primary" id="go-btn">Search</button>
+          <button class="btn" id="paste-btn">Paste</button>
           <button class="btn hidden" id="mine-btn">Use my wallet</button>
         </div>
+        <div class="cain-field-hint" id="addr-hint"></div>
         <div class="chip-row">
           <span class="src-tag" style="margin-right:4px;">Try:</span>
           <button class="chip" data-addr="0x2a2c53bd278c04da9962fcf96490e17f3dfb9bc1">Top Polymarket wallet</button>
@@ -494,7 +502,8 @@
       return;
     }
     showErr('');
-    document.getElementById('addr').value = address;
+    input.value = address;
+    syncField();
     document.getElementById('scan-meta').textContent = 'Scanning…';
 
     /* Update the URL so a scan is linkable, without adding history entries. */
@@ -517,12 +526,113 @@
   }
 
   /* ── Wiring ───────────────────────────────────────────────────────────── */
-  document.getElementById('go-btn').addEventListener('click', function () {
-    search(document.getElementById('addr').value);
+  var field   = document.getElementById('addr-field');
+  var input   = document.getElementById('addr');
+  var chip    = document.getElementById('chain-chip');
+  var hint    = document.getElementById('addr-hint');
+  var clearBt = document.getElementById('addr-clear');
+  var goBt    = document.getElementById('go-btn');
+
+  if (!/Mac|iPhone|iPad/.test(navigator.platform || '')) {
+    document.getElementById('kbd-mod').textContent = 'Ctrl';
+  }
+
+  /* Classify as the user types, so the chain is obvious before searching and a
+     bad paste is caught without a round-trip. */
+  function classify(v) {
+    v = (v || '').trim();
+    if (!v) return { kind: 'empty' };
+    if (SOL_RE.test(v)) return { kind: 'solana', label: 'Solana' };
+    if (EVM_RE.test(v)) return { kind: 'evm', label: 'Polygon' };
+    if (/^0x/i.test(v)) {
+      return { kind: 'bad', label: 'Invalid',
+               why: 'EVM addresses are 0x plus 40 hex characters — this has ' + Math.max(v.length - 2, 0) + '.' };
+    }
+    if (/[0OIl]/.test(v)) {
+      return { kind: 'bad', label: 'Invalid',
+               why: 'Solana addresses are base58 — they never contain 0, O, I or l.' };
+    }
+    return { kind: 'bad', label: 'Invalid',
+             why: 'Not a recognised Solana or 0x… address (' + v.length + ' characters).' };
+  }
+
+  function syncField() {
+    var v = input.value;
+    var c = classify(v);
+
+    clearBt.classList.toggle('show', v.length > 0);
+    field.classList.remove('is-valid', 'is-invalid');
+    hint.classList.remove('bad', 'ok');
+
+    if (c.kind === 'empty') {
+      /* Blank the chip as well as hiding it — stale text in a hidden node
+         still reaches screen readers. */
+      chip.style.display = 'none';
+      chip.textContent = '';
+      chip.className = 'cain-field-chip';
+      hint.textContent = '';
+      goBt.disabled = true;
+      return;
+    }
+    if (c.kind === 'bad') {
+      chip.style.display = ''; chip.className = 'cain-field-chip bad'; chip.textContent = c.label;
+      field.classList.add('is-invalid');
+      hint.textContent = c.why; hint.classList.add('bad');
+      goBt.disabled = true;
+      return;
+    }
+    chip.style.display = ''; chip.className = 'cain-field-chip ok'; chip.textContent = c.label;
+    field.classList.add('is-valid');
+    hint.textContent = c.kind === 'solana'
+      ? 'Solana address — balances, tokens and Cain LP positions.'
+      : 'EVM address — Polymarket trade history.';
+    hint.classList.add('ok');
+    goBt.disabled = false;
+  }
+
+  input.addEventListener('focus', function () { field.classList.add('is-focused'); });
+  input.addEventListener('blur',  function () { field.classList.remove('is-focused'); });
+  input.addEventListener('input', syncField);
+
+  clearBt.addEventListener('click', function () {
+    input.value = ''; syncField(); showErr(''); input.focus();
   });
-  document.getElementById('addr').addEventListener('keydown', function (e) {
+
+  goBt.addEventListener('click', function () { search(input.value); });
+
+  input.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') search(this.value);
+    if (e.key === 'Escape') {
+      if (this.value) { this.value = ''; syncField(); }
+      else this.blur();
+    }
   });
+
+  document.addEventListener('keydown', function (e) {
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+      e.preventDefault(); input.focus(); input.select();
+    }
+  });
+
+  /* Paste straight from the clipboard — the common way an address arrives. */
+  document.getElementById('paste-btn').addEventListener('click', function () {
+    if (!navigator.clipboard || !navigator.clipboard.readText) {
+      input.focus();
+      showErr('This browser will not allow reading the clipboard — paste with ' +
+              (/Mac|iPhone|iPad/.test(navigator.platform || '') ? '\u2318V' : 'Ctrl+V') + '.');
+      return;
+    }
+    navigator.clipboard.readText().then(function (txt) {
+      input.value = (txt || '').trim();
+      syncField();
+      if (!goBt.disabled) search(input.value);
+    }).catch(function () {
+      input.focus();
+      showErr('Clipboard access was denied — paste into the field instead.');
+    });
+  });
+
+  syncField();
   document.querySelectorAll('.chip').forEach(function (c) {
     c.addEventListener('click', function () { search(c.dataset.addr); });
   });
