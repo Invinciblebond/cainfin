@@ -1171,6 +1171,31 @@
       transform: translate(-50%, -50%);
       transition: width .3s, height .3s, border-color .3s, background .3s;
     }
+
+    /* ── Button hover tint ──────────────────────────────────────────────
+       Buttons pick up the same #00ffa3 as the custom cursor on hover.
+       Scoped to `main` so the shared sidebar (injected by /js/sidebar.js)
+       keeps its own hover styling. !important is needed to win against the
+       Tailwind hover:* utility classes already on these buttons. */
+    main button {
+      transition: background-color .18s ease, border-color .18s ease,
+                  color .18s ease, box-shadow .18s ease;
+    }
+    main button:hover {
+      background-color: rgba(0, 255, 163, 0.12) !important;
+      border-color: rgba(0, 255, 163, 0.45) !important;
+      color: #00ffa3 !important;
+      box-shadow: 0 0 18px rgba(0, 255, 163, 0.15);
+    }
+    main button:hover svg { color: #00ffa3; }
+
+    /* The solid light CTA reads better filled than washed. */
+    main button.bg-white:hover {
+      background-color: #00ffa3 !important;
+      color: #060606 !important;
+      box-shadow: 0 0 22px rgba(0, 255, 163, 0.30);
+    }
+    main button.bg-white:hover svg { color: #060606; }
   }
   @media (hover: none), (pointer: coarse) { #cain-cursor, #cain-cursor-ring { display: none; } }
   @keyframes tooltipLoad { from { transform: translateX(0); } to { transform: translateX(150%); } }

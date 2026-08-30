@@ -1,0 +1,186 @@
+/* ============================================================================
+ * css/cain-page.css — shared shell styling for Cain Finance sub-pages
+ * ----------------------------------------------------------------------------
+ * Lifted from index / Swap / Lending so new pages inherit the same look without
+ * copy-pasting it again. Sidebar styling is NOT here — /js/sidebar.js owns that.
+ * ========================================================================== */
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  background-color: #060606; color: #fff;
+  -webkit-font-smoothing: antialiased;
+  font-family: 'Inter', sans-serif;
+}
+
+.dot-grid {
+  background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+.app-shell { display: flex; height: 100vh; overflow: hidden; }
+.cain-main { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+.cain-scroll { flex: 1; overflow-y: auto; padding: 40px 32px 80px; }
+.cain-content { max-width: 1180px; margin: 0 auto; }
+
+/* ── Topbar ─────────────────────────────────────────────────────────────── */
+.cain-topbar {
+  height: 64px; padding: 0 32px; display: flex; align-items: center;
+  justify-content: space-between; flex-shrink: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.cain-search-wrap { flex: 1; max-width: 420px; position: relative; }
+.cain-search-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: #555; display: flex; pointer-events: none;
+}
+.cain-search {
+  width: 100%; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+  padding: 8px 16px 8px 38px; font-size: 13px; color: #fff; outline: none;
+  font-family: 'Inter', sans-serif; transition: border-color .15s;
+}
+.cain-search:focus { border-color: rgba(255,255,255,0.2); }
+.cain-search::placeholder { color: #555; }
+.cain-topbar-actions { display: flex; align-items: center; gap: 12px; }
+.cain-icon-btn {
+  padding: 8px; color: #555; border-radius: 8px; display: flex;
+  background: none; border: none; cursor: pointer; transition: color .15s;
+}
+.cain-icon-btn:hover { color: #fff; }
+.cain-divider { width: 1px; height: 32px; background: rgba(255,255,255,0.1); }
+
+/* ── Dropdown ───────────────────────────────────────────────────────────── */
+.dropdown { position: relative; display: inline-block; }
+.dropdown-menu {
+  display: none; position: absolute; right: 0; top: calc(100% + 8px);
+  background: #141414; border: 1px solid #2a2a2a; border-radius: 10px;
+  min-width: 160px; z-index: 50; overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+.dropdown-menu.open { display: block; }
+.dropdown-menu a {
+  display: block; padding: 10px 16px; font-size: 13px; color: #bbb;
+  text-decoration: none; transition: background .12s, color .12s;
+}
+.dropdown-menu a:hover { background: #1e1e1e; color: #fff; }
+
+/* ── Page headings ──────────────────────────────────────────────────────── */
+.page-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px; margin-bottom: 26px;
+}
+.page-title { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin: 0 0 6px; }
+.page-sub   { font-size: 12px; color: #555; margin: 0; }
+.section-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+  color: #555; margin: 30px 0 12px; font-weight: 600;
+}
+.section-label:first-child { margin-top: 0; }
+
+/* ── Cards ──────────────────────────────────────────────────────────────── */
+.card {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 18px; padding: 20px;
+}
+.card-tight { padding: 16px; border-radius: 14px; }
+.card-grid { display: grid; gap: 14px; }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 1000px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } .grid-3 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px)  { .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; } }
+
+.stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: #555; margin-bottom: 8px; font-weight: 600; }
+.stat-value { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; }
+.stat-sub   { font-size: 11px; color: #666; margin-top: 6px; }
+.up   { color: #00ffa3; }
+.down { color: #ff4d4d; }
+
+/* ── Tables ─────────────────────────────────────────────────────────────── */
+.table-wrap {
+  border: 1px solid rgba(255,255,255,0.06); border-radius: 20px;
+  overflow: hidden; background: rgba(255,255,255,0.015);
+}
+.cain-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.cain-table thead th {
+  text-align: left; padding: 13px 18px; font-size: 10px; text-transform: uppercase;
+  letter-spacing: .8px; color: #555; font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.06); white-space: nowrap;
+}
+.cain-table tbody td {
+  padding: 13px 18px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: #ddd; white-space: nowrap;
+}
+.cain-table tbody tr:last-child td { border-bottom: none; }
+.cain-table tbody tr { transition: background .12s; }
+.cain-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+.num { font-variant-numeric: tabular-nums; }
+.t-right { text-align: right; }
+.table-scroll { overflow-x: auto; }
+
+/* ── Pills / tags ───────────────────────────────────────────────────────── */
+.pill {
+  display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px;
+  border-radius: 999px; font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.pill-green { background: rgba(0,255,163,0.12); color: #00ffa3; }
+.pill-red   { background: rgba(255,77,77,0.12);  color: #ff4d4d; }
+.pill-gray  { background: rgba(255,255,255,0.06); color: #888; }
+.pill-gold  { background: rgba(201,184,122,0.14); color: #c9b87a; }
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+.btn {
+  padding: 9px 18px; border-radius: 12px; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.06); color: #fff;
+  font-family: 'Inter', sans-serif; transition: background .15s, border-color .15s;
+}
+.btn:hover { background: rgba(255,255,255,0.12); }
+.btn-primary { background: #fff; color: #060606; border-color: #fff; }
+.btn-primary:hover { background: #e6e6e6; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.tabs {
+  display: flex; gap: 6px; background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07); border-radius: 14px;
+  padding: 4px; width: fit-content;
+}
+.tab {
+  padding: 8px 22px; border-radius: 10px; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: none; background: transparent; color: #666;
+  transition: all .15s; font-family: 'Inter', sans-serif;
+}
+.tab.active { background: rgba(255,255,255,0.1); color: #fff; }
+.tab:hover:not(.active) { color: #aaa; }
+
+/* ── States ─────────────────────────────────────────────────────────────── */
+.state {
+  padding: 44px 20px; text-align: center; font-size: 13px; color: #555;
+}
+.state-error { color: #ff4d4d; }
+.spinner {
+  display: inline-block; width: 15px; height: 15px; vertical-align: -2px;
+  border: 2px solid rgba(255,255,255,0.15); border-top-color: #fff;
+  border-radius: 50%; animation: cain-spin .7s linear infinite; margin-right: 8px;
+}
+@keyframes cain-spin { to { transform: rotate(360deg); } }
+
+.skel {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 37%, rgba(255,255,255,0.04) 63%);
+  background-size: 400% 100%; animation: cain-shimmer 1.3s ease infinite;
+  border-radius: 6px; height: 13px;
+}
+@keyframes cain-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+.info-note {
+  margin-top: 16px; padding: 14px 16px; background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05); border-radius: 14px;
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 12px; color: #777; line-height: 1.5;
+}
+.info-note a { color: #aaa; }
+
+.src-tag { font-size: 10px; color: #444; letter-spacing: .3px; }

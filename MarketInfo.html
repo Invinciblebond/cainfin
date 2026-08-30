@@ -1,0 +1,395 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+<link rel="icon" type="image/png" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<link rel="apple-touch-icon" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Cain — Market Info</title>
+<meta name="description" content="Crypto prices, Solana TVL, stablecoin float and the largest Polymarket wallets.">
+<meta name="theme-color" content="#060606">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/cain-page.css">
+<link rel="stylesheet" href="/wallet-widget/dist/wallet-widget.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans: ['Inter', 'sans-serif'] },
+    colors: {
+      'cain-black':'#060606','cain-sidebar':'#0a0a0a','cain-gray-text':'#888888',
+      'cain-border':'rgba(255,255,255,0.1)','cain-green':'#00ffa3'
+    }
+  } } }
+</script>
+<style>
+  .price-tile { display: flex; flex-direction: column; justify-content: space-between; min-height: 112px; }
+  .tile-top { display: flex; align-items: center; gap: 9px; }
+  .tile-logo { width: 22px; height: 22px; border-radius: 50%; }
+  .fng-dial { position: relative; height: 6px; border-radius: 3px; background: linear-gradient(90deg,#ff4d4d,#e8b931,#00ffa3); margin-top: 12px; }
+  .fng-dial i { position: absolute; top: -3px; width: 3px; height: 12px; background: #fff; border-radius: 2px; transform: translateX(-50%); }
+  .chart-box { position: relative; height: 260px; }
+  .wallet-row {
+    display: flex; align-items: center; gap: 12px; padding: 12px 14px; text-decoration: none;
+    border-radius: 12px; transition: background .12s; color: inherit;
+  }
+  .wallet-row:hover { background: rgba(255,255,255,0.04); }
+  .wallet-badge {
+    width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(201,184,122,0.14); color: #c9b87a; font-size: 12px; font-weight: 700;
+  }
+  .range-btns { display: flex; gap: 4px; }
+  .range-btn {
+    padding: 5px 11px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.08); background: transparent; color: #666;
+    font-family: 'Inter', sans-serif; transition: all .14s;
+  }
+  .range-btn.active { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.16); }
+</style>
+</head>
+<body class="h-full font-sans">
+<div class="app-shell">
+
+<!-- Sidebar: shared markup lives in /js/sidebar.js — edit that one file to update every page. -->
+<script src="/js/sidebar.js"></script>
+
+<main class="cain-main dot-grid">
+
+  <header class="cain-topbar">
+    <div style="flex:1;">
+      <span class="src-tag" id="updated-at">—</span>
+    </div>
+    <div class="cain-topbar-actions">
+      <button class="btn" id="refresh-btn" style="padding:7px 14px;font-size:12px;">Refresh</button>
+      <div class="cain-divider"></div>
+      <div style="position:relative;"><div id="cain-wallet-root"></div></div>
+    </div>
+  </header>
+
+  <div class="cain-scroll">
+    <div class="cain-content">
+
+      <div class="page-head">
+        <div>
+          <h2 class="page-title">Market Info</h2>
+          <p class="page-sub">Prices, Solana TVL, stablecoin float and the largest Polymarket wallets — all read live in your browser.</p>
+        </div>
+      </div>
+
+      <!-- ═══ PRICE TILES ═══ -->
+      <div class="section-label">Prices</div>
+      <div class="card-grid grid-4" id="price-grid">
+        <div class="card price-tile"><div class="skel" style="width:50%;"></div><div class="skel" style="width:70%;height:22px;margin-top:14px;"></div></div>
+        <div class="card price-tile"><div class="skel" style="width:50%;"></div><div class="skel" style="width:70%;height:22px;margin-top:14px;"></div></div>
+        <div class="card price-tile"><div class="skel" style="width:50%;"></div><div class="skel" style="width:70%;height:22px;margin-top:14px;"></div></div>
+        <div class="card price-tile"><div class="skel" style="width:50%;"></div><div class="skel" style="width:70%;height:22px;margin-top:14px;"></div></div>
+      </div>
+
+      <!-- ═══ SOLANA TVL ═══ -->
+      <div class="section-label" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>Solana TVL trend</span>
+        <span class="range-btns">
+          <button class="range-btn" data-days="90">90D</button>
+          <button class="range-btn active" data-days="365">1Y</button>
+          <button class="range-btn" data-days="99999">All</button>
+        </span>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:16px;">
+          <div>
+            <div class="stat-label">Current TVL</div>
+            <div class="stat-value num" id="tvl-now">—</div>
+            <div class="stat-sub" id="tvl-chg">—</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="stat-label">Peak in range</div>
+            <div class="stat-value num" style="font-size:18px;" id="tvl-peak">—</div>
+            <div class="stat-sub" id="tvl-peak-date">—</div>
+          </div>
+        </div>
+        <div class="chart-box"><canvas id="tvl-chart"></canvas></div>
+      </div>
+
+      <!-- ═══ STABLECOIN FLOAT + POLYMARKET ═══ -->
+      <div class="card-grid grid-2" style="margin-top:30px;align-items:start;">
+
+        <div>
+          <div class="section-label" style="margin-top:0;">Stablecoin float on Solana</div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;">
+              <div>
+                <div class="stat-label">Total float</div>
+                <div class="stat-value num" id="stable-total">—</div>
+                <div class="stat-sub" id="stable-chg">—</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="stat-label">Assets</div>
+                <div class="stat-value num" style="font-size:18px;" id="stable-count">—</div>
+              </div>
+            </div>
+            <div class="table-scroll">
+              <table class="cain-table">
+                <thead><tr><th>Asset</th><th class="t-right">Circulating</th><th class="t-right">24h</th></tr></thead>
+                <tbody id="stable-body">
+                  <tr><td colspan="3" class="state"><span class="spinner"></span>Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label" style="margin-top:0;">Largest Polymarket wallets</div>
+          <div class="card">
+            <div id="wallet-list">
+              <div class="state"><span class="spinner"></span>Loading wallets…</div>
+            </div>
+            <div class="info-note" style="margin-top:14px;">
+              <span>Ranked by open position value. Open any wallet in <a href="/WalletSearch.html">User Wallet Search</a> for its full trade history.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="info-note">
+        <span>Sources: CoinGecko (prices), DefiLlama (TVL, stablecoins), alternative.me (Fear &amp; Greed). Figures are informational only and are not investment advice.</span>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+
+<script src="/wallet-widget/dist/cain-wallet-widget.iife.js" defer></script>
+<script src="/js/cain-data.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var tvlSeries = [], tvlChart = null, rangeDays = 365;
+
+  function usd(n, dp) {
+    if (n == null || isNaN(n)) return '—';
+    var a = Math.abs(n);
+    if (a >= 1e12) return '$' + (n / 1e12).toFixed(dp == null ? 2 : dp) + 'T';
+    if (a >= 1e9)  return '$' + (n / 1e9).toFixed(dp == null ? 2 : dp) + 'B';
+    if (a >= 1e6)  return '$' + (n / 1e6).toFixed(dp == null ? 2 : dp) + 'M';
+    if (a >= 1e3)  return '$' + (n / 1e3).toFixed(1) + 'K';
+    return '$' + n.toFixed(2);
+  }
+  function price(n) {
+    if (n == null || isNaN(n)) return '—';
+    return '$' + n.toLocaleString('en-US', { minimumFractionDigits: n < 10 ? 4 : 2, maximumFractionDigits: n < 10 ? 4 : 2 });
+  }
+  function signed(n) { return (n == null || isNaN(n)) ? '—' : (n >= 0 ? '+' : '') + n.toFixed(2) + '%'; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+
+  /* ── Price tiles ──────────────────────────────────────────────────────── */
+  function renderPrices(coins, fng, gold) {
+    var host = document.getElementById('price-grid');
+    var html = '';
+
+    (coins || []).forEach(function (c) {
+      var ch = c.price_change_percentage_24h;
+      html += '' +
+        '<div class="card price-tile">' +
+          '<div class="tile-top">' +
+            (c.image ? '<img class="tile-logo" src="' + esc(c.image) + '" alt="">' : '') +
+            '<span class="stat-label" style="margin:0;">' + esc((c.symbol || '').toUpperCase()) + '</span>' +
+          '</div>' +
+          '<div>' +
+            '<div class="stat-value num">' + price(c.current_price) + '</div>' +
+            '<div class="stat-sub ' + (ch >= 0 ? 'up' : 'down') + '">' + signed(ch) + ' · 24h</div>' +
+          '</div>' +
+        '</div>';
+    });
+
+    /* Tokenised gold stands in for spot XAU — real metal feeds are all gated. */
+    if (gold) {
+      var gch = parseFloat(gold.priceChangePercent);
+      html += '' +
+        '<div class="card price-tile">' +
+          '<div class="tile-top"><span class="stat-label" style="margin:0;">Gold (PAXG)</span><span class="pill pill-gold">Proxy</span></div>' +
+          '<div>' +
+            '<div class="stat-value num">' + price(parseFloat(gold.lastPrice)) + '</div>' +
+            '<div class="stat-sub ' + (gch >= 0 ? 'up' : 'down') + '">' + signed(gch) + ' · 24h</div>' +
+          '</div>' +
+        '</div>';
+    }
+
+    if (fng) {
+      var v = Number(fng.value) || 0;
+      html += '' +
+        '<div class="card price-tile">' +
+          '<div class="tile-top"><span class="stat-label" style="margin:0;">Fear &amp; Greed</span></div>' +
+          '<div>' +
+            '<div class="stat-value num">' + v + '<span style="font-size:12px;color:#666;font-weight:500;"> / 100</span></div>' +
+            '<div class="stat-sub">' + esc(fng.value_classification || '') + '</div>' +
+            '<div class="fng-dial"><i style="left:' + v + '%;"></i></div>' +
+          '</div>' +
+        '</div>';
+    }
+
+    host.innerHTML = html || '<div class="card state" style="grid-column:1/-1;">Price data unavailable.</div>';
+  }
+
+  /* ── TVL chart ────────────────────────────────────────────────────────── */
+  function renderTvl() {
+    if (!tvlSeries.length) return;
+    var pts = rangeDays >= 99999 ? tvlSeries : tvlSeries.slice(-rangeDays);
+
+    var last  = pts[pts.length - 1];
+    var first = pts[0];
+    var chg   = first && first.tvl ? ((last.tvl - first.tvl) / first.tvl) * 100 : null;
+    var peak  = pts.reduce(function (m, p) { return p.tvl > m.tvl ? p : m; }, pts[0]);
+
+    document.getElementById('tvl-now').textContent  = usd(last.tvl);
+    var chgEl = document.getElementById('tvl-chg');
+    chgEl.textContent = signed(chg) + ' over range';
+    chgEl.className = 'stat-sub ' + (chg >= 0 ? 'up' : 'down');
+    document.getElementById('tvl-peak').textContent = usd(peak.tvl);
+    document.getElementById('tvl-peak-date').textContent = new Date(peak.date * 1000).toLocaleDateString();
+
+    var labels = pts.map(function (p) { return new Date(p.date * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }); });
+    var data   = pts.map(function (p) { return p.tvl; });
+
+    if (tvlChart) tvlChart.destroy();
+    var ctx = document.getElementById('tvl-chart').getContext('2d');
+    var grad = ctx.createLinearGradient(0, 0, 0, 260);
+    grad.addColorStop(0, 'rgba(0,255,163,0.22)');
+    grad.addColorStop(1, 'rgba(0,255,163,0)');
+
+    tvlChart = new Chart(ctx, {
+      type: 'line',
+      data: { labels: labels, datasets: [{
+        data: data, borderColor: '#00ffa3', backgroundColor: grad,
+        borderWidth: 2, fill: true, pointRadius: 0, pointHoverRadius: 4,
+        pointHoverBackgroundColor: '#00ffa3', tension: 0.25
+      }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#111', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+            titleColor: '#888', bodyColor: '#fff', padding: 10, displayColors: false,
+            callbacks: { label: function (c) { return usd(c.parsed.y); } }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#444', maxTicksLimit: 7, font: { size: 10 } } },
+          y: { grid: { color: 'rgba(255,255,255,0.04)' },
+               ticks: { color: '#444', font: { size: 10 }, callback: function (v) { return usd(v, 0); } } }
+        }
+      }
+    });
+  }
+
+  /* ── Stablecoin float ─────────────────────────────────────────────────── */
+  function renderStables(payload) {
+    var body = document.getElementById('stable-body');
+    var assets = (payload && payload.peggedAssets) || [];
+    var rows = [];
+    var total = 0, prevTotal = 0;
+
+    assets.forEach(function (a) {
+      var cc = (a.chainCirculating || {}).Solana;
+      if (!cc) return;
+      var cur  = (cc.current && cc.current.peggedUSD) || 0;
+      var prev = (cc.circulatingPrevDay && cc.circulatingPrevDay.peggedUSD) || 0;
+      if (cur <= 0) return;
+      total += cur; prevTotal += prev;
+      rows.push({ symbol: a.symbol, cur: cur, prev: prev });
+    });
+
+    rows.sort(function (a, b) { return b.cur - a.cur; });
+
+    var chg = prevTotal ? ((total - prevTotal) / prevTotal) * 100 : null;
+    document.getElementById('stable-total').textContent = usd(total);
+    var ce = document.getElementById('stable-chg');
+    ce.textContent = signed(chg) + ' · 24h';
+    ce.className = 'stat-sub ' + (chg >= 0 ? 'up' : 'down');
+    document.getElementById('stable-count').textContent = rows.length;
+
+    if (!rows.length) { body.innerHTML = '<tr><td colspan="3" class="state">No stablecoin data.</td></tr>'; return; }
+
+    body.innerHTML = rows.slice(0, 8).map(function (r) {
+      var d = r.prev ? ((r.cur - r.prev) / r.prev) * 100 : null;
+      return '<tr>' +
+        '<td style="color:#fff;font-weight:500;">' + esc(r.symbol) + '</td>' +
+        '<td class="t-right num">' + usd(r.cur) + '</td>' +
+        '<td class="t-right num ' + (d == null ? '' : d >= 0 ? 'up' : 'down') + '">' + (d == null ? '—' : signed(d)) + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  /* ── Polymarket wallets ───────────────────────────────────────────────── */
+  function renderWallets(users) {
+    var host = document.getElementById('wallet-list');
+    if (!users || !users.length) { host.innerHTML = '<div class="state">Wallet data unavailable.</div>'; return; }
+
+    host.innerHTML = users.map(function (u, i) {
+      return '<a class="wallet-row" href="/WalletSearch.html?address=' + encodeURIComponent(u.address) + '">' +
+        '<div class="wallet-badge">W' + (i + 1) + '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-size:13px;font-weight:600;color:#fff;">' + esc(u.displayName || u.address) + '</div>' +
+          '<div class="stat-sub" style="margin:2px 0 0;">' + usd(u.positionValue) + ' position value</div>' +
+        '</div>' +
+        '<svg style="width:15px;height:15px;color:#555;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>' +
+      '</a>';
+    }).join('');
+  }
+
+  /* ── Load — every feed fires in parallel, each cached by CainData ─────── */
+  function load() {
+    document.getElementById('updated-at').textContent = 'Loading…';
+
+    var jobs = [
+      CainData.prices(['solana', 'bitcoin', 'ethereum']).catch(function () { return null; }),
+      CainData.fearGreed().catch(function () { return null; }),
+      CainData.goldProxy().catch(function () { return null; }),
+      CainData.chainTvl('Solana').catch(function () { return null; }),
+      CainData.stablecoins().catch(function () { return null; }),
+      CainData.topWallets().catch(function () { return null; })
+    ];
+
+    Promise.all(jobs).then(function (r) {
+      var coins = r[0], fngRaw = r[1], gold = r[2], tvl = r[3], stables = r[4], wallets = r[5];
+
+      renderPrices(coins, fngRaw && fngRaw.data && fngRaw.data[0], gold);
+
+      if (tvl && tvl.length) { tvlSeries = tvl; renderTvl(); }
+      else {
+        document.getElementById('tvl-now').textContent = '—';
+        document.getElementById('tvl-chg').textContent = 'TVL data unavailable';
+      }
+
+      if (stables) renderStables(stables);
+      else document.getElementById('stable-body').innerHTML = '<tr><td colspan="3" class="state state-error">Stablecoin data unavailable.</td></tr>';
+
+      renderWallets(wallets);
+
+      document.getElementById('updated-at').textContent =
+        'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    });
+  }
+
+  /* ── Wiring ───────────────────────────────────────────────────────────── */
+  document.querySelectorAll('.range-btn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.range-btn').forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active');
+      rangeDays = Number(b.dataset.days);
+      renderTvl();   /* redraw from the series already in memory — no refetch */
+    });
+  });
+  document.getElementById('refresh-btn').addEventListener('click', function () {
+    CainData.clearCache(); load();
+  });
+
+  load();
+})();
+</script>
+</body></html>

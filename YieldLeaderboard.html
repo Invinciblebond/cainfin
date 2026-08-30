@@ -1,0 +1,318 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+<link rel="icon" type="image/png" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<link rel="apple-touch-icon" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Cain — Solana Yield Leaderboard</title>
+<meta name="description" content="Every Solana yield pool ranked by TVL and live APY, with Cain's Byreal pools benchmarked against the field.">
+<meta name="theme-color" content="#060606">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/cain-page.css">
+<link rel="stylesheet" href="/wallet-widget/dist/wallet-widget.css">
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans: ['Inter', 'sans-serif'] },
+    colors: {
+      'cain-black':'#060606','cain-sidebar':'#0a0a0a','cain-gray-text':'#888888',
+      'cain-border':'rgba(255,255,255,0.1)','cain-green':'#00ffa3'
+    }
+  } } }
+</script>
+<style>
+  .sortable { cursor: pointer; user-select: none; }
+  .sortable:hover { color: #999; }
+  .sort-arrow { opacity: .45; font-size: 9px; margin-left: 3px; }
+  .cain-row { background: rgba(201,184,122,0.06) !important; }
+  .cain-row td { color: #fff; }
+  .rank-bar {
+    position: relative; height: 5px; border-radius: 3px;
+    background: rgba(255,255,255,0.07); overflow: hidden; margin-top: 7px;
+  }
+  .rank-bar span { position: absolute; inset: 0 auto 0 0; background: #c9b87a; border-radius: 3px; }
+  .filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .filters select, .filters input {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; padding: 7px 12px; font-size: 12px; color: #fff;
+    outline: none; font-family: 'Inter', sans-serif;
+  }
+</style>
+</head>
+<body class="h-full font-sans">
+<div class="app-shell">
+
+<!-- Sidebar: shared markup lives in /js/sidebar.js — edit that one file to update every page. -->
+<script src="/js/sidebar.js"></script>
+
+<main class="cain-main dot-grid">
+
+  <header class="cain-topbar">
+    <div class="cain-search-wrap">
+      <span class="cain-search-icon">
+        <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+      </span>
+      <input class="cain-search" id="pool-search" placeholder="Search project or token" type="text">
+    </div>
+    <div class="cain-topbar-actions">
+      <button class="btn" id="refresh-btn" style="padding:7px 14px;font-size:12px;">Refresh</button>
+      <div class="cain-divider"></div>
+      <div style="position:relative;"><div id="cain-wallet-root"></div></div>
+    </div>
+  </header>
+
+  <div class="cain-scroll">
+    <div class="cain-content">
+
+      <div class="page-head">
+        <div>
+          <h2 class="page-title">Solana Yield Leaderboard</h2>
+          <p class="page-sub">Live APY and TVL for every tracked Solana pool — <span style="color:#888;">DefiLlama</span>, benchmarked against Cain's <span style="color:#888;">Byreal</span> pools.</p>
+        </div>
+      </div>
+
+      <!-- Summary tiles -->
+      <div class="card-grid grid-4" style="margin-bottom:8px;">
+        <div class="card">
+          <div class="stat-label">Pools tracked</div>
+          <div class="stat-value num" id="s-count">—</div>
+          <div class="stat-sub">Solana chain</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Total TVL</div>
+          <div class="stat-value num" id="s-tvl">—</div>
+          <div class="stat-sub">Across tracked pools</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Median APY</div>
+          <div class="stat-value num" id="s-median">—</div>
+          <div class="stat-sub">Pools over $1M TVL</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Cain pools</div>
+          <div class="stat-value num" id="s-cain">—</div>
+          <div class="stat-sub">Byreal CLMM</div>
+        </div>
+      </div>
+
+      <!-- Cain benchmark -->
+      <div class="section-label">Cain pools vs the field</div>
+      <div id="cain-bench" class="card-grid grid-3">
+        <div class="card"><div class="skel" style="width:60%;"></div><div class="skel" style="width:40%;margin-top:12px;height:22px;"></div></div>
+        <div class="card"><div class="skel" style="width:60%;"></div><div class="skel" style="width:40%;margin-top:12px;height:22px;"></div></div>
+        <div class="card"><div class="skel" style="width:60%;"></div><div class="skel" style="width:40%;margin-top:12px;height:22px;"></div></div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="section-label">All Solana pools</div>
+      <div class="filters">
+        <select id="f-tvl">
+          <option value="0">Any TVL</option>
+          <option value="100000">TVL over $100K</option>
+          <option value="1000000" selected>TVL over $1M</option>
+          <option value="10000000">TVL over $10M</option>
+        </select>
+        <select id="f-limit">
+          <option value="50">Top 50</option>
+          <option value="100" selected>Top 100</option>
+          <option value="250">Top 250</option>
+          <option value="99999">All</option>
+        </select>
+        <span class="src-tag" id="row-count"></span>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table class="cain-table">
+            <thead>
+              <tr>
+                <th style="width:44px;">#</th>
+                <th class="sortable" data-sort="project">Project <span class="sort-arrow"></span></th>
+                <th class="sortable" data-sort="symbol">Pool <span class="sort-arrow"></span></th>
+                <th class="sortable t-right" data-sort="tvlUsd">TVL <span class="sort-arrow">▼</span></th>
+                <th class="sortable t-right" data-sort="apyBase">Base APY <span class="sort-arrow"></span></th>
+                <th class="sortable t-right" data-sort="apyReward">Reward APY <span class="sort-arrow"></span></th>
+                <th class="sortable t-right" data-sort="apy">Total APY <span class="sort-arrow"></span></th>
+              </tr>
+            </thead>
+            <tbody id="pool-body">
+              <tr><td colspan="7" class="state"><span class="spinner"></span>Loading Solana pools…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="info-note">
+        <span>APY figures are reported by DefiLlama and refresh roughly hourly; Cain pool APR comes from Byreal pool fees over the trailing window. Yield is not guaranteed and past performance does not predict future returns. See the <a href="/Riskdisclosurestatement.html">risk disclosure</a>.</span>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+
+<script src="/wallet-widget/dist/cain-wallet-widget.iife.js" defer></script>
+<script src="/js/cain-data.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var pools = [];      /* DefiLlama Solana pools */
+  var cain  = [];      /* Cain's own Byreal pools */
+  var sortKey = 'tvlUsd', sortDir = -1;
+
+  /* ── Formatting ───────────────────────────────────────────────────────── */
+  function usd(n) {
+    if (n == null || isNaN(n)) return '—';
+    if (n >= 1e9) return '$' + (n / 1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return '$' + (n / 1e3).toFixed(1) + 'K';
+    return '$' + n.toFixed(0);
+  }
+  function pct(n) { return (n == null || isNaN(n)) ? '—' : n.toFixed(2) + '%'; }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+  }); }
+
+  /* ── Percentile of an APY against the field ───────────────────────────── */
+  function percentile(apy, field) {
+    if (!field.length || apy == null) return null;
+    var below = 0;
+    for (var i = 0; i < field.length; i++) if ((field[i].apy || 0) < apy) below++;
+    return Math.round(below / field.length * 100);
+  }
+
+  /* ── Render: summary tiles ────────────────────────────────────────────── */
+  function renderSummary() {
+    var big = pools.filter(function (p) { return (p.tvlUsd || 0) >= 1e6; });
+    var apys = big.map(function (p) { return p.apy || 0; }).sort(function (a, b) { return a - b; });
+    var median = apys.length ? apys[Math.floor(apys.length / 2)] : null;
+    var totalTvl = pools.reduce(function (s, p) { return s + (p.tvlUsd || 0); }, 0);
+
+    document.getElementById('s-count').textContent  = pools.length.toLocaleString();
+    document.getElementById('s-tvl').textContent    = usd(totalTvl);
+    document.getElementById('s-median').textContent = pct(median);
+    document.getElementById('s-cain').textContent   = cain.length || '—';
+  }
+
+  /* ── Render: Cain benchmark cards ─────────────────────────────────────── */
+  function renderBench() {
+    var host = document.getElementById('cain-bench');
+    if (!cain.length) {
+      host.innerHTML = '<div class="card state" style="grid-column:1/-1;">Cain pool data unavailable right now.</div>';
+      return;
+    }
+    var field = pools.filter(function (p) { return (p.tvlUsd || 0) >= 1e5; });
+
+    host.innerHTML = cain.slice(0, 6).map(function (p) {
+      var name = (p.tokenASymbol || '?') + ' / ' + (p.tokenBSymbol || '?');
+      var apr  = Number(p.apr);
+      var rank = percentile(apr, field);
+      var tvl  = Number(p.tvl);
+      return '' +
+        '<div class="card">' +
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">' +
+            '<div>' +
+              '<div class="stat-label">' + esc(name) + '</div>' +
+              '<div class="stat-value num ' + (apr >= 0 ? 'up' : '') + '">' + pct(apr) + '</div>' +
+            '</div>' +
+            '<span class="pill pill-gold">Cain</span>' +
+          '</div>' +
+          '<div class="stat-sub">TVL ' + usd(tvl) + ' · 24h vol ' + usd(Number(p.volume24h)) + '</div>' +
+          (rank == null ? '' :
+            '<div class="stat-sub" style="margin-top:11px;color:#888;">Beats <strong style="color:#c9b87a;">' + rank + '%</strong> of Solana pools over $100K TVL</div>' +
+            '<div class="rank-bar"><span style="width:' + rank + '%;"></span></div>') +
+        '</div>';
+    }).join('');
+  }
+
+  /* ── Render: main table ───────────────────────────────────────────────── */
+  function renderTable() {
+    var q     = (document.getElementById('pool-search').value || '').trim().toLowerCase();
+    var minT  = Number(document.getElementById('f-tvl').value);
+    var limit = Number(document.getElementById('f-limit').value);
+
+    var rows = pools.filter(function (p) {
+      if ((p.tvlUsd || 0) < minT) return false;
+      if (!q) return true;
+      return (p.project || '').toLowerCase().indexOf(q) !== -1 ||
+             (p.symbol  || '').toLowerCase().indexOf(q) !== -1;
+    });
+
+    rows.sort(function (a, b) {
+      var x = a[sortKey], y = b[sortKey];
+      if (typeof x === 'string' || typeof y === 'string') {
+        return String(x || '').localeCompare(String(y || '')) * sortDir;
+      }
+      return ((x || 0) - (y || 0)) * sortDir;
+    });
+
+    var shown = rows.slice(0, limit);
+    document.getElementById('row-count').textContent =
+      shown.length.toLocaleString() + ' of ' + rows.length.toLocaleString() + ' pools';
+
+    var body = document.getElementById('pool-body');
+    if (!shown.length) {
+      body.innerHTML = '<tr><td colspan="7" class="state">No pools match those filters.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = shown.map(function (p, i) {
+      return '<tr>' +
+        '<td class="num" style="color:#555;">' + (i + 1) + '</td>' +
+        '<td style="color:#fff;font-weight:500;">' + esc(p.project) + '</td>' +
+        '<td>' + esc(p.symbol) + '</td>' +
+        '<td class="t-right num">' + usd(p.tvlUsd) + '</td>' +
+        '<td class="t-right num" style="color:#999;">' + pct(p.apyBase) + '</td>' +
+        '<td class="t-right num" style="color:#999;">' + pct(p.apyReward) + '</td>' +
+        '<td class="t-right num ' + ((p.apy || 0) > 0 ? 'up' : '') + '" style="font-weight:600;">' + pct(p.apy) + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  /* ── Load ─────────────────────────────────────────────────────────────── */
+  function load() {
+    document.getElementById('pool-body').innerHTML =
+      '<tr><td colspan="7" class="state"><span class="spinner"></span>Loading Solana pools…</td></tr>';
+
+    /* Both feeds in parallel; each is independently cached by CainData so
+       flipping filters or re-visiting costs no extra network. */
+    Promise.all([
+      CainData.solanaYields().catch(function (e) { return { __err: e }; }),
+      CainData.cainPools().catch(function () { return []; })
+    ]).then(function (res) {
+      if (res[0] && res[0].__err) {
+        document.getElementById('pool-body').innerHTML =
+          '<tr><td colspan="7" class="state state-error">Could not load DefiLlama pools — ' + esc(res[0].__err.message) + '</td></tr>';
+        return;
+      }
+      pools = res[0] || [];
+      cain  = (res[1] || []).filter(function (p) { return p && p.ok !== false; });
+      renderSummary(); renderBench(); renderTable();
+    });
+  }
+
+  /* ── Wiring ───────────────────────────────────────────────────────────── */
+  document.querySelectorAll('.sortable').forEach(function (th) {
+    th.addEventListener('click', function () {
+      var k = th.dataset.sort;
+      if (sortKey === k) sortDir = -sortDir; else { sortKey = k; sortDir = -1; }
+      document.querySelectorAll('.sort-arrow').forEach(function (s) { s.textContent = ''; });
+      th.querySelector('.sort-arrow').textContent = sortDir < 0 ? '▼' : '▲';
+      renderTable();
+    });
+  });
+
+  var t;
+  document.getElementById('pool-search').addEventListener('input', function () {
+    clearTimeout(t); t = setTimeout(renderTable, 160);   /* debounce, no refetch */
+  });
+  document.getElementById('f-tvl').addEventListener('change', renderTable);
+  document.getElementById('f-limit').addEventListener('change', renderTable);
+  document.getElementById('refresh-btn').addEventListener('click', function () {
+    CainData.clearCache(); load();
+  });
+
+  load();
+})();
+</script>
+</body></html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+<link rel="icon" type="image/png" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<link rel="apple-touch-icon" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Cain — More</title>
+<meta name="description" content="Research and analytics tools across Cain Finance.">
+<meta name="theme-color" content="#060606">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/cain-page.css">
+<link rel="stylesheet" href="/wallet-widget/dist/wallet-widget.css">
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans: ['Inter', 'sans-serif'] },
+    colors: {
+      'cain-black':'#060606','cain-sidebar':'#0a0a0a','cain-gray-text':'#888888',
+      'cain-border':'rgba(255,255,255,0.1)','cain-green':'#00ffa3'
+    }
+  } } }
+</script>
+<style>
+  .tool-card {
+    display: block; text-decoration: none; color: inherit;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px; padding: 24px; transition: border-color .18s, background .18s, transform .18s;
+  }
+  .tool-card:hover { border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.05); transform: translateY(-2px); }
+  .tool-icon {
+    width: 42px; height: 42px; border-radius: 12px; display: flex;
+    align-items: center; justify-content: center; margin-bottom: 16px;
+    background: rgba(201,184,122,0.12); color: #c9b87a;
+  }
+  .tool-name { font-size: 16px; font-weight: 600; margin: 0 0 7px; letter-spacing: -0.2px; }
+  .tool-desc { font-size: 12.5px; color: #777; line-height: 1.55; margin: 0 0 16px; }
+  .tool-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+</style>
+</head>
+<body class="h-full font-sans">
+<div class="app-shell">
+
+<!-- Sidebar: shared markup lives in /js/sidebar.js — edit that one file to update every page. -->
+<script src="/js/sidebar.js"></script>
+
+<main class="cain-main dot-grid">
+
+  <header class="cain-topbar">
+    <div class="cain-search-wrap">
+      <span class="cain-search-icon">
+        <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+      </span>
+      <input class="cain-search" id="tool-search" placeholder="Search tools" type="text" oninput="filterTools(this.value)">
+    </div>
+    <div class="cain-topbar-actions">
+      <a href="/Riskdisclosurestatement.html" class="cain-icon-btn" title="Risk disclosure">
+        <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+      </a>
+      <div class="dropdown">
+        <button class="cain-icon-btn" onclick="document.getElementById('community-dropdown').classList.toggle('open')">
+          <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        </button>
+        <div id="community-dropdown" class="dropdown-menu">
+          <a href="https://github.com/Invinciblebond/cainfin" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://x.com/CainFinance" target="_blank" rel="noopener">X</a>
+          <a href="https://discord.gg/k8STqQgFuM" target="_blank" rel="noopener">Discord</a>
+          <a href="https://www.reddit.com/r/CainFinance/" target="_blank" rel="noopener">Reddit</a>
+          <a href="/Tokenomics.html">Cain Token</a>
+          <a href="mailto:cain@cain.finance">Contact</a>
+        </div>
+      </div>
+      <div class="cain-divider"></div>
+      <div style="position:relative;"><div id="cain-wallet-root"></div></div>
+    </div>
+  </header>
+
+  <div class="cain-scroll">
+    <div class="cain-content">
+
+      <div class="page-head">
+        <div>
+          <h2 class="page-title">More</h2>
+          <p class="page-sub">Research and analytics built on live on-chain and market data.</p>
+        </div>
+      </div>
+
+      <div class="card-grid grid-3" id="tool-grid">
+
+        <a class="tool-card" href="/YieldLeaderboard.html" data-name="solana yield leaderboard apy tvl defillama pools">
+          <div class="tool-icon">
+            <svg style="width:21px;height:21px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          </div>
+          <h3 class="tool-name">Solana Yield Leaderboard</h3>
+          <p class="tool-desc">Every Solana yield pool ranked by TVL and live APY, with Cain's own Byreal pools benchmarked against the field.</p>
+          <div class="tool-tags">
+            <span class="pill pill-gray">DefiLlama</span>
+            <span class="pill pill-gray">Byreal</span>
+            <span class="pill pill-green">Live</span>
+          </div>
+        </a>
+
+        <a class="tool-card" href="/MarketInfo.html" data-name="market info crypto prices tvl stablecoin float polymarket wallets fear greed">
+          <div class="tool-icon">
+            <svg style="width:21px;height:21px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 5-6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          </div>
+          <h3 class="tool-name">Market Info</h3>
+          <p class="tool-desc">Crypto price tiles, Solana TVL trend, stablecoin float and the largest Polymarket wallets — one snapshot of market conditions.</p>
+          <div class="tool-tags">
+            <span class="pill pill-gray">CoinGecko</span>
+            <span class="pill pill-gray">DefiLlama</span>
+            <span class="pill pill-green">Live</span>
+          </div>
+        </a>
+
+        <a class="tool-card" href="/WalletSearch.html" data-name="user wallet search solana polymarket lp positions balance sankey">
+          <div class="tool-icon">
+            <svg style="width:21px;height:21px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+          </div>
+          <h3 class="tool-name">User Wallet Search</h3>
+          <p class="tool-desc">Look up any Solana or Polygon wallet — balances, tokens, Cain LP positions, Polymarket trade history and a capital-flow diagram.</p>
+          <div class="tool-tags">
+            <span class="pill pill-gray">Solana RPC</span>
+            <span class="pill pill-gray">Polymarket</span>
+            <span class="pill pill-green">Live</span>
+          </div>
+        </a>
+
+      </div>
+
+      <div id="no-tools" class="state" style="display:none;">No tools match that search.</div>
+
+      <div class="info-note">
+        <span>These pages read public APIs directly from your browser. Nothing you search here is sent to Cain's servers or stored.</span>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+
+<script src="/wallet-widget/dist/cain-wallet-widget.iife.js" defer></script>
+<script>
+  function filterTools(q) {
+    q = (q || '').trim().toLowerCase();
+    var cards = document.querySelectorAll('#tool-grid .tool-card');
+    var shown = 0;
+    cards.forEach(function (c) {
+      var hit = !q || (c.dataset.name || '').indexOf(q) !== -1;
+      c.style.display = hit ? '' : 'none';
+      if (hit) shown++;
+    });
+    document.getElementById('no-tools').style.display = shown ? 'none' : '';
+  }
+  /* Close the community dropdown on an outside click. */
+  document.addEventListener('click', function (e) {
+    var dd = document.getElementById('community-dropdown');
+    if (dd && !e.target.closest('.dropdown')) dd.classList.remove('open');
+  });
+</script>
+</body></html>

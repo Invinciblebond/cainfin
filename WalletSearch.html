@@ -1,0 +1,576 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+<link rel="icon" type="image/png" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<link rel="apple-touch-icon" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Cain — User Wallet Search</title>
+<meta name="description" content="Look up any Solana or Polygon wallet — balances, tokens, Cain LP positions and Polymarket trade history.">
+<meta name="theme-color" content="#060606">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/cain-page.css">
+<link rel="stylesheet" href="/wallet-widget/dist/wallet-widget.css">
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans: ['Inter', 'sans-serif'] },
+    colors: {
+      'cain-black':'#060606','cain-sidebar':'#0a0a0a','cain-gray-text':'#888888',
+      'cain-border':'rgba(255,255,255,0.1)','cain-green':'#00ffa3'
+    }
+  } } }
+</script>
+<style>
+  .search-hero {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px; padding: 22px; margin-bottom: 26px;
+  }
+  .search-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .addr-input {
+    flex: 1; min-width: 260px; background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+    padding: 12px 16px; font-size: 13px; color: #fff; outline: none;
+    font-family: 'Inter', sans-serif; transition: border-color .15s;
+  }
+  .addr-input:focus { border-color: rgba(255,255,255,0.25); }
+  .addr-input::placeholder { color: #4a4a4a; }
+  .chip-row { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+  .chip {
+    padding: 5px 11px; border-radius: 999px; font-size: 11px; cursor: pointer;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+    color: #888; transition: all .14s; font-family: 'Inter', sans-serif;
+  }
+  .chip:hover { color: #fff; border-color: rgba(255,255,255,0.2); }
+  .addr-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: #999; word-break: break-all; }
+  .sankey-box { position: relative; height: 300px; }
+  .sankey-box svg { width: 100%; height: 100%; display: block; }
+  .hidden { display: none !important; }
+  .err-banner {
+    background: rgba(255,77,77,0.08); border: 1px solid rgba(255,77,77,0.22);
+    color: #ff8a8a; border-radius: 12px; padding: 11px 14px; font-size: 12px; margin-bottom: 16px;
+  }
+</style>
+</head>
+<body class="h-full font-sans">
+<div class="app-shell">
+
+<!-- Sidebar: shared markup lives in /js/sidebar.js — edit that one file to update every page. -->
+<script src="/js/sidebar.js"></script>
+
+<main class="cain-main dot-grid">
+
+  <header class="cain-topbar">
+    <div style="flex:1;"><span class="src-tag" id="scan-meta">—</span></div>
+    <div class="cain-topbar-actions">
+      <div class="cain-divider"></div>
+      <div style="position:relative;"><div id="cain-wallet-root"></div></div>
+    </div>
+  </header>
+
+  <div class="cain-scroll">
+    <div class="cain-content">
+
+      <div class="page-head">
+        <div>
+          <h2 class="page-title">User Wallet Search</h2>
+          <p class="page-sub">Balances, tokens, Cain LP positions and Polymarket history — one batched lookup per address.</p>
+        </div>
+      </div>
+
+      <!-- ═══ SEARCH ═══ -->
+      <div class="search-hero">
+        <div class="search-row">
+          <input class="addr-input" id="addr" type="text" spellcheck="false" autocomplete="off"
+                 placeholder="Solana address, or 0x… Polygon address">
+          <button class="btn btn-primary" id="go-btn">Search</button>
+          <button class="btn hidden" id="mine-btn">Use my wallet</button>
+        </div>
+        <div class="chip-row">
+          <span class="src-tag" style="margin-right:4px;">Try:</span>
+          <button class="chip" data-addr="0x2a2c53bd278c04da9962fcf96490e17f3dfb9bc1">Top Polymarket wallet</button>
+          <button class="chip" data-addr="5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9">Sample Solana wallet</button>
+        </div>
+      </div>
+
+      <div id="err" class="err-banner hidden"></div>
+
+      <!-- ═══ EMPTY STATE ═══ -->
+      <div id="empty" class="state" style="padding:70px 20px;">
+        Enter a wallet address to scan it.
+      </div>
+
+      <!-- ═══ RESULTS ═══ -->
+      <div id="results" class="hidden">
+
+        <div class="card" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div style="min-width:0;">
+            <div class="stat-label">Scanned address</div>
+            <div class="addr-mono" id="r-addr">—</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span class="pill pill-gray" id="r-kind">—</span>
+            <a class="btn" id="r-explorer" target="_blank" rel="noopener" style="padding:7px 14px;font-size:12px;">Explorer</a>
+          </div>
+        </div>
+
+        <!-- Overview tiles -->
+        <div class="card-grid grid-4" style="margin-top:14px;">
+          <div class="card">
+            <div class="stat-label">SOL balance</div>
+            <div class="stat-value num" id="t-sol">—</div>
+            <div class="stat-sub" id="t-sol-usd">—</div>
+          </div>
+          <div class="card">
+            <div class="stat-label">Stablecoins</div>
+            <div class="stat-value num" id="t-stable">—</div>
+            <div class="stat-sub">USDC · USDT · USDH · USDS</div>
+          </div>
+          <div class="card">
+            <div class="stat-label">Tokens held</div>
+            <div class="stat-value num" id="t-tokens">—</div>
+            <div class="stat-sub">Non-zero balances</div>
+          </div>
+          <div class="card">
+            <div class="stat-label">Gold (PAXG)</div>
+            <div class="stat-value num" id="t-gold">—</div>
+            <div class="stat-sub" id="t-gold-chg">Market context · proxy</div>
+          </div>
+        </div>
+
+        <!-- Capital flow -->
+        <div class="section-label">Capital flow</div>
+        <div class="card">
+          <div class="sankey-box"><svg id="sankey" preserveAspectRatio="xMidYMid meet"></svg></div>
+          <div class="stat-sub" id="sankey-note" style="text-align:center;">—</div>
+        </div>
+
+        <!-- Token holdings -->
+        <div class="section-label">Token holdings</div>
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table class="cain-table">
+              <thead><tr><th>Token</th><th class="t-right">Amount</th><th>Mint</th></tr></thead>
+              <tbody id="token-body"><tr><td colspan="3" class="state">—</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Cain LP positions -->
+        <div class="section-label">Cain LP positions <span class="src-tag">· Byreal CLMM</span></div>
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table class="cain-table">
+              <thead><tr><th>Pool</th><th class="t-right">Liquidity</th><th class="t-right">Range</th><th class="t-right">Status</th></tr></thead>
+              <tbody id="lp-body"><tr><td colspan="4" class="state">—</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Polymarket -->
+        <div class="section-label">Polymarket activity</div>
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table class="cain-table">
+              <thead><tr><th>Time</th><th>Type</th><th>Market</th><th class="t-right">Size</th><th class="t-right">Value</th></tr></thead>
+              <tbody id="pm-body"><tr><td colspan="5" class="state">—</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="info-note">
+        <span>One search issues four requests total — a single batched Solana RPC call, one token-metadata lookup, one Byreal call and one Polymarket call — and the whole result is cached, so repeating a search costs no network. Read-only: no transaction is ever constructed here.</span>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+
+<script src="/wallet-widget/dist/cain-wallet-widget.iife.js" defer></script>
+<script src="/js/cain-data.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var SOL_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+  var EVM_RE = /^0x[a-fA-F0-9]{40}$/;
+  var solUsd = null;
+
+  /* ── Helpers ──────────────────────────────────────────────────────────── */
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+  function usd(n) {
+    if (n == null || isNaN(n)) return '—';
+    var a = Math.abs(n);
+    if (a >= 1e12) return '$' + (n / 1e12).toFixed(2) + 'T';
+    if (a >= 1e9)  return '$' + (n / 1e9).toFixed(2) + 'B';
+    if (a >= 1e6)  return '$' + (n / 1e6).toFixed(2) + 'M';
+    if (a >= 1e3)  return '$' + (n / 1e3).toFixed(1) + 'K';
+    return '$' + n.toFixed(2);
+  }
+  /* Token supplies span many orders of magnitude — a meme token can carry a
+     quadrillion units — so step all the way up rather than stopping at M. */
+  function amt(n) {
+    if (n == null || isNaN(n)) return '—';
+    var a = Math.abs(n);
+    if (a >= 1e15) return (n / 1e15).toFixed(2) + 'Q';
+    if (a >= 1e12) return (n / 1e12).toFixed(2) + 'T';
+    if (a >= 1e9)  return (n / 1e9).toFixed(2) + 'B';
+    if (a >= 1e6)  return (n / 1e6).toFixed(2) + 'M';
+    if (a >= 1)    return n.toLocaleString('en-US', { maximumFractionDigits: 4 });
+    return n.toFixed(6);
+  }
+  function short(a) { return !a ? '—' : a.slice(0, 6) + '…' + a.slice(-6); }
+  function showErr(msg) {
+    var e = document.getElementById('err');
+    if (!msg) { e.classList.add('hidden'); return; }
+    e.textContent = msg; e.classList.remove('hidden');
+  }
+
+  /* ── Vanilla-SVG Sankey (no d3 — keeps the page dependency-free) ───────── */
+  function drawSankey(nodes, links, note) {
+    var svg = document.getElementById('sankey');
+    var box = svg.parentElement;
+    var W = box.clientWidth || 700, H = box.clientHeight || 300;
+    var pad = 16, nodeW = 14, gap = 12;
+
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    document.getElementById('sankey-note').textContent = note || '';
+
+    if (!nodes.length || !links.length) {
+      var t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', W / 2); t.setAttribute('y', H / 2);
+      t.setAttribute('text-anchor', 'middle'); t.setAttribute('fill', '#555');
+      t.setAttribute('font-size', '12'); t.textContent = 'Not enough data to chart a flow.';
+      svg.appendChild(t);
+      return;
+    }
+
+    /* Column assignment: 0 = source, 2 = terminal, 1 = everything between. */
+    var cols = [[], [], []];
+    nodes.forEach(function (n, i) { cols[n.col == null ? 1 : n.col].push(i); });
+
+    var totalOut = links.filter(function (l) { return nodes[l.source].col === 0; })
+                        .reduce(function (s, l) { return s + l.value; }, 0) || 1;
+
+    function colHeightScale() {
+      var maxCount = Math.max(cols[0].length, cols[1].length, cols[2].length);
+      return (H - pad * 2 - gap * Math.max(maxCount - 1, 0)) / totalOut;
+    }
+    var scale = colHeightScale();
+
+    function layout(col, x) {
+      var vals = col.map(function (i) {
+        var out = links.filter(function (l) { return l.source === i; }).reduce(function (s, l) { return s + l.value; }, 0);
+        var inc = links.filter(function (l) { return l.target === i; }).reduce(function (s, l) { return s + l.value; }, 0);
+        return Math.max(out, inc, 2 / scale);
+      });
+      var h = vals.reduce(function (s, v) { return s + v * scale; }, 0) + gap * (col.length - 1);
+      var y = Math.max((H - h) / 2, pad);
+      col.forEach(function (idx, k) {
+        nodes[idx].x = x; nodes[idx].y = y; nodes[idx].h = Math.max(vals[k] * scale, 3);
+        y += nodes[idx].h + gap;
+      });
+    }
+
+    layout(cols[0], pad);
+    layout(cols[1], W * 0.44);
+    layout(cols[2], W - pad - nodeW);
+
+    var srcOff = {}, tgtOff = {};
+    nodes.forEach(function (_, i) { srcOff[i] = 0; tgtOff[i] = 0; });
+
+    var NS = 'http://www.w3.org/2000/svg';
+    var g = document.createElementNS(NS, 'g');
+    svg.appendChild(g);
+
+    /* Ribbons first, so node blocks sit on top. */
+    links.forEach(function (l) {
+      var sn = nodes[l.source], tn = nodes[l.target];
+      var lh = Math.max(l.value * scale, 1);
+      var sy = sn.y + srcOff[l.source], ty = tn.y + tgtOff[l.target];
+      srcOff[l.source] += lh; tgtOff[l.target] += lh;
+
+      var x0 = sn.x + nodeW, x1 = tn.x, mx = (x0 + x1) / 2;
+      var p = document.createElementNS(NS, 'path');
+      p.setAttribute('d',
+        'M' + x0 + ',' + sy + ' C' + mx + ',' + sy + ' ' + mx + ',' + ty + ' ' + x1 + ',' + ty +
+        ' L' + x1 + ',' + (ty + lh) + ' C' + mx + ',' + (ty + lh) + ' ' + mx + ',' + (sy + lh) + ' ' + x0 + ',' + (sy + lh) + ' Z');
+      p.setAttribute('fill', l.color || 'rgba(201,184,122,0.22)');
+      g.appendChild(p);
+    });
+
+    nodes.forEach(function (n) {
+      var r = document.createElementNS(NS, 'rect');
+      r.setAttribute('x', n.x); r.setAttribute('y', n.y);
+      r.setAttribute('width', nodeW); r.setAttribute('height', n.h);
+      r.setAttribute('rx', 3); r.setAttribute('fill', n.color || '#c9b87a');
+      g.appendChild(r);
+
+      var onLeft = n.col === 0;
+      var t = document.createElementNS(NS, 'text');
+      t.setAttribute('x', onLeft ? n.x + nodeW + 7 : n.x - 7);
+      t.setAttribute('y', n.y + n.h / 2);
+      t.setAttribute('text-anchor', onLeft ? 'start' : 'end');
+      t.setAttribute('dominant-baseline', 'central');
+      t.setAttribute('font-size', '11'); t.setAttribute('fill', '#999');
+      t.textContent = n.label.length > 22 ? n.label.slice(0, 22) + '…' : n.label;
+      g.appendChild(t);
+    });
+  }
+
+  /* ── Build a flow diagram from whatever the wallet actually has ────────── */
+  function buildFlow(data) {
+    /* Polymarket wallets get a trade-flow view: wallet → market → outcome. */
+    if (data.polymarket && data.polymarket.length) {
+      var byMarket = {};
+      data.polymarket.forEach(function (a) {
+        var k = a.title || a.slug || a.eventSlug || 'Unknown market';
+        var v = Math.abs(Number(a.usdcSize) || 0);
+        if (!v) return;
+        if (!byMarket[k]) byMarket[k] = { buy: 0, sell: 0 };
+        var side = (a.side || a.type || '').toUpperCase();
+        if (side === 'SELL' || side === 'REDEEM') byMarket[k].sell += v; else byMarket[k].buy += v;
+      });
+
+      var top = Object.keys(byMarket)
+        .map(function (k) { return { k: k, v: byMarket[k].buy + byMarket[k].sell, d: byMarket[k] }; })
+        .sort(function (a, b) { return b.v - a.v; })
+        .slice(0, 6);
+
+      if (!top.length) return null;
+
+      var nodes = [{ label: short(data.address), col: 0, color: '#c9b87a' }];
+      var links = [];
+      var iIn = nodes.push({ label: 'Deployed', col: 2, color: '#3d7fd6' }) - 1;
+      var iOut = nodes.push({ label: 'Realised', col: 2, color: '#00c47f' }) - 1;
+
+      top.forEach(function (m) {
+        var mi = nodes.push({ label: m.k, col: 1, color: '#6b6b6b' }) - 1;
+        links.push({ source: 0, target: mi, value: m.v, color: 'rgba(201,184,122,0.20)' });
+        if (m.d.buy)  links.push({ source: mi, target: iIn,  value: m.d.buy,  color: 'rgba(61,127,214,0.28)' });
+        if (m.d.sell) links.push({ source: mi, target: iOut, value: m.d.sell, color: 'rgba(0,196,127,0.28)' });
+      });
+
+      return { nodes: nodes, links: links,
+               note: 'Top ' + top.length + ' Polymarket positions by USDC volume' };
+    }
+
+    /* Solana wallets get an allocation view: wallet → token → class. */
+    var toks = (data.tokens || []).filter(function (t) { return t.amount > 0; });
+    if (!toks.length) return null;
+
+    /* Weight by USD where we can (SOL and stables), else by raw amount so the
+       diagram still has proportion. */
+    var weighted = toks.map(function (t) {
+      var w = t.isSol && solUsd ? t.amount * solUsd : t.isStable ? t.amount : null;
+      return { t: t, w: w, est: w == null };
+    });
+    var known = weighted.filter(function (x) { return x.w != null; });
+    var fallback = known.length ? known.reduce(function (s, x) { return s + x.w; }, 0) / known.length : 1;
+    weighted.forEach(function (x) { if (x.w == null) x.w = fallback * 0.35; });
+
+    weighted.sort(function (a, b) { return b.w - a.w; });
+    var top2 = weighted.slice(0, 7);
+    if (!top2.length) return null;
+
+    var n2 = [{ label: short(data.address), col: 0, color: '#c9b87a' }];
+    var l2 = [];
+    var iStable = n2.push({ label: 'Stablecoins', col: 2, color: '#00c47f' }) - 1;
+    var iVol    = n2.push({ label: 'Volatile',    col: 2, color: '#3d7fd6' }) - 1;
+
+    top2.forEach(function (x) {
+      var ti = n2.push({ label: x.t.symbol, col: 1, color: '#6b6b6b' }) - 1;
+      l2.push({ source: 0, target: ti, value: x.w, color: 'rgba(201,184,122,0.20)' });
+      l2.push({
+        source: ti, target: x.t.isStable ? iStable : iVol, value: x.w,
+        color: x.t.isStable ? 'rgba(0,196,127,0.28)' : 'rgba(61,127,214,0.28)'
+      });
+    });
+
+    return { nodes: n2, links: l2,
+             note: 'Allocation across top ' + top2.length + ' holdings' +
+                   (known.length < weighted.length ? ' · unpriced tokens estimated' : '') };
+  }
+
+  /* ── Render ───────────────────────────────────────────────────────────── */
+  function render(data) {
+    document.getElementById('empty').classList.add('hidden');
+    document.getElementById('results').classList.remove('hidden');
+
+    document.getElementById('r-addr').textContent = data.address;
+    var kindEl = document.getElementById('r-kind');
+    kindEl.textContent = data.kind === 'solana' ? 'Solana' : data.kind === 'evm' ? 'Polygon / EVM' : 'Unknown';
+
+    var ex = document.getElementById('r-explorer');
+    ex.href = data.kind === 'solana'
+      ? 'https://solscan.io/account/' + data.address
+      : 'https://polygonscan.com/address/' + data.address;
+
+    /* Tiles */
+    var solKnown = data.kind === 'solana' && data.sol != null;
+    document.getElementById('t-sol').textContent = solKnown ? amt(data.sol) : '—';
+    document.getElementById('t-sol-usd').textContent =
+      solKnown ? (solUsd ? usd(data.sol * solUsd) : 'SOL')
+               : (data.kind === 'solana' ? 'Balance unavailable' : 'Not a Solana address');
+
+    document.getElementById('t-stable').textContent =
+      (data.kind === 'solana' && !data.tokensFailed) ? usd(data.stableTotal) : '—';
+    document.getElementById('t-tokens').textContent =
+      data.tokensFailed ? '—' : (data.tokens.length || '0');
+
+    /* Token table */
+    var tb = document.getElementById('token-body');
+    tb.innerHTML = data.tokens.length
+      ? data.tokens.slice(0, 40).map(function (t) {
+          return '<tr>' +
+            '<td style="color:#fff;font-weight:500;">' + esc(t.symbol) +
+              (t.isStable ? ' <span class="pill pill-green" style="margin-left:5px;">Stable</span>' : '') + '</td>' +
+            '<td class="t-right num">' + amt(t.amount) + '</td>' +
+            '<td class="addr-mono" style="font-size:11px;">' + esc(t.mint ? short(t.mint) : '—') + '</td>' +
+          '</tr>';
+        }).join('')
+      : '<tr><td colspan="3" class="state' + (data.tokensFailed ? ' state-error' : '') + '">' +
+        (data.tokensFailed
+          ? 'Token balances are unavailable — the public Solana RPC is not currently serving getTokenAccountsByOwner. The SOL balance above is still accurate.'
+          : data.kind === 'solana' ? 'No token balances found.' : 'Token scan applies to Solana addresses only.') + '</td></tr>';
+
+    /* LP positions */
+    var lb = document.getElementById('lp-body');
+    lb.innerHTML = data.lpPositions.length
+      ? data.lpPositions.slice(0, 25).map(function (p) {
+          var pool = p.poolName || (p.tokenASymbol && p.tokenBSymbol ? p.tokenASymbol + ' / ' + p.tokenBSymbol : short(p.poolAddress));
+          var range = (p.tickLowerPrice != null && p.tickUpperPrice != null)
+            ? Number(p.tickLowerPrice).toFixed(4) + ' – ' + Number(p.tickUpperPrice).toFixed(4) : '—';
+          var inRange = p.inRange != null ? p.inRange : null;
+          return '<tr>' +
+            '<td style="color:#fff;font-weight:500;">' + esc(pool) + '</td>' +
+            '<td class="t-right num">' + amt(Number(p.liquidity) || 0) + '</td>' +
+            '<td class="t-right num" style="color:#999;">' + esc(range) + '</td>' +
+            '<td class="t-right">' + (inRange == null ? '—' :
+              '<span class="pill ' + (inRange ? 'pill-green' : 'pill-gray') + '">' + (inRange ? 'In range' : 'Out') + '</span>') + '</td>' +
+          '</tr>';
+        }).join('')
+      : '<tr><td colspan="4" class="state">' +
+        (data.kind === 'solana' ? 'No open Cain LP positions for this wallet.' : 'LP positions apply to Solana addresses only.') + '</td></tr>';
+
+    /* Polymarket */
+    var pb = document.getElementById('pm-body');
+    pb.innerHTML = data.polymarket.length
+      ? data.polymarket.slice(0, 50).map(function (a) {
+          var when = a.timestamp ? new Date(a.timestamp * 1000).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+          var type = (a.side || a.type || '—').toUpperCase();
+          var cls  = type === 'BUY' ? 'pill-green' : (type === 'SELL' || type === 'REDEEM') ? 'pill-red' : 'pill-gray';
+          return '<tr>' +
+            '<td style="color:#777;">' + esc(when) + '</td>' +
+            '<td><span class="pill ' + cls + '">' + esc(type) + '</span></td>' +
+            '<td style="max-width:340px;overflow:hidden;text-overflow:ellipsis;">' + esc(a.title || a.slug || '—') + '</td>' +
+            '<td class="t-right num">' + amt(Number(a.size) || 0) + '</td>' +
+            '<td class="t-right num">' + usd(Number(a.usdcSize) || 0) + '</td>' +
+          '</tr>';
+        }).join('')
+      : '<tr><td colspan="5" class="state">' +
+        (data.kind === 'evm' ? 'No Polymarket activity for this wallet.' : 'Polymarket history applies to 0x… addresses only.') + '</td></tr>';
+
+    /* Flow diagram */
+    var flow = buildFlow(data);
+    if (flow) drawSankey(flow.nodes, flow.links, flow.note);
+    else drawSankey([], [], 'No positions or balances to chart.');
+
+    if (data.errors && data.errors.length) showErr(data.errors.join(' · '));
+  }
+
+  /* ── Search ───────────────────────────────────────────────────────────── */
+  var lastData = null;
+
+  function search(address) {
+    address = (address || '').trim();
+    if (!address) return;
+
+    if (!SOL_RE.test(address) && !EVM_RE.test(address)) {
+      showErr('That does not look like a Solana or 0x… address.');
+      return;
+    }
+    showErr('');
+    document.getElementById('addr').value = address;
+    document.getElementById('scan-meta').textContent = 'Scanning…';
+
+    /* Update the URL so a scan is linkable, without adding history entries. */
+    try { history.replaceState(null, '', '?address=' + encodeURIComponent(address)); } catch (e) {}
+
+    var t0 = Date.now();
+
+    /* One orchestrated call. CainData batches the Solana reads into a single
+       RPC POST and caches the whole result, so re-searching is free. */
+    CainData.scanWallet(address).then(function (data) {
+      lastData = data;
+      render(data);
+      var st = CainData.stats();
+      document.getElementById('scan-meta').textContent =
+        'Scanned in ' + (Date.now() - t0) + 'ms · ' + st.cached + ' cached responses';
+    }).catch(function (e) {
+      showErr('Scan failed — ' + e.message);
+      document.getElementById('scan-meta').textContent = 'Scan failed';
+    });
+  }
+
+  /* ── Wiring ───────────────────────────────────────────────────────────── */
+  document.getElementById('go-btn').addEventListener('click', function () {
+    search(document.getElementById('addr').value);
+  });
+  document.getElementById('addr').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') search(this.value);
+  });
+  document.querySelectorAll('.chip').forEach(function (c) {
+    c.addEventListener('click', function () { search(c.dataset.addr); });
+  });
+  document.getElementById('mine-btn').addEventListener('click', function () {
+    if (window.cainWallet && window.cainWallet.address) search(window.cainWallet.address);
+  });
+
+  /* Offer "Use my wallet" once the widget reports a connection. */
+  function syncMine() {
+    var has = !!(window.cainWallet && window.cainWallet.address);
+    document.getElementById('mine-btn').classList.toggle('hidden', !has);
+  }
+  window.addEventListener('cain:connected', syncMine);
+  window.addEventListener('cain:disconnected', syncMine);
+  setTimeout(syncMine, 1200);
+
+  /* Redraw the flow diagram on resize — it is sized from its container. */
+  var rt;
+  window.addEventListener('resize', function () {
+    clearTimeout(rt);
+    rt = setTimeout(function () {
+      if (!lastData) return;
+      var f = buildFlow(lastData);
+      if (f) drawSankey(f.nodes, f.links, f.note);
+    }, 200);
+  });
+
+  /* SOL price for USD conversion — one cached call, shared with other pages. */
+  CainData.prices(['solana']).then(function (r) {
+    if (r && r[0]) {
+      solUsd = r[0].current_price;
+      if (lastData) render(lastData);
+    }
+  }).catch(function () {});
+
+  /* Gold proxy tile (market context). */
+  CainData.goldProxy().then(function (g) {
+    if (!g) return;
+    document.getElementById('t-gold').textContent = '$' + Number(g.lastPrice).toFixed(2);
+    var ch = parseFloat(g.priceChangePercent);
+    var el = document.getElementById('t-gold-chg');
+    el.textContent = (ch >= 0 ? '+' : '') + ch.toFixed(2) + '% · 24h · proxy';
+    el.className = 'stat-sub ' + (ch >= 0 ? 'up' : 'down');
+  }).catch(function () {});
+
+  /* Deep link: /WalletSearch.html?address=… */
+  var qs = new URLSearchParams(location.search).get('address');
+  if (qs) search(qs);
+})();
+</script>
+</body></html>
