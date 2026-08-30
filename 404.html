@@ -1,0 +1,162 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+<link rel="icon" type="image/png" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<link rel="apple-touch-icon" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Page not found — Cain Finance</title>
+<!-- An error page must never be indexed, and must not be treated as a canonical
+     destination for the URL that failed. -->
+<meta name="robots" content="noindex,follow">
+<meta name="description" content="That page could not be found on Cain Finance.">
+<meta name="theme-color" content="#060606">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/cain-page.css">
+<link rel="stylesheet" href="/wallet-widget/dist/wallet-widget.css">
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans: ['Inter', 'sans-serif'] },
+    colors: {
+      'cain-black':'#060606','cain-sidebar':'#0a0a0a','cain-gray-text':'#888888',
+      'cain-border':'rgba(255,255,255,0.1)','cain-green':'#00ffa3'
+    }
+  } } }
+</script>
+<style>
+  .nf-wrap { max-width: 720px; margin: 0 auto; padding: 60px 0 20px; text-align: center; }
+  .nf-code {
+    font-size: 84px; font-weight: 700; letter-spacing: -3px; line-height: 1;
+    background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.25) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    margin: 0 0 10px;
+  }
+  .nf-title { font-size: 21px; font-weight: 600; margin: 0 0 10px; letter-spacing: -0.3px; }
+  .nf-sub { font-size: 13px; color: #777; margin: 0 auto 8px; max-width: 460px; line-height: 1.6; }
+  .nf-path {
+    display: inline-block; max-width: 100%; margin: 6px 0 26px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px;
+    color: #888; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+    padding: 6px 12px; word-break: break-all;
+  }
+  .nf-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 44px; }
+  .nf-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: left; }
+  @media (max-width: 700px) { .nf-links { grid-template-columns: 1fr; } .nf-code { font-size: 64px; } }
+  .nf-card {
+    display: block; text-decoration: none; color: inherit; padding: 16px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px; transition: border-color .16s, background .16s, transform .16s;
+  }
+  .nf-card:hover { border-color: rgba(0,255,163,0.35); background: rgba(255,255,255,0.05); transform: translateY(-2px); }
+  .nf-card b { display: block; font-size: 13.5px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+  .nf-card span { font-size: 11.5px; color: #777; line-height: 1.5; }
+</style>
+</head>
+<body class="h-full font-sans">
+<div class="app-shell">
+
+<!-- Sidebar: shared markup lives in /js/sidebar.js — edit that one file to update every page. -->
+<script src="/js/sidebar.js"></script>
+
+<main class="cain-main dot-grid">
+
+  <header class="cain-topbar">
+    <div style="flex:1;"><span class="src-tag">Page not found</span></div>
+    <div class="cain-topbar-actions">
+      <div class="cain-divider"></div>
+      <div style="position:relative;"><div id="cain-wallet-root"></div></div>
+    </div>
+  </header>
+
+  <div class="cain-scroll">
+    <div class="cain-content">
+
+      <div class="nf-wrap">
+        <p class="nf-code">404</p>
+        <h1 class="nf-title">That page doesn't exist</h1>
+        <p class="nf-sub">The link may be out of date, or the address might have a typo.</p>
+        <div class="nf-path" id="nf-path">&nbsp;</div>
+
+        <div class="nf-actions">
+          <a class="btn btn-primary" href="/">Back to Earn</a>
+          <a class="btn" href="/YieldLeaderboard.html">Browse yields</a>
+        </div>
+
+        <div class="nf-links">
+          <a class="nf-card" href="/Swap.html">
+            <b>Swap</b><span>Trade tokens on Solana at the best available route.</span>
+          </a>
+          <a class="nf-card" href="/Lending.html">
+            <b>Lending</b><span>Earn on deposits or borrow against collateral.</span>
+          </a>
+          <a class="nf-card" href="/Portfolio.html">
+            <b>Portfolio</b><span>Your open liquidity positions in one view.</span>
+          </a>
+          <a class="nf-card" href="/YieldLeaderboard.html">
+            <b>Yield Leaderboard</b><span>Live APY across every tracked Solana pool.</span>
+          </a>
+          <a class="nf-card" href="/MarketInfo.html">
+            <b>Market Info</b><span>Prices, Solana TVL and stablecoin float.</span>
+          </a>
+          <a class="nf-card" href="/Tokenomics.html">
+            <b>CAIN Token</b><span>Supply, utility and the protocol roadmap.</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Static nav: real links in the served HTML so crawlers can follow them
+           without executing /js/sidebar.js. -->
+      <footer class="site-footer">
+        <div class="site-footer-cols">
+          <div>
+            <h4>Product</h4>
+            <a href="/">Earn</a>
+            <a href="/Swap.html">Swap</a>
+            <a href="/Lending.html">Lending</a>
+            <a href="/Portfolio.html">Portfolio</a>
+          </div>
+          <div>
+            <h4>Vaults</h4>
+            <a href="/sp500lp.html">S&amp;P 500 LP</a>
+            <a href="/solusdcvault.html">SOL / USDC</a>
+            <a href="/YieldLeaderboard.html">Yield Leaderboard</a>
+            <a href="/MarketInfo.html">Market Info</a>
+          </div>
+          <div>
+            <h4>Explore</h4>
+            <a href="/WalletSearch.html">Wallet Search</a>
+            <a href="/Tokenomics.html">CAIN Token</a>
+            <a href="/blog.html">Blog</a>
+            <a href="/shop.html">Shop</a>
+          </div>
+          <div>
+            <h4>Legal</h4>
+            <a href="/termsofservice.html">Terms of Service</a>
+            <a href="/Riskdisclosurestatement.html">Risk Disclosure</a>
+            <a href="/Earnterms.html">Earn Terms</a>
+            <a href="/BorrowTerms.html">Borrow Terms</a>
+          </div>
+        </div>
+        <div class="site-footer-base">
+          <span>Cain Finance — LP yield aggregator on Solana.</span>
+          <a href="/faucet.html" style="display:inline;">Faucet</a>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+</main>
+</div>
+
+<script src="/wallet-widget/dist/cain-wallet-widget.iife.js" defer></script>
+<script>
+  /* Show the address that failed — helps a user spot their own typo, and makes
+     a mis-pasted link obvious. Escaped, never written as HTML. */
+  (function () {
+    var el = document.getElementById('nf-path');
+    var p = location.pathname + location.search;
+    if (!p || p === '/') { el.style.display = 'none'; return; }
+    el.textContent = p.length > 120 ? p.slice(0, 120) + '…' : p;
+  })();
+</script>
+</body></html>

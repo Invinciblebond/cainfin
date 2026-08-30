@@ -52,6 +52,7 @@ const EXCLUDED = {
   'potential.html':                      'draft landing page — near-duplicate of the homepage',
   'potentialnewlandingpage.html':        'draft landing page — near-duplicate of the homepage',
   'Profile.html':                        'empty file (0 bytes)',
+  '404.html':                            'error page — served by not_found_handling, must never be indexed',
   '72890.html':                          'ad creative, 728x90',
   'cain-finance-160x600.html':           'ad creative',
   'cain-finance-300x250.html':           'ad creative',

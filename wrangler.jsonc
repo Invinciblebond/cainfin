@@ -6,7 +6,11 @@
     "enabled": true
   },
   "assets": {
-    "directory": "."
+    "directory": ".",
+    // Serve /404.html (with a real 404 status) for any unmatched path.
+    // Without this the platform returns an empty body, so a mistyped or dead
+    // link lands the visitor on a blank white page with no way back.
+    "not_found_handling": "404-page"
   },
   "compatibility_flags": [
     "nodejs_compat"
