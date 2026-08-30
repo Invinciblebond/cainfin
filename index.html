@@ -48,6 +48,39 @@
   }
 
   
+
+  .link-strip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 7px 12px;
+    border-radius: 14px;
+    background: rgba(59,130,246,0.10);
+    border: 1px solid rgba(59,130,246,0.25);
+    backdrop-filter: blur(12px);
+  }
+  .link-strip::-webkit-scrollbar { display: none; }
+  .ls-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    color: #c3d6f7;
+    transition: background-color 0.2s, color 0.2s;
+  }
+  .ls-chip:hover { background: rgba(59,130,246,0.20); color: #fff; }
+  .ls-chip svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .ls-div { flex-shrink: 0; width: 1px; height: 16px; background: rgba(255,255,255,0.15); margin: 0 4px; }
+
   .cain-content {
     width: 100%;
     max-width: 1180px;
@@ -714,6 +747,58 @@
           </div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="cain-content px-8 mb-10">
+    <div class="link-strip">
+      <a class="ls-chip" href="/termsofservice.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        <span>Terms of Service</span>
+      </a>
+      <a class="ls-chip" href="/termsandconditions.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        <span>Terms &amp; Conditions</span>
+      </a>
+      <a class="ls-chip" href="/Riskdisclosurestatement.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        <span>Risk Disclosure</span>
+      </a>
+      <a class="ls-chip" href="/BorrowTerms.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        <span>Borrow Terms</span>
+      </a>
+      <a class="ls-chip" href="/Earnterms.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        <span>Earn Terms</span>
+      </a>
+
+      <span class="ls-div"></span>
+
+      <a class="ls-chip" href="https://github.com/Invinciblebond/cainfin" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 .5C5.73.5.5 5.73.5 12a11.5 11.5 0 007.86 10.92c.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 015.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.26 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.68.8.56A11.5 11.5 0 0023.5 12C23.5 5.73 18.27.5 12 .5z"/></svg>
+        <span>GitHub</span>
+      </a>
+      <a class="ls-chip" href="https://x.com/CainFinance" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.65l-5.22-6.82-5.96 6.82H1.68l7.73-8.84L1.25 2.25h6.82l4.71 6.23 5.46-6.23zm-1.16 17.52h1.83L7.01 4.13H5.05l12.03 15.64z"/></svg>
+        <span>X</span>
+      </a>
+      <a class="ls-chip" href="https://discord.gg/k8STqQgFuM" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.32 4.37A19.8 19.8 0 0015.43 2.9a13.9 13.9 0 00-.63 1.28 18.3 18.3 0 00-5.6 0A13.7 13.7 0 008.56 2.9a19.7 19.7 0 00-4.89 1.47C.57 8.98-.27 13.47.15 17.9a19.9 19.9 0 006.04 3.05c.49-.66.92-1.37 1.29-2.11-.71-.27-1.39-.6-2.03-.98.17-.13.34-.26.5-.4a14.2 14.2 0 0012.1 0c.16.14.33.28.5.4-.64.39-1.32.72-2.03.99.37.74.8 1.44 1.29 2.11a19.8 19.8 0 006.04-3.05c.5-5.15-.84-9.6-3.53-13.54zM8.02 15.2c-1.18 0-2.16-1.08-2.16-2.41 0-1.33.95-2.42 2.16-2.42s2.18 1.09 2.16 2.42c0 1.33-.95 2.41-2.16 2.41zm7.96 0c-1.18 0-2.16-1.08-2.16-2.41 0-1.33.95-2.42 2.16-2.42s2.18 1.09 2.16 2.42c0 1.33-.95 2.41-2.16 2.41z"/></svg>
+        <span>Discord</span>
+      </a>
+      <a class="ls-chip" href="https://www.reddit.com/r/CainFinanceSolana/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M24 11.78a2.6 2.6 0 00-4.4-1.86 12.8 12.8 0 00-6.96-2.22l1.18-5.56 3.87.82a1.85 1.85 0 103.7-.13 1.85 1.85 0 00-3.5-.83l-4.32-.92a.45.45 0 00-.54.35L11.7 7.7a12.8 12.8 0 00-7.06 2.22 2.6 2.6 0 10-2.87 4.26 5.2 5.2 0 00-.06.8c0 4.07 4.74 7.38 10.58 7.38s10.58-3.31 10.58-7.38a5 5 0 00-.06-.79A2.6 2.6 0 0024 11.78zM6.2 13.64a1.85 1.85 0 113.7 0 1.85 1.85 0 01-3.7 0zm10.34 4.9a6.94 6.94 0 01-4.55 1.41 6.94 6.94 0 01-4.55-1.42.45.45 0 01.63-.64 6.1 6.1 0 003.92 1.16 6.1 6.1 0 003.92-1.17.45.45 0 11.63.65zm-.34-3.05a1.85 1.85 0 111.85-1.85 1.85 1.85 0 01-1.85 1.85z"/></svg>
+        <span>Reddit</span>
+      </a>
+      <a class="ls-chip" href="/Tokenomics.html">
+        <svg viewBox="0 0 100 100" fill="currentColor" stroke="none"><polygon points="50,7 89,28.5 89,71.5 50,93 11,71.5 11,28.5"/></svg>
+        <span>Cain Token</span>
+      </a>
+      <a class="ls-chip" href="mailto:cain@cain.finance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+        <span>Contact</span>
+      </a>
     </div>
   </section>
 
