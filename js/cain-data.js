@@ -21,29 +21,32 @@
   'use strict';
 
   /* ── Endpoints ──────────────────────────────────────────────────────────── */
-  /* Solana reads go through Cain's own Cloudflare Worker, same as js/lend.js —
-     it holds the private RPC key in env.SOLANA_RPC_URL and allowlists methods,
-     so no endpoint or key is exposed in the browser.
-     Fallback is the WalletConnect endpoint, which is what index.html already
-     uses for balances today. Public api.mainnet-beta.solana.com is deliberately
-     NOT here: it rejects browser origins with 403, and it also blocks
-     Cloudflare egress IPs, which is what the worker's own DEFAULT_RPC hits. */
+  /* READ-ONLY RPC DATA ENDPOINTS — none of these connect a wallet.
+     Wallet connection is handled entirely by /wallet-widget (Solana Wallet
+     Adapter + Wallet Standard auto-discovery); WalletConnect the protocol is
+     not used anywhere in this project. The reown/walletconnect host below is
+     just a public JSON-RPC provider for getBalance / getTokenAccountsByOwner,
+     and it is the same one index.html reads balances from.
+
+     Public api.mainnet-beta.solana.com is deliberately NOT here: it rejects
+     browser origins with 403, and it also blocks Cloudflare egress IPs, which
+     is what the worker's own DEFAULT_RPC fallback hits. */
   var CAIN_PROXY   = 'https://cain-jupiter-proxy.doffecul.workers.dev';
   var CAIN_RPC     = CAIN_PROXY + '/rpc';
-  var WC_RPC       = 'https://rpc.walletconnect.org/v1/?chainId=solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp&projectId=1b446d8bfbc011456375ba38db461186';
+  var PUBLIC_RPC   = 'https://rpc.walletconnect.org/v1/?chainId=solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp&projectId=1b446d8bfbc011456375ba38db461186';
 
   /* Override in a page (before this script) to point at your own RPC —
      matches the window.CAIN_SOLANA_RPC_URL seam the rest of the site uses. */
   var RPC_OVERRIDE = window.CAIN_SOLANA_RPC_URL || null;
 
-  /* WalletConnect leads because it is the path index.html already uses for
-     balances and is the one currently serving. The worker proxy is the better
+  /* The public JSON-RPC host leads because it is the path index.html already
+     reads balances from and is the one currently serving. The worker proxy is the better
      home for this long term — it keeps the RPC key server-side — but it needs
      `wrangler secret put SOLANA_RPC_URL` set on the deployment first; until
      then it answers 403 because its DEFAULT_RPC fallback blocks Cloudflare
      egress IPs. Once that secret is set, put CAIN_RPC first here.
      Reordered at runtime as endpoints prove themselves. */
-  var RPC_ORDER = [WC_RPC, CAIN_RPC];
+  var RPC_ORDER = [PUBLIC_RPC, CAIN_RPC];
   var JUP_TOKENS   = 'https://lite-api.jup.ag/tokens/v2/search';   /* replaces the retired tokens.jup.ag */
   var BYREAL_API   = 'https://cainfin.onrender.com';
   var POOLS_PROXY  = 'https://infofetchworker.doffecul.workers.dev';
@@ -110,8 +113,8 @@
    *   Cain worker /rpc  — PREFERRED. Holds the private RPC key server-side and
    *     allowlists methods. Reads `body.method`, so it takes ONE call per POST;
    *     sending an array gets "RPC method not allowed: undefined".
-   *   WalletConnect     — fallback, and what index.html uses today. Accepts a
-   *     real JSON-RPC array, so the whole wallet read fits in ONE POST.
+   *   Public JSON-RPC   — fallback, and what index.html reads balances from
+   *     today. Accepts a real JSON-RPC array, so several reads fit in ONE POST.
    *
    * Either way a wallet scan is at most two Solana requests, and both are
    * deduped and cached by key.
@@ -174,7 +177,7 @@
     });
   }
 
-  /* Several calls in one WalletConnect POST. Not usable against the worker. */
+  /* Several calls in one POST to the public host. Not usable against the worker. */
   function rpcBatch(calls, ttl) {
     var body = calls.map(function (c, i) {
       return { jsonrpc: '2.0', id: i + 1, method: c.method, params: c.params };
@@ -182,7 +185,7 @@
     var key = 'RPCB ' + JSON.stringify(body);
 
     return cached(key, ttl || 30e3, function () {
-      return postRpc(WC_RPC, body).then(function (res) {
+      return postRpc(PUBLIC_RPC, body).then(function (res) {
         var arr = res.body;
         if (!Array.isArray(arr)) throw new Error('Solana RPC HTTP ' + res.status);
         var byId = {};

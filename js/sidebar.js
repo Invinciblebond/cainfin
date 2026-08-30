@@ -82,10 +82,15 @@
     },
     {
       label: 'More',
-      href: '/More.html',
-      /* The hub page and everything it links to all light up "More". */
-      match: ['/More.html', '/YieldLeaderboard.html', '/MarketInfo.html', '/WalletSearch.html'],
-      icon: '<path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>'
+      /* No href — opens a submenu in place rather than navigating. Any child
+         page being open lights "More" up and expands the group. */
+      match: ['/YieldLeaderboard.html', '/MarketInfo.html', '/WalletSearch.html'],
+      icon: '<path d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>',
+      children: [
+        { label: 'Yield Leaderboard', href: '/YieldLeaderboard.html', match: ['/YieldLeaderboard.html'] },
+        { label: 'Market Info',       href: '/MarketInfo.html',       match: ['/MarketInfo.html'] },
+        { label: 'User Wallet Search', href: '/WalletSearch.html',    match: ['/WalletSearch.html'] }
+      ]
     }
   ];
 
@@ -120,10 +125,29 @@
     return '<svg class="' + cls + '" fill="none" stroke="currentColor" viewBox="0 0 24 24">' + inner + '</svg>';
   }
 
+  var CHEVRON = '<svg class="sidebar-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+
   function renderRow(item) {
     var active = isActive(item);
     var body = svg(item.icon, active ? ICON_ACTIVE : ICON_IDLE) +
                '<span class="sidebar-label">' + item.label + '</span>';
+
+    /* Group with children — a button that opens a submenu, never a link. */
+    if (item.children && item.children.length) {
+      var openNow = active;   /* a child page is open, so start expanded */
+      var links = item.children.map(function (c) {
+        return '<a class="sidebar-sublink' + (isActive(c) ? ' active' : '') +
+               '" href="' + c.href + '">' + c.label + '</a>';
+      }).join('');
+
+      return '<div class="sidebar-group' + (openNow ? ' open' : '') + '">' +
+               '<button type="button" class="sidebar-grouphead w-full ' +
+                 (active ? ROW_ACTIVE : ROW_IDLE) + '" aria-expanded="' + (openNow ? 'true' : 'false') + '">' +
+                 body + CHEVRON +
+               '</button>' +
+               '<div class="sidebar-submenu">' + links + '</div>' +
+             '</div>';
+    }
 
     if (!item.href) {
       return '<button type="button" class="w-full ' + ROW_IDLE + '"' +
@@ -187,7 +211,26 @@ rows +
     '#sidebar.collapsed nav a,#sidebar.collapsed nav button,#sidebar.collapsed #sidebar-toggle{justify-content:center;gap:0;padding-left:0;padding-right:0}',
     '#sidebar.collapsed .p-4 > .flex.items-center{justify-content:center}',
     '#collapse-icon{transition:transform .25s ease}',
-    '#sidebar.collapsed #collapse-icon{transform:rotate(180deg)}'
+    '#sidebar.collapsed #collapse-icon{transform:rotate(180deg)}',
+
+    /* ── "More" submenu ── */
+    '#sidebar .sidebar-group{position:relative}',
+    '#sidebar .sidebar-grouphead{cursor:pointer;border:none;background:transparent;font:inherit;text-align:left}',
+    '#sidebar .sidebar-caret{width:14px;height:14px;margin-left:auto;flex-shrink:0;opacity:.6;transition:transform .2s ease}',
+    '#sidebar .sidebar-group.open .sidebar-caret{transform:rotate(180deg)}',
+    '#sidebar .sidebar-submenu{display:none;margin:2px 0 4px}',
+    '#sidebar .sidebar-group.open .sidebar-submenu{display:block}',
+    '#sidebar .sidebar-sublink{display:block;padding:7px 12px 7px 42px;font-size:12px;color:#888;text-decoration:none;border-radius:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background .12s,color .12s}',
+    '#sidebar .sidebar-sublink:hover{background:rgba(255,255,255,0.04);color:#fff}',
+    '#sidebar .sidebar-sublink.active{background:rgba(255,255,255,0.05);color:#fff;font-weight:500}',
+
+    /* Collapsed rail: the submenu becomes a flyout panel beside the icon. */
+    '#sidebar.collapsed .sidebar-caret{display:none}',
+    '#sidebar.collapsed .sidebar-group.open .sidebar-submenu{display:block;position:absolute;left:calc(100% + 6px);top:0;min-width:200px;padding:6px;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.7);z-index:300}',
+    '#sidebar.collapsed .sidebar-sublink{padding-left:12px}',
+    /* The rail clips with overflow:hidden for the collapse animation, which
+       would also clip the flyout — lift it only while one is open. */
+    '#sidebar.submenu-open{overflow:visible}'
   ].join('\n');
 
   function injectCSS() {
@@ -204,8 +247,74 @@ rows +
      still define their own identical toggleSidebar() are harmless either way. */
   window.toggleSidebar = function () {
     var el = document.getElementById('sidebar');
-    if (el) el.classList.toggle('collapsed');
+    if (!el) return;
+    el.classList.toggle('collapsed');
+    /* Never leave a submenu hanging open across a collapse/expand. */
+    if (window.__cainCloseSidebarGroups) window.__cainCloseSidebarGroups();
   };
+
+  /* Submenu groups: click the head to expand/collapse. When the rail is
+     collapsed the submenu renders as a flyout, so an outside click or Escape
+     should dismiss it. */
+  function wireGroups() {
+    var groups = document.querySelectorAll('#sidebar .sidebar-group');
+    if (!groups.length) return;
+
+    /* Mirror "any group open" onto #sidebar so the CSS can lift overflow. */
+    function syncOverflow() {
+      var el = document.getElementById('sidebar');
+      if (!el) return;
+      var anyOpen = !!el.querySelector('.sidebar-group.open');
+      el.classList.toggle('submenu-open', anyOpen);
+    }
+
+    function setOpen(g, open) {
+      g.classList.toggle('open', open);
+      var h = g.querySelector('.sidebar-grouphead');
+      if (h) h.setAttribute('aria-expanded', open ? 'true' : 'false');
+      syncOverflow();
+    }
+    window.__cainCloseSidebarGroups = function () {
+      groups.forEach(function (g) { setOpen(g, false); });
+    };
+
+    groups.forEach(function (g) {
+      var head = g.querySelector('.sidebar-grouphead');
+      if (!head) return;
+      head.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setOpen(g, !g.classList.contains('open'));
+      });
+    });
+
+    /* A group auto-opens when one of its pages is active, but that should not
+       fire a flyout open on a collapsed rail at page load. */
+    var el0 = document.getElementById('sidebar');
+    if (el0 && el0.classList.contains('collapsed')) {
+      groups.forEach(function (g) { setOpen(g, false); });
+    }
+    syncOverflow();
+
+    document.addEventListener('click', function (e) {
+      groups.forEach(function (g) {
+        if (!g.classList.contains('open')) return;
+        /* Leave an expanded group alone unless the rail is collapsed — inline
+           submenus are not overlays and should stay put while browsing. */
+        var el = document.getElementById('sidebar');
+        if (!el || !el.classList.contains('collapsed')) return;
+        if (!g.contains(e.target)) setOpen(g, false);
+      });
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      groups.forEach(function (g) {
+        var el = document.getElementById('sidebar');
+        if (el && el.classList.contains('collapsed')) setOpen(g, false);
+      });
+    });
+  }
 
   /* Auto-collapse on narrow viewports (previously only index.html did this). */
   function wireResponsive() {
@@ -213,7 +322,9 @@ rows +
     var mq = window.matchMedia('(max-width:768px)');
     function apply() {
       var el = document.getElementById('sidebar');
-      if (el) el.classList.toggle('collapsed', mq.matches);
+      if (!el) return;
+      el.classList.toggle('collapsed', mq.matches);
+      if (mq.matches && window.__cainCloseSidebarGroups) window.__cainCloseSidebarGroups();
     }
     if (mq.addEventListener) mq.addEventListener('change', apply);
     else if (mq.addListener) mq.addListener(apply);
@@ -232,5 +343,6 @@ rows +
     if (mount) mount.outerHTML = renderSidebar();
   }
 
+  wireGroups();
   wireResponsive();
 })();
