@@ -100,22 +100,29 @@
   var ICON_ACTIVE  = 'w-5 h-5 text-cain-gray-text flex-shrink-0';
   var ICON_IDLE    = 'w-5 h-5 flex-shrink-0';
 
-  /* ── Which item is the current page? ────────────────────────────────────── */
-  function currentPath() {
-    var p = location.pathname;
-    /* Treat a bare directory URL as the index it serves. */
-    if (p === '' || p.charAt(p.length - 1) === '/') p = p + 'index.html';
+  /* ── Which item is the current page? ──────────────────────────────────────
+   * Production serves this site from Cloudflare with .html stripped, so the
+   * live URL for Swap.html is /Swap — hitting /Swap.html 307-redirects to it.
+   * A local static server serves the opposite. Both forms therefore have to
+   * resolve to the same key, or the active item silently stops highlighting
+   * on one of the two.
+   * ------------------------------------------------------------------------ */
+  function normalisePath(p) {
+    p = String(p || '').toLowerCase();
+    var q = p.indexOf('?'); if (q !== -1) p = p.slice(0, q);
+    var h = p.indexOf('#'); if (h !== -1) p = p.slice(0, h);
+    if (p.charAt(0) !== '/') p = '/' + p;
+    if (p.length > 1 && p.charAt(p.length - 1) === '/') p = p.slice(0, -1);
+    if (p.slice(-5) === '.html') p = p.slice(0, -5);
+    if (p === '' || p === '/index') p = '/';
     return p;
   }
 
   function isActive(item) {
     if (!item.match) return false;
-    var p = currentPath();
+    var here = normalisePath(location.pathname);
     for (var i = 0; i < item.match.length; i++) {
-      var m = item.match[i];
-      if (m === '/') m = '/index.html';
-      /* Case-insensitive: some hosts normalise casing on static assets. */
-      if (m.toLowerCase() === p.toLowerCase()) return true;
+      if (normalisePath(item.match[i]) === here) return true;
     }
     return false;
   }

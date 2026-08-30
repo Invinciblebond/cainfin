@@ -417,3 +417,34 @@ body {
     transition: background .15s !important;
   }
   .wallet-adapter-modal-button-close:hover { background: rgba(255,255,255,0.1) !important; }
+
+/* ── Site footer ────────────────────────────────────────────────────────────
+ * Real <a href> links in the served HTML. The sidebar is injected by
+ * /js/sidebar.js, so without this a crawler fetching the page source finds no
+ * internal links at all — Googlebot does render JS, but that is a delayed
+ * second pass and a poor thing to depend on for discovery.
+ * ========================================================================== */
+.site-footer {
+  margin-top: 56px; padding-top: 26px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+.site-footer-cols {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 26px;
+}
+@media (max-width: 760px) { .site-footer-cols { grid-template-columns: repeat(2, 1fr); } }
+.site-footer h4 {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+  color: #555; font-weight: 600; margin: 0 0 11px;
+}
+.site-footer a {
+  display: block; font-size: 12.5px; color: #888; text-decoration: none;
+  padding: 4px 0; transition: color .14s;
+}
+.site-footer a:hover { color: #fff; }
+.site-footer-base {
+  margin-top: 26px; padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px;
+  font-size: 11px; color: #4a4a4a;
+}
