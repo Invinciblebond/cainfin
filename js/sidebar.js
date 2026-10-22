@@ -58,8 +58,8 @@
     },
     {
       label: 'Token',
-      href: '/Tokenomics.html',
-      match: ['/Tokenomics.html'],
+      href: '/CainToken.html',
+      match: ['/CainToken.html'],
       icon: '<path d="M7 7h.01M2 2h8l12 12-8 8L2 10V2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>'
     },
     {

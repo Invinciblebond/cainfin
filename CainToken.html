@@ -1,0 +1,1225 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+<link rel="icon" type="image/png" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<link rel="apple-touch-icon" href="https://i.postimg.cc/nLK3nxCS/6fff818b-2da5-4e55-8836-05ca193b7ffb-removebg-preview.png">
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>$CAIN — Cain Token</title>
+<meta property="og:url" content="https://cain.finance/CainToken">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Cain Finance">
+<meta property="og:title" content="$CAIN — Cain Token">
+<meta property="og:description" content="Live $CAIN price, market cap, Fees Earnt, holders and the developer's position — read straight from Solana.">
+<meta property="og:image" content="https://i.ibb.co/q4kwtJH/ee973fab-08f0-4e27-b170-ecb250a9e08a.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="$CAIN — Cain Token">
+<meta name="twitter:description" content="Live $CAIN price, market cap, Fees Earnt, holders and the developer's position — read straight from Solana.">
+<meta name="twitter:image" content="https://i.ibb.co/q4kwtJH/ee973fab-08f0-4e27-b170-ecb250a9e08a.png">
+<link rel="canonical" href="https://cain.finance/CainToken">
+<meta name="description" content="Live $CAIN price, market cap, Fees Earnt, holders and the developer's position — read straight from Solana.">
+<meta name="theme-color" content="#060606">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/cain-page.css">
+<style id="cain-token-css">
+/* $CAIN live price — styles for this page only (same tokens as the rest of Cain). */
+[hidden] { display: none !important; }
+
+.ct-num { font-variant-numeric: tabular-nums; }
+.ct-up { color: #00ffa3 !important; }
+.ct-down { color: #ff6b6b !important; }
+.ct-muted { color: #888; }
+.ct-mono { font-family: 'SF Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+/* ── Shared atoms ──────────────────────────────────────────────────────── */
+.ct-label {
+  font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: .07em;
+  border-bottom: 1px dashed rgba(255,255,255,.15); padding-bottom: 3px; width: fit-content;
+}
+.ct-mini-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+
+.ct-chip {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px; padding: 3px 8px; border-radius: 999px;
+  background: rgba(0,255,163,.13); color: #00ffa3; white-space: nowrap;
+}
+.ct-chip::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+[data-status="delayed"] .ct-chip, .ct-chip[data-status="delayed"] { background: rgba(245,165,36,.14); color: #f5a524; }
+[data-status="prelaunch"] .ct-chip, .ct-chip[data-status="prelaunch"],
+[data-status="loading"] .ct-chip, .ct-chip[data-status="loading"],
+[data-status="error"] .ct-chip, .ct-chip[data-status="error"] { background: rgba(255,255,255,.07); color: #9a9a9a; }
+
+.ct-tag {
+  font-family: 'SF Mono', ui-monospace, Menlo, monospace; font-size: 11px; color: #888;
+  background: rgba(26,26,26,.6); border: 1px solid rgba(255,255,255,.1); border-radius: 6px;
+  padding: 3px 9px; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap;
+}
+.ct-addr {
+  display: inline-flex; align-items: center; gap: 6px; font-family: 'SF Mono', ui-monospace, Menlo, monospace;
+  font-size: 11px; color: #a8a8a8; background: rgba(26,26,26,.6); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 6px; padding: 3px 4px 3px 9px;
+}
+.ct-copy {
+  width: 22px; height: 22px; border-radius: 5px; background: rgba(255,255,255,.08); border: 0; color: #a8a8a8;
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer; position: relative;
+}
+.ct-copy:hover { color: #fff; background: rgba(255,255,255,.14); }
+.ct-copy.is-copied { color: #00ffa3; }
+.ct-copy.is-copied::after {
+  content: 'Copied'; position: absolute; left: calc(100% + 8px); top: 50%; transform: translateY(-50%);
+  font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; color: #00ffa3; white-space: nowrap;
+}
+
+.ct-token-mark {
+  width: 28px; height: 28px; border-radius: 50%; background: #c9b87a; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.ct-token-mark svg { width: 58%; height: 58%; }
+
+.ct-link { color: #6b9eff; text-decoration: underline; text-decoration-style: dotted; font-weight: 500; }
+.ct-link:hover { color: #9dbdff; }
+
+.ct-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 999px;
+  font-size: 14px; font-weight: 700; text-decoration: none; padding: 11px 26px; white-space: nowrap;
+  transition: background .15s, box-shadow .15s, transform .15s; border: 0; cursor: pointer; font-family: inherit;
+}
+.ct-btn-green { background: #00ffa3; color: #04140d; box-shadow: 0 0 0 1px rgba(0,255,163,.4), 0 8px 24px rgba(0,255,163,.16); }
+.ct-btn-green:hover { background: #33ffb6; box-shadow: 0 0 0 1px rgba(0,255,163,.55), 0 10px 28px rgba(0,255,163,.24); }
+.ct-btn-white { background: #fff; color: #000; }
+.ct-btn-white:hover { background: #e9e9e9; }
+.ct-btn-ghost { background: rgba(255,255,255,.06); color: #fff; border: 1px solid rgba(255,255,255,.1); font-weight: 600; }
+.ct-btn-ghost:hover { background: rgba(255,255,255,.12); }
+.ct-btn[disabled] { background: rgba(0,255,163,.12); color: #7fd9b6; box-shadow: inset 0 0 0 1px rgba(0,255,163,.25); cursor: default; }
+.ct-btn svg { width: 14px; height: 14px; }
+
+/* Surfaces lifted from the vault cards / vault table on the index page */
+.ct-glass {
+  border-radius: 32px; border: 1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,.015) 40%, rgba(10,10,12,.18) 100%);
+  box-shadow: inset 1.5px 1.5px 1px 0 rgba(255,255,255,.22), inset -1px -1px 1px 1px rgba(255,255,255,.08), 0 6px 18px rgba(0,0,0,.35);
+}
+.ct-tile {
+  border-radius: 20px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.03);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07);
+}
+.ct-panel {
+  border-radius: 24px; border: 1px solid rgba(255,255,255,.06); overflow: hidden;
+  background-color: rgba(14,14,16,.5);
+  background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px); background-size: 24px 24px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.10), inset 0 0 0 1px rgba(255,255,255,.04);
+}
+.ct-panel-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  padding: 16px 20px 16px 24px; border-bottom: 1px solid rgba(255,255,255,.06); background: rgba(255,255,255,.015);
+}
+.ct-panel-head h2 { margin: 0; font-size: 15px; font-weight: 600; }
+
+.ct-seg { display: inline-flex; padding: 3px; border-radius: 12px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); }
+.ct-seg button {
+  padding: 6px 12px; border-radius: 9px; border: 0; background: transparent; color: #8a8a8a;
+  font: inherit; font-size: 12px; font-weight: 500; cursor: pointer;
+}
+.ct-seg button:hover { color: #fff; }
+.ct-seg button[aria-pressed="true"] { background: rgba(255,255,255,.12); color: #fff; }
+
+.ct-big { display: flex; align-items: baseline; gap: 10px; }
+.ct-big b { font-size: 72px; font-weight: 700; letter-spacing: -3px; line-height: .95; }
+.ct-big span { font-size: 24px; font-weight: 600; color: #888; }
+.ct-sub-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ct-sub-row .ct-usd { font-size: 15px; color: #c4c4c4; font-weight: 500; }
+.ct-sub-row .ct-delta { font-size: 12px; color: #00ffa3; font-weight: 500; }
+/* ── Token page ───────────────────────────────────────────────────────── */
+.ct-page { display: flex; flex-direction: column; gap: 36px; font-variant-numeric: tabular-nums; }
+.ct-page-head { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.ct-page-head .ct-token-mark { width: 60px; height: 60px; border-radius: 16px; box-shadow: inset 1.5px 1.5px 1px rgba(255,255,255,.35), 0 6px 18px rgba(0,0,0,.35); }
+.ct-page-head h1 { margin: 0; font-size: 36px; font-weight: 700; letter-spacing: -1px; line-height: 1.05; }
+.ct-page-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; color: #888; }
+.ct-warn {
+  padding: 12px 16px; border-radius: 14px; font-size: 13px; line-height: 1.5;
+  background: rgba(245,165,36,.08); border: 1px solid rgba(245,165,36,.25); color: #f5c06b;
+}
+
+.ct-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
+.ct-split > div { padding: 40px; display: flex; flex-direction: column; gap: 14px; }
+.ct-split > div:first-child { border-right: 1px solid rgba(255,255,255,.07); }
+.ct-split .ct-big b { font-size: 76px; }
+.ct-split .ct-price-big { font-size: 52px; font-weight: 700; letter-spacing: -2px; line-height: 1; overflow-wrap: anywhere; }
+.ct-change-pill { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: rgba(0,255,163,.12); color: #00ffa3; }
+.ct-change-pill.ct-down { background: rgba(255,107,107,.12); }
+.ct-bar { display: flex; height: 6px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,.06); max-width: 460px; margin-top: 8px; gap: 2px; }
+.ct-bar i { display: block; border-radius: 999px; background: #00ffa3; }
+.ct-bar i + i { background: rgba(0,255,163,.32); }
+.ct-legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 12px; color: #888; }
+.ct-legend span { display: flex; align-items: center; gap: 6px; }
+.ct-legend em { font-style: normal; color: #e2e2e2; font-weight: 500; }
+.ct-legend .ct-sw { width: 8px; height: 8px; border-radius: 50%; background: #00ffa3; }
+.ct-legend .ct-sw.dim { background: rgba(0,255,163,.32); }
+.ct-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-top: 18px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.06); }
+.ct-two b { display: block; font-size: 30px; font-weight: 700; line-height: 1; letter-spacing: -1px; }
+@media (max-width: 760px) {
+  .ct-split > div { padding: 28px; }
+  .ct-split > div:first-child { border-right: 0; border-bottom: 1px solid rgba(255,255,255,.07); }
+  .ct-split .ct-big b { font-size: 56px; }
+  .ct-split .ct-price-big { font-size: 38px; }
+}
+
+/* Fees Earnt chart */
+.ct-chart-legend { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.ct-chart-legend span { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #888; }
+.ct-chart-legend .ln { width: 16px; height: 2px; border-radius: 1px; background: #00ffa3; }
+.ct-chart-legend .br { width: 8px; height: 10px; border-radius: 1px; background: rgba(0,255,163,.35); }
+.ct-chart-body { position: relative; height: 400px; }
+.ct-chart-info { position: absolute; left: 24px; top: 16px; right: 110px; font-size: 11px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ct-chart-info b { color: #00ffa3; font-weight: 600; }
+.ct-chart-info em { font-style: normal; color: #e6e6e6; }
+.ct-chart-plot { position: absolute; left: 24px; right: 110px; top: 46px; bottom: 38px; cursor: crosshair; }
+.ct-chart-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ct-chart-area { fill: rgba(0,255,163,.08); }
+.ct-chart-line { fill: none; stroke: #00ffa3; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.ct-chart-bars span { position: absolute; background: rgba(0,255,163,.22); border-radius: 1.5px; }
+.ct-chart-last { position: absolute; left: 0; right: 0; border-top: 1px dashed rgba(255,255,255,.35); }
+.ct-chart-cross { position: absolute; top: 0; bottom: 0; border-left: 1px solid rgba(255,255,255,.18); }
+.ct-chart-dot { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: #00ffa3; box-shadow: 0 0 0 4px rgba(0,255,163,.2); transform: translate(-50%, -50%); }
+.ct-chart-yaxis { position: absolute; right: 0; width: 110px; top: 46px; bottom: 38px; }
+.ct-chart-yaxis span { position: absolute; left: 12px; transform: translateY(-50%); font-size: 11px; color: #888; white-space: nowrap; }
+.ct-chart-yaxis .ct-chart-lasttag { position: absolute; left: 6px; right: auto; color: #04140d; transform: translateY(-50%); padding: 3px 7px; border-radius: 6px; background: #00ffa3; color: #04140d; font-size: 11px; font-weight: 700; white-space: nowrap; z-index: 1; }
+.ct-chart-xaxis { position: absolute; left: 24px; right: 110px; bottom: 12px; height: 16px; }
+.ct-chart-xaxis span { position: absolute; transform: translateX(-50%); font-size: 11px; color: #888; white-space: nowrap; }
+.ct-chart-empty { position: absolute; inset: 46px 110px 38px 24px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 13px; color: #888; line-height: 1.6; padding: 0 20px; }
+@media (max-width: 640px) {
+  .ct-chart-body { height: 320px; }
+  .ct-chart-plot, .ct-chart-xaxis { right: 84px; left: 14px; }
+  .ct-chart-yaxis { width: 84px; }
+  .ct-chart-info { left: 14px; right: 14px; }
+}
+
+/* Stat tiles */
+.ct-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 12px; }
+.ct-stats .ct-tile { padding: 22px; }
+.ct-stats .ct-v { font-size: 28px; font-weight: 700; letter-spacing: -1px; margin-top: 14px; line-height: 1; overflow-wrap: anywhere; }
+.ct-stats .ct-s { font-size: 12px; color: #888; margin-top: 8px; }
+.ct-stats .ct-meter { height: 4px; border-radius: 999px; background: rgba(255,255,255,.08); margin-top: 10px; overflow: hidden; }
+.ct-stats .ct-meter i { display: block; height: 100%; background: #00ffa3; border-radius: 999px; }
+
+/* Where the money goes */
+.ct-h2 { margin: 0; font-size: 36px; font-weight: 700; letter-spacing: -1px; }
+.ct-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 14px; }
+.ct-card { padding: 32px; display: flex; flex-direction: column; gap: 14px; }
+.ct-card-icon { width: 48px; height: 48px; border-radius: 14px; background: rgba(0,255,163,.1); border: 1px solid rgba(0,255,163,.22); display: flex; align-items: center; justify-content: center; }
+.ct-card-icon svg { width: 22px; height: 22px; }
+.ct-card h3 { margin: 4px 0 0; font-size: 19px; font-weight: 700; }
+.ct-card p { margin: 0; font-size: 13px; line-height: 1.7; color: #9a9a9a; }
+.ct-card-stat { margin-top: auto; padding-top: 14px; }
+.ct-card-stat b { display: block; font-size: 30px; font-weight: 700; line-height: 1; color: #00ffa3; }
+.ct-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  padding: 14px 14px 14px 20px; border-radius: 16px; background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08);
+}
+.ct-banner-icon { width: 36px; height: 36px; border-radius: 12px; background: rgba(0,255,163,.1); border: 1px solid rgba(0,255,163,.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* Developer position + verify */
+.ct-duo { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 14px; }
+.ct-dev { padding: 28px; border-radius: 24px; display: flex; flex-direction: column; gap: 20px; }
+.ct-dev h2 { margin: 0; font-size: 19px; font-weight: 700; }
+.ct-dev-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.ct-dev-grid b { display: block; font-size: 24px; font-weight: 700; line-height: 1; letter-spacing: -.5px; }
+.ct-verify table { width: 100%; border-collapse: collapse; }
+.ct-verify td { padding: 16px 24px; vertical-align: middle; }
+.ct-verify tr + tr td { border-top: 1px solid rgba(255,255,255,.05); }
+.ct-verify .ct-vname { font-size: 14px; font-weight: 600; color: #e8e8e8; }
+.ct-verify .ct-vaddr { font-family: 'SF Mono', ui-monospace, Menlo, monospace; font-size: 12px; color: #888; margin-top: 4px; word-break: break-all; }
+.ct-verify td:last-child { text-align: right; white-space: nowrap; font-size: 13px; }
+.ct-verify-foot { padding: 14px 24px 18px; font-size: 12px; color: #888; line-height: 1.6; border-top: 1px solid rgba(255,255,255,.05); }
+.ct-page-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.06); font-size: 12px; color: #888; }
+@media (max-width: 560px) {
+  .ct-split > div { padding: 22px; }
+  .ct-big b, .ct-split .ct-big b { font-size: 48px; letter-spacing: -2px; }
+  .ct-split .ct-price-big { font-size: 32px; letter-spacing: -1px; }
+  .ct-two b { font-size: 22px; }
+  .ct-dev { padding: 22px; }
+  .ct-dev-grid b { font-size: 19px; }
+  .ct-card { padding: 24px; }
+  .ct-h2, .ct-page-head h1 { font-size: 28px; }
+  .ct-verify td { padding: 14px 16px; }
+  .ct-topbar-status .ct-topbar-text { display: none; }
+}
+</style>
+<link rel="stylesheet" href="/wallet-widget/dist/wallet-widget.css">
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans: ['Inter', 'sans-serif'] },
+    colors: {
+      'cain-black':'#060606','cain-sidebar':'#0a0a0a','cain-gray-text':'#888888',
+      'cain-border':'rgba(255,255,255,0.1)','cain-green':'#00ffa3'
+    }
+  } } }
+</script>
+<style>
+  .cain-main.dot-grid { background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px); background-size: 24px 24px; }
+  .ct-topbar-status { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #888; }
+</style>
+</head>
+<body class="h-full font-sans">
+<div class="app-shell">
+
+<!-- Sidebar: shared markup lives in /js/sidebar.js — edit that one file to update every page. -->
+<script src="/js/sidebar.js"></script>
+
+<main class="cain-main dot-grid">
+
+  <header class="cain-topbar">
+    <div class="ct-topbar-status" data-ct-status>
+      <span class="ct-chip" data-ct="statusLabel">Loading</span>
+      <span class="ct-topbar-text" data-ct="footLine">Connecting…</span>
+    </div>
+    <div class="cain-topbar-actions">
+      <div class="cain-divider"></div>
+      <div style="position:relative;"><div id="cain-wallet-root"></div></div>
+    </div>
+  </header>
+
+  <div class="cain-scroll">
+    <div class="cain-content ct-page" data-ct-status>
+
+      <!-- Header -->
+      <header class="ct-page-head">
+        <div style="display:flex;align-items:center;gap:18px;">
+          <span class="ct-token-mark" aria-hidden="true">
+            <svg viewBox="0 0 100 100"><polygon points="50,7 89,28.5 89,71.5 50,93 11,71.5 11,28.5" fill="#1a1610"></polygon></svg>
+          </span>
+          <div>
+            <h1>$CAIN</h1>
+            <div class="ct-page-meta">
+              <span>Cain Token on Solana</span>
+              <span class="ct-tag">pump.fun</span>
+              <span class="ct-addr" data-ct-title="mint" title="B2E46Lwe9E3NorYf4DVWRzeuPNjKUNwrh38bNz2Jpump">
+                <span data-ct="mintShort">B2E46L…z2Jpump</span>
+                <button type="button" class="ct-copy" data-ct-copy="mint" aria-label="Copy token address">
+                  <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" stroke-width="2"></rect><path d="M5 15V5a2 2 0 012-2h10" stroke-width="2" stroke-linecap="round"></path></svg>
+                </button>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <a class="ct-btn ct-btn-ghost" data-ct-href="pumpfunHref" href="https://pump.fun/coin/B2E46Lwe9E3NorYf4DVWRzeuPNjKUNwrh38bNz2Jpump" target="_blank" rel="noopener">View on pump.fun
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          </a>
+          <a class="ct-btn ct-btn-green" data-ct-href="pumpfunHref" href="https://pump.fun/coin/B2E46Lwe9E3NorYf4DVWRzeuPNjKUNwrh38bNz2Jpump" target="_blank" rel="noopener">Buy $CAIN</a>
+        </div>
+      </header>
+
+      <div class="ct-warn" data-ct-show="isPre" hidden>
+        $CAIN hasn't launched yet. Live numbers appear here the moment it starts trading on pump.fun.
+      </div>
+
+      <!-- Fees Earnt + price -->
+      <section class="ct-glass ct-split" aria-label="Fees Earnt and price">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="ct-label">Fees Earnt</span>
+            <span class="ct-chip" data-ct="statusLabel">Loading</span>
+          </div>
+          <div class="ct-big"><b data-ct="feesSol">—</b><span>SOL</span></div>
+          <div class="ct-sub-row">
+            <span class="ct-usd" data-ct="feesUsdApprox"></span>
+            <span class="ct-delta" data-ct="fees24hLine"></span>
+          </div>
+          <div class="ct-bar" aria-hidden="true"><i data-ct-width="claimedPct" style="width:0%"></i><i data-ct-width="unclaimedPct" style="width:0%"></i></div>
+          <div class="ct-legend">
+            <span><i class="ct-sw"></i>Claimed <em data-ct="claimedSol">—</em></span>
+            <span><i class="ct-sw dim"></i>In fee vault <em data-ct="unclaimedSol">—</em></span>
+          </div>
+          <p style="margin:10px 0 0;font-size:14px;color:#a8a8a8;line-height:1.65;max-width:460px;">Creator fees $CAIN has earnt on pump.fun: 0.30% of every trade on the bonding curve, read live from the creator fee vault.</p>
+        </div>
+        <div>
+          <span class="ct-label">Price</span>
+          <div class="ct-price-big" data-ct="priceUsd">—</div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span class="ct-change-pill" data-ct="change24hLong" data-ct-tone="changeTone" data-ct-show="hasChange" hidden></span>
+            <span class="ct-mono" style="font-size:12px;color:#888;" data-ct="priceSol">—</span>
+          </div>
+          <div class="ct-two">
+            <div><div class="ct-mini-label">Market cap</div><b data-ct="mcapUsd">—</b></div>
+            <div><div class="ct-mini-label">24h volume</div><b data-ct="volume24h">—</b></div>
+          </div>
+          <div style="font-size:12px;color:#888;margin-top:auto;padding-top:10px;" data-ct-show="hasLastTrade" hidden>
+            Last trade <span data-ct="lastTradeTime"></span> · <span style="color:#e2e2e2;" data-ct="lastTradeLine"></span> ·
+            <a class="ct-link" data-ct-href="lastTradeHref" href="https://solscan.io" target="_blank" rel="noopener">check it</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Fees Earnt chart -->
+      <section class="ct-panel" aria-label="Fees Earnt over time" data-ct-feeschart>
+        <div class="ct-panel-head">
+          <div class="ct-chart-legend">
+            <h2>Fees Earnt</h2>
+            <span><i class="ln"></i>Total fees earnt</span>
+            <span><i class="br"></i>Fees per period (est. from volume)</span>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="ct-seg" role="group" aria-label="Currency">
+              <button type="button" data-unit="sol">SOL</button>
+              <button type="button" data-unit="usd">USD</button>
+            </div>
+            <div class="ct-seg" role="group" aria-label="Time range">
+              <button type="button" data-range="6h">6h</button>
+              <button type="button" data-range="24h">24h</button>
+              <button type="button" data-range="7d">7d</button>
+              <button type="button" data-range="all">All time</button>
+            </div>
+          </div>
+        </div>
+        <div class="ct-chart-body">
+          <div class="ct-chart-info"></div>
+          <div class="ct-chart-plot">
+            <div class="ct-chart-bars"></div>
+            <svg class="ct-chart-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"></svg>
+            <div class="ct-chart-last" hidden></div>
+            <div class="ct-chart-cross" hidden></div>
+            <div class="ct-chart-dot" hidden></div>
+          </div>
+          <div class="ct-chart-yaxis"></div>
+          <div class="ct-chart-yaxis" style="pointer-events:none;"><span class="ct-chart-lasttag" hidden></span></div>
+          <div class="ct-chart-xaxis"></div>
+          <div class="ct-chart-empty" hidden>The Fees Earnt chart appears once $CAIN has trading history on GeckoTerminal.</div>
+        </div>
+      </section>
+
+      <!-- Stats -->
+      <section class="ct-stats" aria-label="Token stats">
+        <div class="ct-tile"><div class="ct-label">Market cap</div><div class="ct-v" data-ct="mcapUsd">—</div><div class="ct-s" data-ct="solUsd"></div></div>
+        <div class="ct-tile"><div class="ct-label">Holders</div><div class="ct-v" data-ct="holders">—</div><div class="ct-s">via Jupiter</div></div>
+        <div class="ct-tile"><div class="ct-label">Dev holding</div><div class="ct-v" data-ct="devBalanceCompact">—</div><div class="ct-s"><span data-ct="devPctLine">—</span> · <span data-ct="devSells" data-ct-tone="devSellTone">—</span></div></div>
+        <div class="ct-tile"><div class="ct-label">Curve progress</div><div class="ct-v" data-ct="curvePct">—</div><div class="ct-meter"><i data-ct-width="curveWidth" style="width:0%"></i></div><div class="ct-s" data-ct="curveSub">to PumpSwap graduation</div></div>
+        <div class="ct-tile"><div class="ct-label">Volume 24h</div><div class="ct-v" data-ct="volume24h">—</div><div class="ct-s" data-ct="buysSells">24h trades</div></div>
+        <div class="ct-tile"><div class="ct-label">Fees earnt 24h</div><div class="ct-v ct-up" data-ct="fees24hSol">—</div><div class="ct-s" data-ct="fees24hUsd">0.30% of every trade on the curve</div></div>
+        <div class="ct-tile"><div class="ct-label">All-time high</div><div class="ct-v" data-ct="ath">—</div><div class="ct-s" data-ct="athWhen">market cap</div></div>
+        <div class="ct-tile"><div class="ct-label">Top 10 holders</div><div class="ct-v" data-ct="top10">—</div><div class="ct-s">share of supply, via Jupiter</div></div>
+      </section>
+
+      <!-- Where the money goes -->
+      <section aria-label="Where the money goes" style="display:flex;flex-direction:column;gap:20px;padding-top:12px;">
+        <h2 class="ct-h2">Where the money goes</h2>
+        <div class="ct-cards">
+          <div class="ct-glass ct-card">
+            <div class="ct-card-icon"><svg fill="none" stroke="#00ffa3" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke-width="1.8"></circle><path d="M12 3v9l6.5 6.5" stroke-width="1.8" stroke-linecap="round"></path></svg></div>
+            <h3>100% launched on pump.fun</h3>
+            <p>No presale, no team allocation, no private round. The full 1,000,000,000 supply started on pump.fun's bonding curve, open to everyone at the same price.</p>
+            <div class="ct-card-stat"><div class="ct-mini-label">On the curve at launch</div><b>100%</b></div>
+          </div>
+          <div class="ct-glass ct-card">
+            <div class="ct-card-icon"><svg fill="none" stroke="#00ffa3" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 0114.9-4M20 12a8 8 0 01-14.9 4" stroke-width="1.8" stroke-linecap="round"></path><path d="M19 3v5h-5M5 21v-5h5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+            <h3>A $CAIN bonus on every swap</h3>
+            <p>Every $CAIN swap in our Swap page receives a small bonus that is distributed at the end of each day. You will be given approximately 0.3% of your trade size in $CAIN tokens, at no extra cost. Think of it as an airdrop.</p>
+            <div class="ct-card-stat"><div class="ct-mini-label">Bonus per swap</div><b>≈0.3%</b></div>
+          </div>
+          <div class="ct-glass ct-card">
+            <div class="ct-card-icon"><svg fill="none" stroke="#00ffa3" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" stroke-width="1.8"></rect><path d="M8 11V7a4 4 0 018 0v4" stroke-width="1.8" stroke-linecap="round"></path></svg></div>
+            <h3>Cain Finance will never sell its stake</h3>
+            <p>The developer wallet is public. Its balance and sell count update live on this page, so you don't have to take our word for it.</p>
+            <div class="ct-card-stat"><div class="ct-mini-label">Dev sells since launch</div><b data-ct="devSellCount" data-ct-tone="devSellTone">—</b></div>
+          </div>
+        </div>
+        <div class="ct-banner">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="ct-banner-icon"><svg width="16" height="16" fill="none" stroke="#00ffa3" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></div>
+            <div>
+              <div style="font-size:14px;font-weight:600;">Swap on Cain, earn $CAIN</div>
+              <div style="font-size:12px;color:#888;margin-top:2px;">Every swap gets about 0.3% of its size back in $CAIN, paid out at the end of each day.</div>
+            </div>
+          </div>
+          <a class="ct-btn ct-btn-white" href="/Swap" style="padding:10px 24px;font-weight:600;">Go to Swap</a>
+        </div>
+      </section>
+
+      <!-- Developer position + verify -->
+      <section class="ct-duo" aria-label="Developer position and verification">
+        <div class="ct-tile ct-dev">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <h2>Developer position</h2>
+            <span class="ct-chip">Watched live</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span style="font-size:13px;color:#e2e2e2;font-weight:500;">Cain Finance</span>
+            <span class="ct-tag" style="text-transform:none;letter-spacing:0;" data-ct="devShort" data-ct-title="dev" title="4rN3svArAPgLQoLndnCxFJchyNyDzpodkfQTcFhUcCLc">4rN3sv…hUcCLc</span>
+            <a class="ct-link" style="font-size:12px;" data-ct-href="profileHref" href="https://pump.fun/profile/CainFinance" target="_blank" rel="noopener">@CainFinance on pump.fun ↗</a>
+          </div>
+          <div class="ct-dev-grid">
+            <div><div class="ct-mini-label">Holding now</div><b data-ct="devBalance">—</b></div>
+            <div><div class="ct-mini-label">Share of supply</div><b data-ct="devPct">—</b></div>
+            <div><div class="ct-mini-label">Bought since launch</div><b data-ct="devBought">—</b></div>
+            <div><div class="ct-mini-label">Sold since launch</div><b data-ct="devSold" data-ct-tone="devSellTone">—</b></div>
+          </div>
+          <p style="margin:0;font-size:13px;line-height:1.7;color:#9a9a9a;">If this wallet ever sells or moves $CAIN, this card shows it within minutes.</p>
+        </div>
+
+        <div class="ct-panel ct-verify">
+          <div class="ct-panel-head">
+            <h2>Verify it yourself</h2>
+            <span style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.06em;">On-chain</span>
+          </div>
+          <table>
+            <tbody>
+              <tr>
+                <td><div class="ct-vname">Token mint</div><div class="ct-vaddr" data-ct="mint">B2E46Lwe9E3NorYf4DVWRzeuPNjKUNwrh38bNz2Jpump</div></td>
+                <td><a class="ct-link" data-ct-href="solscanMint" href="https://solscan.io/token/B2E46Lwe9E3NorYf4DVWRzeuPNjKUNwrh38bNz2Jpump" target="_blank" rel="noopener">Solscan ↗</a></td>
+              </tr>
+              <tr>
+                <td><div class="ct-vname">Developer wallet</div><div class="ct-vaddr" data-ct="dev">4rN3svArAPgLQoLndnCxFJchyNyDzpodkfQTcFhUcCLc</div></td>
+                <td><a class="ct-link" data-ct-href="solscanDev" href="https://solscan.io/account/4rN3svArAPgLQoLndnCxFJchyNyDzpodkfQTcFhUcCLc" target="_blank" rel="noopener">Solscan ↗</a></td>
+              </tr>
+              <tr>
+                <td><div class="ct-vname">Creator fee vault</div><div class="ct-vaddr" data-ct="vault">9Sp2qa5ofEqrex5hkqGZk6oV51FEBzWohFpnYot9cD3A</div></td>
+                <td><a class="ct-link" data-ct-href="solscanVault" href="https://solscan.io/account/9Sp2qa5ofEqrex5hkqGZk6oV51FEBzWohFpnYot9cD3A" target="_blank" rel="noopener">Solscan ↗</a></td>
+              </tr>
+              <tr>
+                <td><div class="ct-vname">pump.fun bonding curve</div><div class="ct-vaddr" data-ct="curveAddr">GFwKK6wL8vji1kdSDZGWJMjmgoPuZQU5H6H5bQj8hhnZ</div></td>
+                <td><a class="ct-link" data-ct-href="solscanCurve" href="https://solscan.io/account/GFwKK6wL8vji1kdSDZGWJMjmgoPuZQU5H6H5bQj8hhnZ" target="_blank" rel="noopener">Solscan ↗</a></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="ct-verify-foot">Sources: Solana mainnet (price, Fees Earnt, dev wallet), Jupiter (holders, 24h stats), CoinGecko (SOL/USD), GeckoTerminal (chart history). The Fees Earnt total is exact; earlier chart points are estimated from trading volume × 0.30%.</div>
+        </div>
+      </section>
+
+      <footer class="ct-page-foot">
+        <span data-ct="updatedLine">Connecting to live data…</span>
+        <span>Crypto prices move fast. Read the <a class="ct-link" href="/Riskdisclosurestatement">Risk Disclosure</a> before buying.</span>
+      </footer>
+
+    </div>
+  </div>
+</main>
+</div>
+
+<script src="/wallet-widget/dist/cain-wallet-widget.iife.js" defer></script>
+<script id="cain-token-js">
+/* ============================================================================
+ * $CAIN live data — runs entirely in the browser, no backend and no API keys.
+ * ----------------------------------------------------------------------------
+ * Same keyless sources the rest of the site already uses:
+ *   • Solana reads   → WalletConnect public RPC (same WC_RPC as the wallet
+ *                       balance code on this page; window.CAIN_SOLANA_RPC_URL
+ *                       overrides it, like everywhere else)
+ *   • token stats    → Jupiter lite-api tokens/v2 (holders, top-10, 24h stats)
+ *   • SOL/USD        → CoinGecko, Binance as fallback
+ *   • price history  → GeckoTerminal public API (sparkline, ATH, Fees chart)
+ *
+ * What is read where
+ *   price / mcap / curve progress  pump.fun bonding-curve account (exact)
+ *   Fees Earnt                     creator fee vault balance + every claim the
+ *                                  creator has made (scanned from its own
+ *                                  transactions, cached in this browser)
+ *   dev holding / buys / sells     dev wallet token account + same scan
+ *
+ * Fills any element carrying data-ct / data-ct-* attributes on the page.
+ * ========================================================================== */
+(function () {
+  'use strict';
+
+  var CFG = {
+    /* $CAIN token address (CA). */
+    mint: 'B2E46Lwe9E3NorYf4DVWRzeuPNjKUNwrh38bNz2Jpump',
+    /* Cain Finance developer wallet (pump.fun @CainFinance). */
+    dev: '4rN3svArAPgLQoLndnCxFJchyNyDzpodkfQTcFhUcCLc',
+    profile: 'https://pump.fun/profile/CainFinance',
+    rpc: window.CAIN_SOLANA_RPC_URL ||
+      'https://rpc.walletconnect.org/v1/?chainId=solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp&projectId=1b446d8bfbc011456375ba38db461186'
+  };
+
+  var PUMP = '6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P';
+  var PUMP_AMM = 'pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA';
+  var WSOL = 'So11111111111111111111111111111111111111112';
+  var DECIMALS = 6;
+  var LAMPORTS = 1e9;
+  var INITIAL_REAL_TOKENS = 793100000000000;   /* raw, 6 decimals */
+  var RENT_EMPTY = 890880;                     /* lamports an empty vault keeps */
+  var FEE_RATE = 0.003;                        /* creator fee on the curve: 0.30% */
+
+  var FAST_MS = 20000;      /* on-chain price, vault, dev balance */
+  var SLOW_MS = 120000;     /* Jupiter stats, SOL/USD, claims scan, history */
+  var STALE_MS = 90000;
+  var SCAN_TX_PER_RUN = 60;
+
+  var S = {
+    addr: null,        /* { curve, vault, ammAuth, creator } */
+    chain: null,       /* on-chain reads */
+    jup: null,         /* Jupiter token record */
+    solUsd: null,
+    scan: null,        /* claims + dev buys/sells */
+    hist24: null,      /* GeckoTerminal 24h candles */
+    athUsd: null, athAt: null,
+    pool: null,
+    lastOkAt: 0, failed: false, prelaunch: false
+  };
+  var charts = [];
+
+  /* ── Small helpers ──────────────────────────────────────────────────── */
+  function isNum(v) { return typeof v === 'number' && isFinite(v); }
+  function each(sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }
+  function lsGet(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode */ } }
+
+  function getJSON(url, ms) {
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var t = ctrl ? setTimeout(function () { ctrl.abort(); }, ms || 8000) : null;
+    return fetch(url, { signal: ctrl && ctrl.signal, headers: { Accept: 'application/json' } }).then(function (r) {
+      if (t) clearTimeout(t);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+  function rpc(method, params) {
+    return fetch(CFG.rpc, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: method, params: params })
+    }).then(function (r) {
+      if (!r.ok) throw new Error(method + ' HTTP ' + r.status);
+      return r.json();
+    }).then(function (b) {
+      if (b.error) throw new Error(method + ': ' + (b.error.message || 'error'));
+      return b.result;
+    });
+  }
+  /* Run promise-returning jobs a few at a time (public RPCs dislike bursts). */
+  function pool(items, size, fn) {
+    var i = 0, out = new Array(items.length);
+    function next() {
+      if (i >= items.length) return Promise.resolve();
+      var k = i++;
+      return fn(items[k]).then(function (v) { out[k] = v; }, function () { out[k] = false; }).then(next);
+    }
+    var workers = [];
+    for (var w = 0; w < Math.min(size, items.length); w++) workers.push(next());
+    return Promise.all(workers).then(function () { return out; });
+  }
+
+  /* ── base58 / PDA (same derivation Solana uses) ─────────────────────── */
+  var B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  function b58decode(s) {
+    var n = 0n;
+    for (var i = 0; i < s.length; i++) {
+      var v = B58.indexOf(s[i]);
+      if (v < 0) throw new Error('bad base58');
+      n = n * 58n + BigInt(v);
+    }
+    var bytes = [];
+    while (n > 0n) { bytes.unshift(Number(n & 0xffn)); n >>= 8n; }
+    for (var j = 0; j < s.length && s[j] === '1'; j++) bytes.unshift(0);
+    var out = new Uint8Array(32);
+    out.set(bytes.slice(-32), 32 - Math.min(32, bytes.length));
+    return out;
+  }
+  function b58encode(bytes) {
+    var n = 0n, s = '';
+    for (var i = 0; i < bytes.length; i++) n = (n << 8n) + BigInt(bytes[i]);
+    while (n > 0n) { s = B58[Number(n % 58n)] + s; n /= 58n; }
+    for (var j = 0; j < bytes.length && bytes[j] === 0; j++) s = '1' + s;
+    return s;
+  }
+  var P = 2n ** 255n - 19n;
+  function modp(a) { var r = a % P; return r >= 0n ? r : r + P; }
+  function powp(b, e) { var r = 1n; b = modp(b); while (e > 0n) { if (e & 1n) r = (r * b) % P; b = (b * b) % P; e >>= 1n; } return r; }
+  var D = modp(-121665n * powp(121666n, P - 2n));
+  function onCurve(bytes) {
+    var y = 0n;
+    for (var i = 31; i >= 0; i--) y = (y << 8n) | BigInt(bytes[i]);
+    var sign = y >> 255n;
+    y &= (1n << 255n) - 1n;
+    if (y >= P) return false;
+    var y2 = (y * y) % P, u = modp(y2 - 1n), v = modp(D * y2 + 1n);
+    if (u === 0n) return sign === 0n;
+    return powp((u * powp(v, P - 2n)) % P, (P - 1n) / 2n) === 1n;
+  }
+  function pda(seeds, programId) {
+    var program = b58decode(programId);
+    var marker = new TextEncoder().encode('ProgramDerivedAddress');
+    var bump = 255;
+    function attempt() {
+      if (bump < 0) return Promise.reject(new Error('no PDA'));
+      var parts = seeds.concat([new Uint8Array([bump]), program, marker]);
+      var len = parts.reduce(function (s, p) { return s + p.length; }, 0);
+      var buf = new Uint8Array(len), o = 0;
+      parts.forEach(function (p) { buf.set(p, o); o += p.length; });
+      return crypto.subtle.digest('SHA-256', buf).then(function (h) {
+        h = new Uint8Array(h);
+        if (!onCurve(h)) return b58encode(h);
+        bump--;
+        return attempt();
+      });
+    }
+    return attempt();
+  }
+  var enc = function (s) { return new TextEncoder().encode(s); };
+  function deriveFor(creator) {
+    return Promise.all([
+      pda([enc('creator-vault'), b58decode(creator)], PUMP),
+      pda([enc('creator_vault'), b58decode(creator)], PUMP_AMM)
+    ]).then(function (r) { return { vault: r[0], ammAuth: r[1] }; });
+  }
+
+  /* ── pump.fun bonding curve account ─────────────────────────────────── */
+  function b64bytes(s) { var bin = atob(s), out = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i); return out; }
+  function u64(bytes, off) { return new DataView(bytes.buffer, bytes.byteOffset + off, 8).getBigUint64(0, true); }
+  function parseCurve(bytes) {
+    if (!bytes || bytes.length < 81) throw new Error('unexpected curve layout');
+    return {
+      vTok: Number(u64(bytes, 8)), vSol: Number(u64(bytes, 16)),
+      rTok: Number(u64(bytes, 24)), rSol: Number(u64(bytes, 32)),
+      supply: Number(u64(bytes, 40)) / Math.pow(10, DECIMALS),
+      complete: bytes[48] === 1,
+      creator: b58encode(bytes.slice(49, 81))
+    };
+  }
+
+  /* ── Transaction helpers (jsonParsed) ───────────────────────────────── */
+  function keysOf(tx) {
+    var k = (tx && tx.transaction && tx.transaction.message && tx.transaction.message.accountKeys) || [];
+    return k.map(function (x) { return typeof x === 'string' ? x : x.pubkey; });
+  }
+  function lamportDelta(tx, acct) {
+    if (!tx || !tx.meta) return 0;
+    var i = keysOf(tx).indexOf(acct);
+    return i < 0 ? 0 : (tx.meta.postBalances[i] || 0) - (tx.meta.preBalances[i] || 0);
+  }
+  function tokenDelta(tx, owner, mint) {
+    if (!tx || !tx.meta) return 0;
+    function sum(list) {
+      return (list || []).filter(function (b) { return b.owner === owner && b.mint === mint; })
+        .reduce(function (s, b) { return s + Number((b.uiTokenAmount && b.uiTokenAmount.amount) || 0); }, 0);
+    }
+    return sum(tx.meta.postTokenBalances) - sum(tx.meta.preTokenBalances);
+  }
+  function sumParsed(res) {
+    return ((res && res.value) || []).reduce(function (s, a) {
+      var info = a.account && a.account.data && a.account.data.parsed && a.account.data.parsed.info;
+      return s + Number((info && info.tokenAmount && info.tokenAmount.amount) || 0);
+    }, 0);
+  }
+
+  /* ── Fast loop: everything read straight from Solana ────────────────── */
+  function loadChain() {
+    var curveP = S.addr ? Promise.resolve(S.addr.curve) : pda([enc('bonding-curve'), b58decode(CFG.mint)], PUMP);
+    return curveP.then(function (curve) {
+      return rpc('getAccountInfo', [curve, { encoding: 'base64', commitment: 'confirmed' }]).then(function (info) {
+        if (!info || !info.value) { S.prelaunch = true; S.addr = S.addr || { curve: curve }; return null; }
+        S.prelaunch = false;
+        var c = parseCurve(b64bytes(info.value.data[0]));
+        var ready = (S.addr && S.addr.creator === c.creator) ? Promise.resolve(S.addr) :
+          deriveFor(c.creator).then(function (d) { return { curve: curve, vault: d.vault, ammAuth: d.ammAuth, creator: c.creator }; });
+        return ready.then(function (addr) {
+          S.addr = addr;
+          return Promise.all([
+            rpc('getBalance', [addr.vault, { commitment: 'confirmed' }]).catch(function () { return null; }),
+            c.complete ? rpc('getTokenAccountsByOwner', [addr.ammAuth, { mint: WSOL }, { encoding: 'jsonParsed' }]).catch(function () { return null; }) : null,
+            rpc('getTokenAccountsByOwner', [CFG.dev, { mint: CFG.mint }, { encoding: 'jsonParsed' }]).catch(function () { return null; }),
+            rpc('getSignaturesForAddress', [curve, { limit: 1 }]).catch(function () { return null; })
+          ]).then(function (r) {
+            var vault = r[0] && isNum(r[0].value) ? r[0].value : null;
+            var chain = {
+              curve: c,
+              unclaimedLamports: vault == null ? null : Math.max(0, vault - (vault > 0 ? RENT_EMPTY : 0)) + sumParsed(r[1]),
+              devRaw: r[2] ? sumParsed(r[2]) : null,
+              lastSig: r[3] && r[3][0] && !r[3][0].err ? r[3][0] : null,
+              at: Date.now()
+            };
+            var prevSig = S.chain && S.chain.lastTrade && S.chain.lastTrade.signature;
+            if (chain.lastSig && chain.lastSig.signature === prevSig) {
+              chain.lastTrade = S.chain.lastTrade;
+              return chain;
+            }
+            if (!chain.lastSig || c.complete) return chain;
+            return rpc('getTransaction', [chain.lastSig.signature, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }]).then(function (tx) {
+              var d = lamportDelta(tx, curve);
+              if (d) chain.lastTrade = { side: d > 0 ? 'buy' : 'sell', sol: Math.abs(d) / LAMPORTS, at: (chain.lastSig.blockTime || 0) * 1000, signature: chain.lastSig.signature };
+              return chain;
+            }, function () { return chain; });
+          });
+        });
+      });
+    }).then(function (chain) {
+      if (chain) S.chain = chain;
+      S.lastOkAt = Date.now();
+      S.failed = false;
+    }, function () {
+      S.failed = true;
+    });
+  }
+
+  /* ── Slow loop: Jupiter, SOL/USD, claims scan, history ──────────────── */
+  function loadJupiter() {
+    return getJSON('https://lite-api.jup.ag/tokens/v2/search?query=' + CFG.mint).then(function (list) {
+      var t = (Array.isArray(list) ? list : []).filter(function (x) { return x && x.id === CFG.mint; })[0];
+      if (t) S.jup = t;
+    }).catch(function () { /* optional */ });
+  }
+  function loadSolUsd() {
+    return getJSON('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd').then(function (r) {
+      if (r && r.solana && isNum(r.solana.usd)) S.solUsd = r.solana.usd; else throw new Error('no price');
+    }).catch(function () {
+      return getJSON('https://api.binance.com/api/v3/ticker/price?symbol=SOLUSDT').then(function (r) {
+        var p = Number(r && r.price);
+        if (isNum(p) && p > 0) S.solUsd = p;
+      }).catch(function () { /* keep the last value */ });
+    });
+  }
+
+  /* Claims and dev buys/sells. Fee claims are signed by the coin's creator,
+     so scanning the creator's (and the dev wallet's) own transactions is a
+     short list — not every trade. Progress is cached in this browser. */
+  function scanKey() { return 'cain_ct_scan_v1:' + CFG.mint; }
+  function scanWallets() {
+    if (!S.addr || !S.addr.vault) return Promise.resolve();
+    var st = lsGet(scanKey()) || { cursors: {}, claimed: 0, bought: 0, sold: 0, sells: 0 };
+    if (st.creator && st.creator !== S.addr.creator) st = { cursors: {}, claimed: 0, bought: 0, sold: 0, sells: 0 };
+    st.creator = S.addr.creator;
+    var since = S.jup && S.jup.createdAt ? Date.parse(S.jup.createdAt) / 1000 - 3600 : 0;
+    var wallets = S.addr.creator === CFG.dev ? [CFG.dev] : [S.addr.creator, CFG.dev];
+    var chain = Promise.resolve(), okAll = true;
+    wallets.forEach(function (w) {
+      chain = chain.then(function () {
+        var opts = { limit: 1000 };
+        if (st.cursors[w]) opts.until = st.cursors[w];
+        return rpc('getSignaturesForAddress', [w, opts]).then(function (sigs) {
+          sigs = (sigs || []).filter(function (s) { return !s.err && (!since || !s.blockTime || s.blockTime >= since); }).reverse();
+          var batch = sigs.slice(0, SCAN_TX_PER_RUN);
+          return pool(batch, 3, function (s) {
+            return rpc('getTransaction', [s.signature, { encoding: 'jsonParsed', maxSupportedTransactionVersion: 0 }]);
+          }).then(function (txs) {
+            for (var i = 0; i < batch.length; i++) {
+              var tx = txs[i];
+              if (tx === false) break;         /* request failed: stop here and retry next time */
+              if (tx && tx.meta && !tx.meta.err) {
+                var dv = lamportDelta(tx, S.addr.vault);
+                if (dv < 0) st.claimed += -dv;
+                var dw = tokenDelta(tx, S.addr.ammAuth, WSOL);
+                if (dw < 0) st.claimed += -dw;
+                if (w === CFG.dev) {
+                  var dd = tokenDelta(tx, CFG.dev, CFG.mint);
+                  if (dd > 0) st.bought += dd;
+                  if (dd < 0) { st.sold += -dd; st.sells += 1; }
+                }
+              }
+              st.cursors[w] = batch[i].signature;
+            }
+            st.complete = sigs.length <= SCAN_TX_PER_RUN;
+          });
+        }).catch(function () { okAll = false; /* method unavailable / rate-limited: keep what we have */ });
+      });
+    });
+    return chain.then(function () { st.at = Date.now(); if (okAll) st.okAt = st.at; S.scan = st; lsSet(scanKey(), st); });
+  }
+
+  /* GeckoTerminal: one pool lookup, then candles on demand. */
+  function gtPool() {
+    if (S.pool) return Promise.resolve(S.pool);
+    return getJSON('https://api.geckoterminal.com/api/v2/networks/solana/tokens/' + CFG.mint + '/pools?page=1').then(function (r) {
+      var p = r && r.data && r.data[0] && r.data[0].attributes && r.data[0].attributes.address;
+      if (!p) throw new Error('no pool');
+      S.pool = p;
+      return p;
+    });
+  }
+  var GT_RANGES = {
+    '6h':  { tf: 'minute', agg: 5,  limit: 72 },
+    '24h': { tf: 'minute', agg: 15, limit: 96 },
+    '7d':  { tf: 'hour',   agg: 1,  limit: 168 },
+    'all': { tf: 'hour',   agg: 4,  limit: 1000 }
+  };
+  function candles(range) {
+    var g = GT_RANGES[range] || GT_RANGES['24h'];
+    return gtPool().then(function (pool) {
+      return getJSON('https://api.geckoterminal.com/api/v2/networks/solana/pools/' + pool + '/ohlcv/' + g.tf +
+        '?aggregate=' + g.agg + '&limit=' + g.limit + '&currency=usd&token=base');
+    }).then(function (r) {
+      var list = (r && r.data && r.data.attributes && r.data.attributes.ohlcv_list) || [];
+      /* [ts, open, high, low, close, volumeUsd], newest first → oldest first */
+      return list.map(function (c) { return { t: c[0] * 1000, o: +c[1], h: +c[2], l: +c[3], c: +c[4], v: +c[5] }; })
+        .sort(function (a, b) { return a.t - b.t; });
+    });
+  }
+  function loadHistory() {
+    return candles('24h').then(function (c) { S.hist24 = c; }).catch(function () {})
+      .then(function () { return candles('all'); })
+      .then(function (c) {
+        var supply = S.chain ? S.chain.curve.supply : 1e9;
+        c.forEach(function (k) { if (!isNum(S.athUsd) || k.h * supply > S.athUsd) { S.athUsd = k.h * supply; S.athAt = k.t; } });
+      }).catch(function () {});
+  }
+
+  /* ── Derived numbers ────────────────────────────────────────────────── */
+  function numbers() {
+    var c = S.chain && S.chain.curve;
+    var solUsd = S.solUsd;
+    var priceSol = null, priceUsd = null;
+    if (c && !c.complete && c.vTok > 0) {
+      priceSol = (c.vSol / LAMPORTS) / (c.vTok / Math.pow(10, DECIMALS));
+      priceUsd = isNum(solUsd) ? priceSol * solUsd : (S.jup && S.jup.usdPrice) || null;
+    } else if (S.jup && isNum(S.jup.usdPrice)) {
+      priceUsd = S.jup.usdPrice;
+      priceSol = isNum(solUsd) ? priceUsd / solUsd : null;
+    }
+    var supply = c ? c.supply : (S.jup && S.jup.totalSupply) || 1e9;
+    var scanOk = !!(S.scan && S.scan.okAt);   /* only trust claims / dev totals once a scan has succeeded */
+    var claimed = scanOk ? S.scan.claimed : 0;
+    var unclaimed = S.chain ? S.chain.unclaimedLamports : null;
+    var feesSol = unclaimed == null ? null : (unclaimed + claimed) / LAMPORTS;
+    var st24 = S.jup && S.jup.stats24h;
+    var vol24 = st24 ? (Number(st24.buyVolume) || 0) + (Number(st24.sellVolume) || 0) : null;
+    var change = st24 && isNum(st24.priceChange) ? st24.priceChange : null;
+    if (change == null && S.hist24 && S.hist24.length > 1 && isNum(priceUsd)) change = (priceUsd / S.hist24[0].o - 1) * 100;
+    var mcapUsd = isNum(priceUsd) ? priceUsd * supply : null;
+    var ath = isNum(S.athUsd) ? Math.max(S.athUsd, mcapUsd || 0) : mcapUsd;
+    var devBal = S.chain && S.chain.devRaw != null ? S.chain.devRaw / Math.pow(10, DECIMALS) : null;
+    return {
+      priceSol: priceSol, priceUsd: priceUsd, change: change, supply: supply,
+      mcapUsd: mcapUsd, athUsd: ath, athAt: ath === S.athUsd ? S.athAt : Date.now(),
+      feesSol: feesSol, feesUsd: isNum(feesSol) && isNum(solUsd) ? feesSol * solUsd : null,
+      claimedSol: scanOk ? claimed / LAMPORTS : null, unclaimedSol: unclaimed == null ? null : unclaimed / LAMPORTS,
+      fees24Sol: isNum(vol24) && isNum(solUsd) && solUsd > 0 ? (vol24 * FEE_RATE) / solUsd : null,
+      fees24Usd: isNum(vol24) ? vol24 * FEE_RATE : null,
+      vol24: vol24, buys: st24 ? st24.numBuys : null, sells: st24 ? st24.numSells : null,
+      holders: S.jup && isNum(S.jup.holderCount) ? S.jup.holderCount : null,
+      top10: S.jup && S.jup.audit && isNum(S.jup.audit.topHoldersPercentage) ? S.jup.audit.topHoldersPercentage : null,
+      devBal: devBal, devPct: isNum(devBal) && supply ? (devBal / supply) * 100 : null,
+      devBought: scanOk ? S.scan.bought / Math.pow(10, DECIMALS) : null,
+      devSold: scanOk ? S.scan.sold / Math.pow(10, DECIMALS) : null,
+      devSells: scanOk ? S.scan.sells : null,
+      progress: c ? (c.complete ? 100 : Math.max(0, Math.min(100, (1 - c.rTok / INITIAL_REAL_TOKENS) * 100))) : null,
+      complete: c ? c.complete : false,
+      lastTrade: S.chain ? S.chain.lastTrade : null
+    };
+  }
+
+  /* ── Formatting ─────────────────────────────────────────────────────── */
+  function fx(v, dp) { return Number(v).toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp }); }
+  function usd(v, dp) { return isNum(v) ? '$' + fx(v, dp == null ? 2 : dp) : '—'; }
+  function usdK(v) {
+    if (!isNum(v)) return '—';
+    var a = Math.abs(v);
+    if (a >= 1e9) return '$' + (v / 1e9).toFixed(2) + 'B';
+    if (a >= 1e6) return '$' + (v / 1e6).toFixed(2) + 'M';
+    if (a >= 1e3) return '$' + (v / 1e3).toFixed(1) + 'K';
+    return '$' + v.toFixed(2);
+  }
+  function tiny(v, pre) {
+    if (!isNum(v)) return '—';
+    if (v >= 1) return (pre || '') + fx(v, 2);
+    if (v === 0) return (pre || '') + '0';
+    return (pre || '') + v.toFixed(Math.min(12, Math.max(4, Math.ceil(-Math.log10(v)) + 3)));
+  }
+  function sol(v, dp) { return isNum(v) ? fx(v, dp == null ? 3 : dp) + ' SOL' : '—'; }
+  function int(v) { return isNum(v) ? Math.round(v).toLocaleString('en-US') : '—'; }
+  function kfmt(v) {
+    if (!isNum(v)) return '—';
+    var a = Math.abs(v);
+    if (a >= 1e9) return (v / 1e9).toFixed(2) + 'B';
+    if (a >= 1e6) return (v / 1e6).toFixed(2) + 'M';
+    if (a >= 1e3) return (v / 1e3).toFixed(1) + 'K';
+    return String(Math.round(v));
+  }
+  function pct(v, dp) { return isNum(v) ? fx(v, dp == null ? 1 : dp) + '%' : '—'; }
+  function ago(ms) {
+    if (!ms) return '';
+    var s = Math.max(0, Math.round((Date.now() - ms) / 1000));
+    if (s < 5) return 'just now';
+    if (s < 60) return s + 's ago';
+    var m = Math.round(s / 60);
+    if (m < 60) return m + ' min ago';
+    var h = Math.round(m / 60);
+    return h < 48 ? h + 'h ago' : Math.round(h / 24) + 'd ago';
+  }
+  function clock(ms) { var d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+  function day(ms) { var d = new Date(ms); return d.getDate() + ' ' + d.toLocaleString('en-US', { month: 'short' }); }
+  function short(a) { return a ? a.slice(0, 6) + '…' + a.slice(-6) : ''; }
+
+  function status() {
+    if (S.prelaunch) return 'prelaunch';
+    if (!S.chain) return S.failed ? 'error' : 'loading';
+    return Date.now() - S.lastOkAt > STALE_MS ? 'delayed' : 'live';
+  }
+
+  /* ── View model: every value a page element can ask for ─────────────── */
+  function view() {
+    var n = numbers(), st = status(), a = S.addr || {};
+    var claimedPct = isNum(n.feesSol) && n.feesSol > 0 && isNum(n.claimedSol) ? (n.claimedSol / n.feesSol) * 100 : 0;
+    var pf = 'https://pump.fun/coin/' + CFG.mint;
+    return {
+      status: st,
+      statusLabel: { live: 'Live', delayed: 'Delayed', prelaunch: 'Soon', error: 'Offline', loading: 'Loading' }[st],
+      isPre: st === 'prelaunch', notPre: st !== 'prelaunch',
+      footLine: {
+        live: 'Updated ' + ago(S.lastOkAt) + ' · read from Solana',
+        delayed: 'Last update ' + ago(S.lastOkAt) + ' · retrying',
+        prelaunch: 'Tracker starts at launch · read from Solana',
+        error: 'Live data is unavailable right now',
+        loading: 'Connecting…'
+      }[st],
+      updatedLine: S.lastOkAt ? 'Numbers refresh every 20 seconds, read straight from Solana. Updated ' + ago(S.lastOkAt) + '.' : 'Connecting to live data…',
+
+      priceUsd: tiny(n.priceUsd, '$'),
+      priceSol: isNum(n.priceSol) ? tiny(n.priceSol) + ' SOL' : '—',
+      change24h: isNum(n.change) ? (n.change >= 0 ? '▲ ' : '▼ ') + fx(Math.abs(n.change), 1) + '%' : '',
+      change24hLong: isNum(n.change) ? (n.change >= 0 ? '▲ ' : '▼ ') + fx(Math.abs(n.change), 1) + '% · 24h' : '',
+      changeTone: isNum(n.change) ? (n.change >= 0 ? 'up' : 'down') : '',
+      hasChange: isNum(n.change),
+
+      mcapUsd: isNum(n.mcapUsd) ? usd(n.mcapUsd, 0) : '—',
+      mcapCompact: usdK(n.mcapUsd),
+      ath: usdK(n.athUsd),
+      athWhen: isNum(n.athAt) && n.athUsd ? 'market cap · ' + day(n.athAt) : 'market cap',
+      solUsd: isNum(S.solUsd) ? 'SOL ' + usd(S.solUsd) : '',
+
+      holders: int(n.holders),
+      top10: pct(n.top10),
+
+      feesSol: isNum(n.feesSol) ? fx(n.feesSol, 3) : '—',
+      feesSolUnit: sol(n.feesSol),
+      feesUsdApprox: isNum(n.feesUsd) ? '≈ ' + usd(n.feesUsd) : '',
+      fees24hLine: isNum(n.fees24Sol) ? '≈ +' + sol(n.fees24Sol) + ' in the last 24h' : '',
+      fees24hSol: isNum(n.fees24Sol) ? '≈ ' + sol(n.fees24Sol) : '—',
+      fees24hUsd: isNum(n.fees24Usd) ? '≈ ' + usd(n.fees24Usd) + ' · 0.30% of 24h volume' : '0.30% of every trade on the curve',
+      claimedSol: sol(n.claimedSol),
+      unclaimedSol: sol(n.unclaimedSol),
+      claimedPct: claimedPct.toFixed(2) + '%',
+      unclaimedPct: (isNum(n.feesSol) && n.feesSol > 0 ? 100 - claimedPct : 0).toFixed(2) + '%',
+
+      volume24h: usdK(n.vol24),
+      buysSells: isNum(n.buys) ? int(n.buys) + ' buys · ' + int(n.sells) + ' sells' : '24h trades',
+
+      curvePct: pct(n.progress),
+      curveWidth: isNum(n.progress) ? n.progress.toFixed(2) + '%' : '0%',
+      curveSub: n.complete ? 'Graduated to PumpSwap' : 'to PumpSwap graduation',
+
+      devBalance: int(n.devBal),
+      devBalanceCompact: kfmt(n.devBal),
+      devPct: pct(n.devPct, 2),
+      devPctLine: pct(n.devPct, 2) + ' of supply',
+      devBought: int(n.devBought),
+      devSold: int(n.devSold),
+      devSells: isNum(n.devSells) ? n.devSells + (n.devSells === 1 ? ' sell' : ' sells') : '—',
+      devSellCount: isNum(n.devSells) ? String(n.devSells) : '—',
+      devSellTone: isNum(n.devSells) ? (n.devSells === 0 ? 'up' : 'down') : '',
+
+      hasLastTrade: !!n.lastTrade,
+      lastTradeTime: n.lastTrade ? clock(n.lastTrade.at) : '',
+      lastTradeLine: n.lastTrade ? n.lastTrade.side + ' ' + sol(n.lastTrade.sol, 2) : '',
+      lastTradeHref: n.lastTrade ? 'https://solscan.io/tx/' + n.lastTrade.signature : 'https://solscan.io/token/' + CFG.mint,
+
+      mint: CFG.mint, mintShort: short(CFG.mint),
+      dev: CFG.dev, devShort: short(CFG.dev),
+      vault: a.vault || '—', curveAddr: a.curve || '—',
+      creatorMismatch: !!(a.creator && a.creator !== CFG.dev),
+
+      pumpfunHref: pf, profileHref: CFG.profile,
+      solscanMint: 'https://solscan.io/token/' + CFG.mint,
+      solscanDev: 'https://solscan.io/account/' + CFG.dev,
+      solscanVault: a.vault ? 'https://solscan.io/account/' + a.vault : 'https://solscan.io/token/' + CFG.mint,
+      solscanCurve: a.curve ? 'https://solscan.io/account/' + a.curve : 'https://solscan.io/token/' + CFG.mint
+    };
+  }
+
+  /* ── Binding ────────────────────────────────────────────────────────── */
+  function render() {
+    var v = view();
+    each('[data-ct]', function (el) { var k = el.getAttribute('data-ct'); if (k in v && el.textContent !== String(v[k])) el.textContent = v[k]; });
+    each('[data-ct-href]', function (el) { var k = el.getAttribute('data-ct-href'); if (v[k]) el.setAttribute('href', v[k]); });
+    each('[data-ct-title]', function (el) { var k = el.getAttribute('data-ct-title'); if (v[k]) el.setAttribute('title', v[k]); });
+    each('[data-ct-width]', function (el) { el.style.width = v[el.getAttribute('data-ct-width')] || '0%'; });
+    each('[data-ct-show]', function (el) { el.hidden = !v[el.getAttribute('data-ct-show')]; });
+    each('[data-ct-tone]', function (el) {
+      var t = v[el.getAttribute('data-ct-tone')];
+      el.classList.toggle('ct-up', t === 'up');
+      el.classList.toggle('ct-down', t === 'down');
+    });
+    each('[data-ct-status]', function (el) { el.setAttribute('data-status', v.status); });
+    drawSparks();
+    charts.forEach(function (c) { c.liveUpdate(); });
+  }
+
+  /* ── Sparkline (24h price) ──────────────────────────────────────────── */
+  function drawSparks() {
+    var pts = (S.hist24 || []).filter(function (k) { return isNum(k.c); });
+    each('svg[data-ct-spark]', function (svg) {
+      var vb = (svg.getAttribute('viewBox') || '0 0 300 56').split(/\s+/).map(Number), w = vb[2], h = vb[3];
+      if (pts.length < 2) { svg.innerHTML = ''; svg.classList.add('ct-empty'); return; }
+      svg.classList.remove('ct-empty');
+      var vals = pts.map(function (k) { return k.c; });
+      var hi = Math.max.apply(null, vals), lo = Math.min.apply(null, vals);
+      if (hi === lo) { hi *= 1.01; lo *= 0.99; }
+      var line = vals.map(function (v, i) {
+        return ((i / (vals.length - 1)) * w).toFixed(1) + ',' + (4 + (1 - (v - lo) / (hi - lo)) * (h - 8)).toFixed(1);
+      }).join(' ');
+      svg.classList.toggle('ct-spark-down', vals[vals.length - 1] < vals[0]);
+      svg.innerHTML = '<polygon class="ct-spark-area" points="' + line + ' ' + w + ',' + h + ' 0,' + h + '"></polygon>' +
+        '<polyline class="ct-spark-line" points="' + line + '"></polyline>';
+    });
+  }
+
+  /* ── Fees Earnt chart (token page) ──────────────────────────────────────
+     The end point is the exact on-chain total. Earlier points step back
+     through each period's trading volume × 0.30%, so they are estimates. */
+  function FeesChart(root) {
+    var self = this;
+    this.root = root; this.range = '24h'; this.unit = 'sol'; this.candles = null; this.points = []; this.hover = null;
+    ['plot', 'svg', 'bars', 'yaxis', 'xaxis', 'info', 'empty', 'cross', 'dot', 'last', 'lasttag'].forEach(function (k) {
+      self[k] = root.querySelector('.ct-chart-' + k);
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-range]'), function (b) {
+      b.addEventListener('click', function () { self.range = b.getAttribute('data-range'); self.sync(); self.load(); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-unit]'), function (b) {
+      b.addEventListener('click', function () { self.unit = b.getAttribute('data-unit'); self.sync(); self.draw(); });
+    });
+    this.plot.addEventListener('mousemove', function (e) {
+      if (self.points.length < 2) return;
+      var r = self.plot.getBoundingClientRect();
+      self.hover = Math.max(0, Math.min(self.points.length - 1, Math.round(((e.clientX - r.left) / r.width) * (self.points.length - 1))));
+      self.drawHover();
+    });
+    this.plot.addEventListener('mouseleave', function () { self.hover = null; self.drawHover(); });
+    this.sync();
+    this.load();
+    setInterval(function () { self.load(); }, 5 * 60000);
+  }
+  FeesChart.prototype.sync = function () {
+    var self = this;
+    Array.prototype.forEach.call(this.root.querySelectorAll('[data-range]'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-range') === self.range)); });
+    Array.prototype.forEach.call(this.root.querySelectorAll('[data-unit]'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-unit') === self.unit)); });
+  };
+  FeesChart.prototype.load = function () {
+    var self = this, range = this.range;
+    candles(range).then(function (c) { if (self.range === range) { self.candles = c; self.liveUpdate(true); } },
+      function () { if (self.range === range) { self.candles = []; self.liveUpdate(true); } });
+  };
+  FeesChart.prototype.liveUpdate = function (force) {
+    if (!this.candles) return;
+    var n = numbers();
+    var total = n.feesSol, solUsd = S.solUsd;
+    var key = [total, solUsd, this.candles.length].join('|');
+    if (!force && key === this.key) return;
+    this.key = key;
+    var pts = [];
+    if (this.candles.length && isNum(total) && isNum(solUsd) && solUsd > 0) {
+      var cum = total;
+      for (var i = this.candles.length - 1; i >= 0; i--) {
+        var fee = (this.candles[i].v * FEE_RATE) / solUsd;
+        pts.unshift({ t: this.candles[i].t, fees: Math.max(0, cum), per: fee });
+        cum -= fee;
+      }
+      pts.push({ t: Date.now(), fees: total, per: 0, exact: true });
+    }
+    this.points = pts;
+    this.draw();
+  };
+  FeesChart.prototype.fmt = function (v) {
+    return this.unit === 'usd' ? (isNum(S.solUsd) ? usd(v * S.solUsd) : '—') : sol(v);
+  };
+  FeesChart.prototype.draw = function () {
+    var pts = this.points, n = pts.length;
+    this.empty.hidden = n >= 2;
+    if (n < 2) {
+      this.svg.innerHTML = ''; this.bars.innerHTML = ''; this.yaxis.innerHTML = ''; this.xaxis.innerHTML = '';
+      this.last.hidden = true; this.lasttag.hidden = true; this.info.textContent = '';
+      return;
+    }
+    var vals = pts.map(function (p) { return p.fees; });
+    var hiV = Math.max.apply(null, vals), loV = Math.min.apply(null, vals);
+    var lo = this.range === 'all' ? 0 : Math.max(0, loV - (hiV - loV) * 0.08);
+    var hi = hiV + (hiV - lo) * 0.06;
+    if (!(hi > lo)) hi = lo + 1;
+    var yp = function (v) { return ((hi - v) / (hi - lo)) * 76 + 2; };
+    var t0 = pts[0].t, span = Math.max(1, pts[n - 1].t - t0);
+    var xp = function (t) { return ((t - t0) / span) * 100; };
+    this.xp = xp; this.yp = yp;
+
+    var line = pts.map(function (p) { return (xp(p.t) * 10).toFixed(1) + ',' + (yp(p.fees) * 10).toFixed(1); }).join(' ');
+    this.svg.innerHTML = '<polygon class="ct-chart-area" points="' + line + ' 1000,780 0,780"></polygon><polyline class="ct-chart-line" points="' + line + '"></polyline>';
+
+    var maxD = Math.max.apply(null, pts.map(function (p) { return p.per; })) || 1;
+    var barW = Math.max(0.3, (100 / n) * 0.6), html = '';
+    pts.forEach(function (p) {
+      var h = (p.per / maxD) * 14;
+      if (h > 0) html += '<span style="left:' + (xp(p.t) - barW / 2).toFixed(3) + '%;width:' + barW.toFixed(3) + '%;top:' + (99 - h).toFixed(2) + '%;height:' + h.toFixed(2) + '%"></span>';
+    });
+    this.bars.innerHTML = html;
+
+    var lastY = yp(vals[n - 1]), yh = '';
+    for (var k = 0; k < 5; k++) {
+      var v = lo + ((hi - lo) * (k + 0.5)) / 5;
+      if (Math.abs(yp(v) - lastY) < 7) continue;
+      yh += '<span style="top:' + yp(v).toFixed(2) + '%">' + this.fmt(v) + '</span>';
+    }
+    this.yaxis.innerHTML = yh;
+    var ticks = this.plot.clientWidth < 420 ? 3 : 6, longSpan = span > 36 * 3600e3, xh = '';
+    for (var j = 0; j < ticks; j++) {
+      var t = t0 + (span * j) / (ticks - 1);
+      xh += '<span style="left:' + Math.min(96, Math.max(4, xp(t))).toFixed(2) + '%">' + (longSpan ? day(t) : clock(t)) + '</span>';
+    }
+    this.xaxis.innerHTML = xh;
+    this.last.hidden = false; this.last.style.top = lastY.toFixed(2) + '%';
+    this.lasttag.hidden = false; this.lasttag.style.top = lastY.toFixed(2) + '%'; this.lasttag.textContent = this.fmt(vals[n - 1]);
+    this.drawHover();
+  };
+  FeesChart.prototype.drawHover = function () {
+    var pts = this.points;
+    if (pts.length < 2 || !this.xp) return;
+    var i = this.hover == null ? pts.length - 1 : this.hover, p = pts[i];
+    var x = this.xp(p.t).toFixed(3) + '%';
+    this.cross.hidden = this.dot.hidden = this.hover == null;
+    this.cross.style.left = x; this.dot.style.left = x; this.dot.style.top = this.yp(p.fees).toFixed(2) + '%';
+    this.info.innerHTML = '<b>' + (this.hover == null ? 'Now' : 'Point') + '</b> · ' + day(p.t) + ' ' + clock(p.t) +
+      ' · Total <em>' + (p.exact ? '' : '≈ ') + this.fmt(p.fees) + '</em>' +
+      (p.per > 0 ? ' · This period <em>≈ +' + this.fmt(p.per) + '</em>' : '');
+  };
+
+  /* ── Copy buttons ───────────────────────────────────────────────────── */
+  function wireCopy() {
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('[data-ct-copy]');
+      if (!btn) return;
+      var v = view()[btn.getAttribute('data-ct-copy')];
+      if (!v) return;
+      var done = function () { btn.classList.add('is-copied'); setTimeout(function () { btn.classList.remove('is-copied'); }, 1600); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(done, done); else done();
+    });
+  }
+
+  /* ── Loops ──────────────────────────────────────────────────────────── */
+  function fast() {
+    if (document.hidden) return Promise.resolve();
+    return loadChain().then(render);
+  }
+  function slow() {
+    if (document.hidden) return Promise.resolve();
+    return Promise.all([loadJupiter(), loadSolUsd(), loadHistory()])
+      .then(scanWallets).then(render, render);
+  }
+
+  function boot() {
+    if (!document.querySelector('[data-ct],[data-ct-status],[data-ct-feeschart]')) return;
+    if (!window.crypto || !crypto.subtle || typeof BigInt === 'undefined') return;   /* very old browsers: leave the dashes */
+    S.scan = lsGet(scanKey());
+    wireCopy();
+    each('[data-ct-feeschart]', function (el) { charts.push(new FeesChart(el)); });
+    render();
+    fast().then(slow);
+    setInterval(fast, FAST_MS);
+    setInterval(slow, SLOW_MS);
+    setInterval(render, 5000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) fast(); });
+  }
+
+  window.CainToken = { config: CFG, view: view, refresh: function () { return fast().then(slow); } };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+
+</script>
+<script src="/js/visit-beacon.js" defer></script>
+</body>
+</html>
