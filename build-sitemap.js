@@ -30,6 +30,7 @@ const PUBLIC = [
   { url: '/YieldLeaderboard.html',       priority: '0.8', changefreq: 'daily'   },
   { url: '/MarketInfo.html',             priority: '0.8', changefreq: 'daily'   },
   { url: '/WalletSearch.html',           priority: '0.7', changefreq: 'weekly'  },
+  { url: '/PumpFunQuant.html',           priority: '0.8', changefreq: 'daily'   },
   { url: '/sp500lp.html',                priority: '0.8', changefreq: 'weekly'  },
   { url: '/solusdcvault.html',           priority: '0.8', changefreq: 'weekly'  },
   { url: '/blog.html',                   priority: '0.7', changefreq: 'weekly'  },

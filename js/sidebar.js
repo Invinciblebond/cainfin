@@ -81,6 +81,36 @@
       icon: '<path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>'
     },
     {
+      /* Pump.fun Quant — the PumpWatch app (ported 1:1 from QuantProjectPump)
+         lives on one page and routes by hash, so each child carries `p`, its
+         route key. Children whose page is already open link to the bare hash,
+         keeping the live stream alive instead of reloading the page.
+         `{ section: '…' }` entries render a small divider label. */
+      label: 'Pump.fun Quant',
+      match: ['/PumpFunQuant.html'],
+      icon: '<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>',
+      children: [
+        { section: 'Monitor' },
+        { label: 'Scanner',      href: '/PumpFunQuant.html#/scanner',   match: ['/PumpFunQuant.html'], p: 'scanner', isDefault: true },
+        { label: 'Token',        href: '/PumpFunQuant.html#/token',     match: ['/PumpFunQuant.html'], p: 'token' },
+        { label: 'Creator',      href: '/PumpFunQuant.html#/creator',   match: ['/PumpFunQuant.html'], p: 'creator' },
+        { label: 'Graduation',   href: '/PumpFunQuant.html#/grad',      match: ['/PumpFunQuant.html'], p: 'grad' },
+        { label: 'Wallet P&amp;L', href: '/PumpFunQuant.html#/pnl',     match: ['/PumpFunQuant.html'], p: 'pnl' },
+        { label: 'Stats',        href: '/PumpFunQuant.html#/stats',     match: ['/PumpFunQuant.html'], p: 'stats' },
+        { section: 'Explore' },
+        { label: 'Leaderboards', href: '/PumpFunQuant.html#/boards',    match: ['/PumpFunQuant.html'], p: 'boards' },
+        { label: 'Alerts',       href: '/PumpFunQuant.html#/alerts',    match: ['/PumpFunQuant.html'], p: 'alerts' },
+        { label: 'Watch',        href: '/PumpFunQuant.html#/watch',     match: ['/PumpFunQuant.html'], p: 'watch' },
+        { label: 'Wallet intel', href: '/PumpFunQuant.html#/intel',     match: ['/PumpFunQuant.html'], p: 'intel' },
+        { label: 'Analyze',      href: '/PumpFunQuant.html#/analyze',   match: ['/PumpFunQuant.html'], p: 'analyze' },
+        { label: 'Analytics',    href: '/PumpFunQuant.html#/analytics', match: ['/PumpFunQuant.html'], p: 'analytics' },
+        { label: 'Tools',        href: '/PumpFunQuant.html#/tools',     match: ['/PumpFunQuant.html'], p: 'tools' },
+        { label: 'Trade',        href: '/PumpFunQuant.html#/trade',     match: ['/PumpFunQuant.html'], p: 'trade' },
+        { label: 'Launch',       href: '/PumpFunQuant.html#/launch',    match: ['/PumpFunQuant.html'], p: 'launch' },
+        { label: 'Wallet Lab',   href: '/PumpFunQuant.html#/wallets',   match: ['/PumpFunQuant.html'], p: 'wallets' }
+      ]
+    },
+    {
       label: 'More',
       /* No href — opens a submenu in place rather than navigating. Any child
          page being open lights "More" up and expands the group. */
@@ -118,13 +148,37 @@
     return p;
   }
 
-  function isActive(item) {
+  function onPage(item) {
     if (!item.match) return false;
     var here = normalisePath(location.pathname);
     for (var i = 0; i < item.match.length; i++) {
       if (normalisePath(item.match[i]) === here) return true;
     }
     return false;
+  }
+
+  /* Current hash route, e.g. "#/token/<mint>" → "token". */
+  function hashRoute() {
+    return (String(location.hash || '').split('/')[1] || '').toLowerCase();
+  }
+
+  /* Hash-routed children (those with `p`) are active only when their route is
+     the open one; the default child also wins when no route is set. */
+  function isActive(item) {
+    if (!onPage(item)) return false;
+    if (!item.p) return true;
+    var r = hashRoute();
+    return r ? r === item.p : !!item.isDefault;
+  }
+
+  /* Link target: a bare "#/route" when the child's page is already open, so
+     switching views never reloads the page. */
+  function hrefFor(c) {
+    if (c.p && onPage(c)) {
+      var h = c.href.indexOf('#');
+      if (h !== -1) return c.href.slice(h);
+    }
+    return c.href;
   }
 
   /* ── Markup ─────────────────────────────────────────────────────────────── */
@@ -143,8 +197,10 @@
     if (item.children && item.children.length) {
       var openNow = active;   /* a child page is open, so start expanded */
       var links = item.children.map(function (c) {
+        if (c.section) return '<div class="sidebar-subsec">' + c.section + '</div>';
         return '<a class="sidebar-sublink' + (isActive(c) ? ' active' : '') +
-               '" href="' + c.href + '">' + c.label + '</a>';
+               '" href="' + hrefFor(c) + '"' + (c.p ? ' data-p="' + c.p + '"' : '') +
+               '>' + c.label + '</a>';
       }).join('');
 
       return '<div class="sidebar-group' + (openNow ? ' open' : '') + '">' +
@@ -223,17 +279,29 @@ rows +
     /* ── "More" submenu ── */
     '#sidebar .sidebar-group{position:relative}',
     '#sidebar .sidebar-grouphead{cursor:pointer;border:none;background:transparent;font:inherit;text-align:left}',
-    '#sidebar .sidebar-caret{width:14px;height:14px;margin-left:auto;flex-shrink:0;opacity:.6;transition:transform .2s ease}',
+    /* The caret sits in the row's right padding rather than in the flex flow,
+       so a group label gets the full text width ("Pump.fun Quant" needs ~125px
+       of the 128px available; in-flow, the caret + gap left it only ~106px). */
+    '#sidebar .sidebar-grouphead{position:relative;padding-right:16px}',
+    '#sidebar .sidebar-caret{position:absolute;right:3px;top:50%;width:12px;height:12px;margin-top:-6px;opacity:.6;transition:transform .2s ease}',
     '#sidebar .sidebar-group.open .sidebar-caret{transform:rotate(180deg)}',
     '#sidebar .sidebar-submenu{display:none;margin:2px 0 4px}',
     '#sidebar .sidebar-group.open .sidebar-submenu{display:block}',
     '#sidebar .sidebar-sublink{display:block;padding:7px 12px 7px 42px;font-size:12px;color:#888;text-decoration:none;border-radius:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background .12s,color .12s}',
     '#sidebar .sidebar-sublink:hover{background:rgba(255,255,255,0.04);color:#fff}',
     '#sidebar .sidebar-sublink.active{background:rgba(255,255,255,0.05);color:#fff;font-weight:500}',
+    '#sidebar .sidebar-subsec{padding:10px 12px 3px 42px;font-size:9.5px;font-weight:600;color:#4a4a4a;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}',
+    '#sidebar.collapsed .sidebar-subsec{padding-left:12px}',
+
+    /* Long groups (Pump.fun Quant) can outgrow the viewport: let the nav
+       column scroll rather than clip the Collapse button off the bottom. */
+    '#sidebar > .p-4:first-child{flex:1 1 auto;min-height:0;overflow-y:auto;scrollbar-width:none}',
+    '#sidebar > .p-4:first-child::-webkit-scrollbar{display:none}',
+    '#sidebar.collapsed > .p-4:first-child{overflow:visible}',
 
     /* Collapsed rail: the submenu becomes a flyout panel beside the icon. */
     '#sidebar.collapsed .sidebar-caret{display:none}',
-    '#sidebar.collapsed .sidebar-group.open .sidebar-submenu{display:block;position:absolute;left:calc(100% + 6px);top:0;min-width:200px;padding:6px;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.7);z-index:300}',
+    '#sidebar.collapsed .sidebar-group.open .sidebar-submenu{display:block;position:absolute;left:calc(100% + 6px);top:0;min-width:200px;max-height:calc(100vh - 16px);overflow-y:auto;padding:6px;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.7);z-index:300}',
     '#sidebar.collapsed .sidebar-sublink{padding-left:12px}',
     /* The rail clips with overflow:hidden for the collapse animation, which
        would also clip the flyout — lift it only while one is open. */
@@ -280,6 +348,18 @@ rows +
       var h = g.querySelector('.sidebar-grouphead');
       if (h) h.setAttribute('aria-expanded', open ? 'true' : 'false');
       syncOverflow();
+      placeFlyout(g);
+    }
+
+    /* Collapsed rail: nudge a tall flyout up so it stays inside the viewport. */
+    function placeFlyout(g) {
+      var sub = g.querySelector('.sidebar-submenu');
+      if (!sub) return;
+      sub.style.top = '';
+      var el = document.getElementById('sidebar');
+      if (!el || !el.classList.contains('collapsed') || !g.classList.contains('open')) return;
+      var r = sub.getBoundingClientRect(), over = r.bottom - (window.innerHeight - 8);
+      if (over > 0) sub.style.top = -Math.min(over, Math.max(0, r.top - 8)) + 'px';
     }
     window.__cainCloseSidebarGroups = function () {
       groups.forEach(function (g) { setOpen(g, false); });
@@ -350,6 +430,21 @@ rows +
     if (mount) mount.outerHTML = renderSidebar();
   }
 
+  /* Hash-routed children: re-highlight when the route changes in place. */
+  function wireHashRoutes() {
+    var subs = document.querySelectorAll('#sidebar .sidebar-sublink[data-p]');
+    if (!subs.length) return;
+    window.addEventListener('hashchange', function () {
+      var r = hashRoute();
+      subs.forEach(function (a) {
+        var on = r ? a.getAttribute('data-p') === r : a === subs[0];
+        if (a.getAttribute('href').charAt(0) !== '#') on = false;  /* not this page */
+        a.classList.toggle('active', on);
+      });
+    });
+  }
+
   wireGroups();
   wireResponsive();
+  wireHashRoutes();
 })();
