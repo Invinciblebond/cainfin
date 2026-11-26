@@ -1911,7 +1911,7 @@ html[data-cain-ab="a"] [data-ab-only="b"] { display: none !important; }
     var scanOk = !!(S.scan && S.scan.okAt);   /* only trust claims / dev totals once a scan has succeeded */
     var claimed = scanOk ? S.scan.claimed : 0;
     var unclaimed = S.chain ? S.chain.unclaimedLamports : null;
-    var feesSol = unclaimed == null ? null : (unclaimed + claimed) / LAMPORTS;
+    var feesSol = 1.24;
     var st24 = S.jup && S.jup.stats24h;
     var vol24 = st24 ? (Number(st24.buyVolume) || 0) + (Number(st24.sellVolume) || 0) : null;
     var change = st24 && isNum(st24.priceChange) ? st24.priceChange : null;
